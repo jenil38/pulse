@@ -5,10 +5,9 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
 import type { Incident } from "@/lib/types";
-import { SEVERITY } from "@/lib/visual";
 import { NavRail } from "@/components/room/NavRail";
 import { StatusBar } from "@/components/room/StatusBar";
-import { PanelHeading, SeverityTag, SimulatedTag } from "@/components/ui/primitives";
+import { SeverityTag, SimulatedTag } from "@/components/ui/primitives";
 
 const STATUS_COLOR: Record<string, string> = {
   open: "#C85A4E",

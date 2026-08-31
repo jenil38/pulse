@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Simulation } from "@/lib/types";
-import { SEVERITY, STATE } from "@/lib/visual";
+import { STATE } from "@/lib/visual";
 import {
   PanelHeading,
   SeverityTag,

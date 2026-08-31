@@ -3,7 +3,6 @@
 import Link from "next/link";
 import type { Simulation, Topology } from "@/lib/types";
 import { STATE } from "@/lib/visual";
-import { SCENES } from "./scenes";
 
 /**
  * Mobile / reduced-motion landing.
