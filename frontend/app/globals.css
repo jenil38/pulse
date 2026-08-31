@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * PULSE global styles.
+ * Deep graphite base, subtle volumetric haze, film grain — the atmosphere of
+ * an instrumented machine room, not a gaming HUD.
+ */
+
+:root {
+  --grain-opacity: 0.028;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-void text-ink font-sans antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: rgba(63, 200, 188, 0.22);
+    color: #e6eaec;
+  }
+
+  /* Focus: visible, restrained, never a browser-default blue blob. */
+  :focus-visible {
+    outline: 1px solid rgba(63, 200, 188, 0.75);
+    outline-offset: 2px;
+  }
+
+  /* Scrollbars: thin, part of the surface. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2a3237 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #1e2529;
+    border-radius: 99px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #2a3237;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* Film grain — the reference's atmospheric signature, in our own palette. */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: -50%;
+    pointer-events: none;
+    z-index: 60;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Volumetric haze: a soft radial lift so the scene has atmosphere/depth. */
+  .haze {
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(63, 200, 188, 0.05) 0%, transparent 55%),
+      radial-gradient(90% 60% at 50% 100%, rgba(95, 168, 200, 0.035) 0%, transparent 60%);
+  }
+
+  .panel {
+    @apply bg-panel border border-line;
+  }
+
+  /* Editorial metadata type — hairline, letter-spaced, uppercase. */
+  .meta {
+    @apply font-mono text-meta uppercase tracking-[0.16em] text-ink-mute;
+  }
+  .micro {
+    @apply font-mono text-micro uppercase tracking-[0.18em] text-ink-faint;
+  }
+
+  .hairline {
+    @apply border-t border-line;
+  }
+}
+
+/* Accessibility: honour reduced motion everywhere, including WebGL scenes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,70 @@
+version: 2
+
+# PULSE demo warehouse — data contracts.
+#
+# These tests encode the SAME expectations the failure-simulation engine models.
+# A failing test here corresponds to a failure type in PULSE:
+#
+#   not_null on customer_id      -> NULL_SPIKE
+#   unique on payment_id         -> DUPLICATE_SPIKE
+#   accepted_values on status    -> SCHEMA_DRIFT
+#   freshness (see sources)      -> STALE_DATA
+
+sources:
+  - name: raw
+    description: Landed, untransformed data from external systems.
+    freshness:
+      warn_after: { count: 6, period: hour }
+      error_after: { count: 24, period: hour }
+    loaded_at_field: ingested_at
+    tables:
+      - name: raw_payments
+        description: Stripe charge & refund events.
+      - name: raw_orders
+        description: Order lifecycle events (CDC).
+      - name: raw_customers
+        description: Customer records (CDC).
+      - name: raw_inventory
+        description: Nightly stock-level snapshots.
+      - name: raw_marketing
+        description: Campaign spend & performance.
+
+models:
+  - name: stg_payments
+    description: Cleaned, typed payment rows.
+    columns:
+      - name: payment_id
+        description: Primary key — one row per charge.
+        tests: [unique, not_null]
+      - name: amount
+        description: >
+          Charge amount. MUST be numeric — this is the contract the
+          "Payments schema drift" demo scenario violates.
+        tests: [not_null]
+      - name: payment_status
+        tests:
+          - accepted_values:
+              values: ['succeeded', 'refunded', 'failed', 'pending']
+
+  - name: stg_orders
+    description: Deduplicated, typed orders.
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        description: >
+          Nullable in raw; a spike in nulls here is the "Customer ID null
+          spike" demo scenario.
+        tests: [not_null]
+      - name: order_total
+        tests: [not_null]
+
+  - name: daily_revenue
+    description: >
+      Daily net revenue. Feeds the Executive Revenue Dashboard, which feeds
+      Board Revenue Reporting and the Finance Team.
+    columns:
+      - name: revenue_date
+        tests: [unique, not_null]
+      - name: net_revenue
+        tests: [not_null]
