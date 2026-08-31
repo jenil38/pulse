@@ -232,10 +232,18 @@ python -m pytest backend/tests -q
 Frontend:
 
 ```bash
-cd frontend && npx tsc --noEmit && npm run build
+cd frontend && npm test && npx tsc --noEmit && npm run build
 ```
 
-Both clean — 7 routes build successfully.
+**13 tests passing**, typecheck clean, 7 routes build successfully. The frontend
+tests guard the parts where a silent regression would change what the product
+*communicates*:
+
+- the flow metaphor (healthy flows evenly, degraded stutters, failed stops)
+- the confirmed PULSE palette (so it can't drift back toward the reference site)
+- distinct geometry per node type
+- scroll choreography: contiguous scene coverage, and the regression guard that
+  kept the hero headline visible at scroll position zero
 
 ## Demo Scenarios
 

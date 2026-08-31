@@ -120,7 +120,7 @@ export default function IncidentReplayPage({
 
         <main className="haze relative flex min-w-0 flex-1 flex-col">
           <div className="relative min-h-0 flex-1">
-            <TopologyScene />
+            <TopologyScene cursor="REPLAY" />
 
             {/* Incident header, overlaid top-left */}
             <div className="pointer-events-none absolute left-4 top-4 max-w-md">
