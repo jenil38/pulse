@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter } from "next/font/google";
+import { ContextualCursor } from "@/components/ui/ContextualCursor";
 import "./globals.css";
 
 const sans = Inter({
@@ -28,7 +29,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
-      <body className="grain bg-void">{children}</body>
+      <body className="grain bg-void">
+        {children}
+        <ContextualCursor />
+      </body>
     </html>
   );
 }

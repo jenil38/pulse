@@ -63,7 +63,7 @@ function ChaosLabInner() {
         <main className="relative min-w-0 flex-1 haze">
           {topology ? (
             <>
-              <TopologyScene />
+              <TopologyScene cursor="SIMULATE" />
               <PropagationBar
                 simulation={simulation}
                 hops={hops}

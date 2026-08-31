@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { usePulse } from "@/lib/store";
+import { useOnScreen } from "@/hooks/useOnScreen";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { STATE } from "@/lib/visual";
 import { FlowEdges } from "./FlowEdges";
@@ -167,10 +168,22 @@ function HoverLabel() {
   );
 }
 
-export function TopologyScene({ className = "" }: { className?: string }) {
+export function TopologyScene({
+  className = "",
+  cursor = "INSPECT",
+}: {
+  className?: string;
+  cursor?: string;
+}) {
   const reduced = useReducedMotion();
+  const { ref, visible } = useOnScreen<HTMLDivElement>();
+
   return (
-    <div className={`relative h-full w-full ${className}`}>
+    <div
+      ref={ref}
+      data-cursor={cursor}
+      className={`relative h-full w-full ${className}`}
+    >
       <Canvas
         // Cap DPR — quality without melting laptops.
         dpr={[1, 1.75]}
@@ -187,8 +200,9 @@ export function TopologyScene({ className = "" }: { className?: string }) {
         onCreated={({ gl }) => {
           gl.setClearColor("#060708", 1);
         }}
-        // Pause rendering entirely when reduced motion is requested.
-        frameloop={reduced ? "demand" : "always"}
+        // Pause rendering when reduced motion is requested OR the map is
+        // scrolled offscreen — no runaway rAF loops (DESIGN.md §33).
+        frameloop={reduced || !visible ? "demand" : "always"}
       >
         <Suspense fallback={null}>
           <SceneContents />
