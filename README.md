@@ -235,15 +235,19 @@ Frontend:
 cd frontend && npm test && npx tsc --noEmit && npm run build
 ```
 
-**13 tests passing**, typecheck clean, 7 routes build successfully. The frontend
-tests guard the parts where a silent regression would change what the product
-*communicates*:
+**31 tests passing**, typecheck clean (including `--noUnusedLocals`), 7 routes
+build successfully. The frontend tests guard the parts where a silent regression
+would change what the product *communicates*:
 
 - the flow metaphor (healthy flows evenly, degraded stutters, failed stops)
 - the confirmed PULSE palette (so it can't drift back toward the reference site)
 - distinct geometry per node type
 - scroll choreography: contiguous scene coverage, and the regression guard that
   kept the hero headline visible at scroll position zero
+- the landing camera path: no NaNs, no hard cuts, keyframes hit exactly, and the
+  blast-radius pull-back stays the film's largest gesture
+- story phases: the system is fully revealed before the failure starts, fully
+  propagated before recovery begins, and fully recovered by the final scene
 
 ## Demo Scenarios
 

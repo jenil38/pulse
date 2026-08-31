@@ -5,6 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Asset, HealthState, Topology } from "@/lib/types";
 import { NODE_SHAPE, STATE } from "@/lib/visual";
+import { cameraAt, storyState } from "@/lib/story";
 
 /**
  * The cinematic landing scene.
@@ -27,63 +28,6 @@ interface SceneProps {
   blastStates: Map<string, HealthState>;
   progress: React.RefObject<number>;
   reducedMotion: boolean;
-}
-
-/** Camera keyframes per scene (position + look-at), interpolated by scroll. */
-const KEYS: { at: number; pos: [number, number, number]; look: [number, number, number] }[] = [
-  { at: 0.0, pos: [0, 0, 26], look: [0, 0, 0] },        // 1 pinhole on one node
-  { at: 0.12, pos: [-40, 14, 90], look: [-30, 4, 0] },   // 2 sources appear
-  { at: 0.26, pos: [-14, 20, 96], look: [-6, 0, 0] },    // 3 flow along the pipe
-  { at: 0.38, pos: [-6, 62, 196], look: [10, 0, 0] },    // 4 healthy whole system
-  { at: 0.50, pos: [-46, 24, 74], look: [-42, 8, -34] }, // 5 failure at the source
-  { at: 0.64, pos: [0, 78, 232], look: [10, 0, 0] },     // 6 blast radius pull-back
-  { at: 0.76, pos: [46, 18, 92], look: [56, -2, -18] },  // 7 business impact
-  { at: 0.88, pos: [-10, 56, 186], look: [10, 0, 0] },   // 8 recovery
-  { at: 1.0, pos: [-6, 66, 210], look: [10, 0, 0] },     // 9 settle wide
-];
-
-function lerpKeys(p: number) {
-  let a = KEYS[0];
-  let b = KEYS[KEYS.length - 1];
-  for (let i = 0; i < KEYS.length - 1; i++) {
-    if (p >= KEYS[i].at && p <= KEYS[i + 1].at) {
-      a = KEYS[i];
-      b = KEYS[i + 1];
-      break;
-    }
-  }
-  const span = b.at - a.at || 1;
-  const t = Math.min(Math.max((p - a.at) / span, 0), 1);
-  // Smoothstep for weighted, damped movement between beats.
-  const e = t * t * (3 - 2 * t);
-  return {
-    pos: new THREE.Vector3(
-      THREE.MathUtils.lerp(a.pos[0], b.pos[0], e),
-      THREE.MathUtils.lerp(a.pos[1], b.pos[1], e),
-      THREE.MathUtils.lerp(a.pos[2], b.pos[2], e)
-    ),
-    look: new THREE.Vector3(
-      THREE.MathUtils.lerp(a.look[0], b.look[0], e),
-      THREE.MathUtils.lerp(a.look[1], b.look[1], e),
-      THREE.MathUtils.lerp(a.look[2], b.look[2], e)
-    ),
-  };
-}
-
-/**
- * The story state at a given scroll position:
- *  - `reveal`   how much of the topology has appeared (0..1 by pipeline stage)
- *  - `failure`  0..1 how far the failure has propagated (in hops)
- *  - `recovery` 0..1 how far recovery has swept back
- */
-function storyState(p: number) {
-  const reveal =
-    p < 0.08 ? 0 : Math.min((p - 0.08) / 0.26, 1); // scenes 2-4 build the system
-  const failure =
-    p < 0.46 ? 0 : Math.min((p - 0.46) / 0.26, 1); // scenes 5-7 propagate
-  const recovery =
-    p < 0.8 ? 0 : Math.min((p - 0.8) / 0.16, 1);   // scene 8 heals
-  return { reveal, failure, recovery };
 }
 
 function SceneContents({
@@ -196,10 +140,10 @@ function CameraRig({
 }) {
   useFrame(({ camera }) => {
     const p = progress.current ?? 0;
-    const { pos, look } = lerpKeys(p);
+    const { pos, look } = cameraAt(p);
     const damp = reduced ? 1 : 0.075;
-    camRef.current.lerp(pos, damp);
-    lookRef.current.lerp(look, damp);
+    camRef.current.lerp(new THREE.Vector3(pos[0], pos[1], pos[2]), damp);
+    lookRef.current.lerp(new THREE.Vector3(look[0], look[1], look[2]), damp);
     camera.position.copy(camRef.current);
     camera.lookAt(lookRef.current);
   });
