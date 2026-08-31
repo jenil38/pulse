@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
-import type { Asset, FailureType, FailureTypeInfo } from "@/lib/types";
+import type { FailureType, FailureTypeInfo } from "@/lib/types";
 import { NODE_LABEL, STAGE_ORDER } from "@/lib/visual";
 import { Button, PanelHeading } from "@/components/ui/primitives";
 

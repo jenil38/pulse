@@ -3,9 +3,8 @@
 import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { Asset, Dependency, HealthState, Topology } from "@/lib/types";
+import type { Asset, HealthState, Topology } from "@/lib/types";
 import { NODE_SHAPE, STATE } from "@/lib/visual";
-import { SCENES } from "./scenes";
 
 /**
  * The cinematic landing scene.

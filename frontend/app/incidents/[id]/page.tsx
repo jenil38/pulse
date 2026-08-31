@@ -6,17 +6,10 @@ import { use, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
 import type { IncidentDetail } from "@/lib/types";
-import { STATE } from "@/lib/visual";
 import { NavRail } from "@/components/room/NavRail";
 import { StatusBar } from "@/components/room/StatusBar";
 import { ReplayTimeline } from "@/components/incidents/ReplayTimeline";
-import {
-  Button,
-  PanelHeading,
-  SeverityTag,
-  SimulatedTag,
-  StateDot,
-} from "@/components/ui/primitives";
+import { Button } from "@/components/ui/primitives";
 
 const TopologyScene = dynamic(
   () => import("@/components/three/TopologyScene").then((m) => m.TopologyScene),
