@@ -37,7 +37,7 @@ Demo company: **NOVA COMMERCE** (43 assets, 47 dependencies). All telemetry is
 | 8. Responsive/a11y/perf | ✅ MobileRoom, MobileStory, cursor, offscreen pause |
 | 9. Docker/CI/README/dbt/Airflow | ✅ (Docker authored but unrunnable here) |
 
-**Tests: 35 backend + 13 frontend, all passing. Typecheck clean (incl. `--noUnusedLocals`). Build clean (7 routes).**
+**Tests: 36 backend + 41 frontend, all passing. Typecheck clean (incl. `--noUnusedLocals`). Build clean (7 routes).**
 
 Per the stop condition: **no more major features.** Remaining work is bugs,
 performance, testing, documentation and polish only.
@@ -55,15 +55,22 @@ performance, testing, documentation and polish only.
 
 ## Known gaps / next steps
 
-1. **Landing scenes 3–9 never visually verified.** The browser pane was hidden
-   for the later part of the session, which pauses `requestAnimationFrame`, so
-   scroll progress freezes and screenshots come back black. Camera keyframes in
-   `components/marketing/CinematicScene.tsx` (`KEYS`) are reasoned but unproven —
-   **open the landing page in a real browser and tune them.**
-2. Keyboard navigation of the 3D graph (arrow-key traversal of lineage) would
-   strengthen a11y beyond the current panel-based parity.
-3. Docker compose/Dockerfiles authored but never executed (Docker not installed).
-4. Incidents are in-memory; SQLAlchemy models exist but aren't wired up.
+1. **Landing scenes 3–9 never visually confirmed by eye.** The browser pane never
+   composited (rAF stays paused), so screenshots come back black. Mitigated two
+   ways: the camera path is unit-tested (`frontend/tests/story.test.ts`) and
+   *geometrically* verified — `backend/tools/check_camera_framing.py` projects
+   all 43 nodes through each keyframe's real frustum and proves every scene
+   frames its subject. **The user is reviewing it in their own browser**; retune
+   `CAMERA_KEYS` in `frontend/lib/story.ts` based on their feedback.
+2. Docker compose/Dockerfiles authored but never executed (Docker not installed).
+3. Incidents are in-memory; SQLAlchemy models exist but aren't wired up.
+
+## Recently completed
+
+- Keyboard lineage navigation (← → lineage, ↑ ↓ branch alternatives, Home, Esc)
+  plus an aria-live announcer, since the WebGL canvas is inert to assistive tech.
+- Perf: store keeps Map indexes; particle loop memoises node state per frame
+  (was ~24k array scans/frame).
 
 ## Run it
 
