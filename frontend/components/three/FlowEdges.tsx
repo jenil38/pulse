@@ -104,6 +104,10 @@ export function FlowEdges({
 
   const progress = useRef<Float32Array>(new Float32Array(count));
   const initialized = useRef(false);
+  // Per-frame memo for node states. `stateOf` does linear scans, and the
+  // particle loop asks for both ends of an edge on every particle — without
+  // this we'd run tens of thousands of array scans per frame.
+  const stateCache = useRef(new Map<string, HealthState>());
 
   useFrame((s, delta) => {
     const mesh = meshRef.current;
@@ -112,6 +116,19 @@ export function FlowEdges({
     // Clamp delta so a backgrounded tab doesn't teleport every particle.
     const dt = Math.min(delta, 0.05);
     const t = s.clock.elapsedTime;
+
+    // States can change between frames (propagation), so the cache lives for
+    // exactly one frame: at most one `stateOf` call per node per frame.
+    const cache = stateCache.current;
+    cache.clear();
+    const cachedState = (id: string): HealthState => {
+      let v = cache.get(id);
+      if (v === undefined) {
+        v = stateOf(id);
+        cache.set(id, v);
+      }
+      return v;
+    };
 
     if (!initialized.current) {
       for (let i = 0; i < count; i++) progress.current[i] = spec[i].offset;
@@ -123,8 +140,8 @@ export function FlowEdges({
       const e = edges[sp.edge];
       // An edge flows at the rate of its WEAKEST end — a broken producer
       // stops the pipe even if the consumer is nominally fine.
-      const upV = STATE[stateOf(e.upstream)];
-      const downV = STATE[stateOf(e.downstream)];
+      const upV = STATE[cachedState(e.upstream)];
+      const downV = STATE[cachedState(e.downstream)];
       const flow = Math.min(upV.flow, downV.flow);
       const jitter = Math.max(upV.jitter, downV.jitter);
 
