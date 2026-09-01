@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
 import type { Asset, Comparison, FailureType, FailureTypeInfo } from "@/lib/types";
-import { NODE_LABEL, STAGE_ORDER, STATE } from "@/lib/visual";
-import { NavRail } from "@/components/room/NavRail";
-import { StatusBar } from "@/components/room/StatusBar";
-import { Button, SimulatedTag } from "@/components/ui/primitives";
+import { NODE_LABEL, STAGE_ORDER } from "@/lib/visual";
+import { AppShell } from "@/components/room/AppShell";
+import { Toolbar } from "@/components/room/Toolbar";
+import { Button } from "@/components/ui/Button";
+import { EmptyState, Table, Td, Th } from "@/components/ui/primitives";
 
 /**
- * Scenario comparison — split screen, two failures, one verdict.
- * Every number comes from the deterministic graph engine.
+ * Scenario comparison.
+ *
+ * The least cinematic surface in the product, deliberately: this is a
+ * quantitative question and the answer is a table plus one clear verdict. Bars
+ * are proportional rules, not charts — they exist only to make the ratio
+ * legible at a glance.
  */
 export default function ComparePage() {
   const loadTopology = usePulse((s) => s.loadTopology);
@@ -30,7 +35,7 @@ export default function ComparePage() {
     api.failureTypes().then(setTypes).catch(() => setTypes([]));
   }, [loadTopology]);
 
-  const run = async () => {
+  const run = useCallback(async () => {
     setBusy(true);
     try {
       setResult(
@@ -46,42 +51,47 @@ export default function ComparePage() {
     } finally {
       setBusy(false);
     }
-  };
+  }, [aOrigin, aFail, bOrigin, bFail]);
 
   // Run the headline comparison once the topology is available.
   useEffect(() => {
     if (topology && !result) run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topology]);
+  }, [topology, result, run]);
 
-  const assets = [...(topology?.assets ?? [])].sort(
-    (a, b) =>
-      STAGE_ORDER.indexOf(a.type) - STAGE_ORDER.indexOf(b.type) ||
-      a.name.localeCompare(b.name)
+  const assets = useMemo(
+    () =>
+      [...(topology?.assets ?? [])].sort(
+        (a, b) =>
+          STAGE_ORDER.indexOf(a.type) - STAGE_ORDER.indexOf(b.type) ||
+          a.name.localeCompare(b.name)
+      ),
+    [topology]
   );
 
-  return (
-    <div className="flex h-screen flex-col overflow-hidden bg-void">
-      <StatusBar />
-      <div className="flex min-h-0 flex-1">
-        <NavRail />
-        <main className="haze min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-5xl px-8 py-10">
-            <header className="pb-8">
-              <div className="flex items-center gap-3">
-                <h1 className="font-mono text-lg tracking-[0.16em] text-ink">
-                  SCENARIO COMPARISON
-                </h1>
-                <SimulatedTag />
-              </div>
-              <p className="pt-2 text-[11px] leading-relaxed text-ink-mute">
-                Compare the blast radius of two failures. Which single component
-                would hurt most?
-              </p>
-            </header>
+  const rows = result
+    ? [
+        { label: "Assets affected", a: result.a.affected_assets, b: result.b.affected_assets },
+        { label: "Blast score", a: result.a.blast_score, b: result.b.blast_score },
+        { label: "Critical dashboards", a: result.a.critical_dashboards, b: result.b.critical_dashboards },
+        { label: "ML models", a: result.a.ml_models, b: result.b.ml_models },
+        { label: "Teams impacted", a: result.a.teams, b: result.b.teams },
+      ]
+    : [];
 
-            {/* Split configuration */}
-            <div className="grid gap-4 md:grid-cols-2">
+  return (
+    <AppShell>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Toolbar title="Compare scenarios" />
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-[880px] px-8 py-8">
+            <p className="max-w-prose text-body text-secondary">
+              Compare the blast radius of two failures to find which component is
+              the greater liability.
+            </p>
+
+            {/* Configuration */}
+            <div className="grid gap-6 pt-6 md:grid-cols-2">
               <ScenarioPicker
                 title="Scenario A"
                 assets={assets}
@@ -90,8 +100,6 @@ export default function ComparePage() {
                 failure={aFail}
                 onOrigin={setAOrigin}
                 onFailure={setAFail}
-                side="a"
-                result={result}
               />
               <ScenarioPicker
                 title="Scenario B"
@@ -101,40 +109,91 @@ export default function ComparePage() {
                 failure={bFail}
                 onOrigin={setBOrigin}
                 onFailure={setBFail}
-                side="b"
-                result={result}
               />
             </div>
 
-            <div className="flex justify-center py-6">
+            <div className="pt-5">
               <Button variant="primary" onClick={run} disabled={busy}>
                 {busy ? "Computing…" : "Compare blast radius"}
               </Button>
             </div>
 
             {/* Verdict */}
-            {result && (
+            {result ? (
               <>
-                <div className="animate-fade-up border border-line bg-panel px-6 py-6 text-center">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink-faint">
-                    Verdict
-                  </div>
-                  <div className="pt-3 font-mono text-3xl tabular-nums leading-none text-degraded">
-                    {result.ratio}×
-                  </div>
-                  <p className="pt-3 text-[12px] text-ink-dim">{result.verdict}</p>
+                <div className="mt-8 border-t border-border pt-6">
+                  <p className="text-caption text-tertiary">Verdict</p>
+                  <p className="pt-1 text-title-lg tnum text-primary">
+                    {result.ratio}× greater blast radius
+                  </p>
+                  <p className="max-w-prose pt-1 text-small text-secondary">
+                    {result.verdict}
+                  </p>
                 </div>
 
-                {/* Proportional bars — comparison, not a table dump */}
-                <div className="pt-8">
-                  <CompareBars result={result} />
+                <div className="pt-6">
+                  <Table>
+                    <thead>
+                      <tr>
+                        <Th>Measure</Th>
+                        <Th align="right" width="88px">A</Th>
+                        <Th align="right" width="88px">B</Th>
+                        <Th width="200px">Relative</Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r) => {
+                        const max = Math.max(r.a, r.b, 1);
+                        return (
+                          <tr key={r.label}>
+                            <Td className="text-secondary">{r.label}</Td>
+                            <Td align="right" mono className="text-primary">
+                              {r.a}
+                            </Td>
+                            <Td align="right" mono className="text-primary">
+                              {r.b}
+                            </Td>
+                            <Td>
+                              <span className="flex items-center gap-1">
+                                <span className="flex flex-1 justify-end">
+                                  <span
+                                    className="h-1.5 rounded-full bg-recovering transition-[width] duration-slow ease-standard"
+                                    style={{ width: `${(r.a / max) * 100}%` }}
+                                  />
+                                </span>
+                                <span className="h-3 w-px bg-border" />
+                                <span className="flex flex-1">
+                                  <span
+                                    className="h-1.5 rounded-full bg-degraded transition-[width] duration-slow ease-standard"
+                                    style={{ width: `${(r.b / max) * 100}%` }}
+                                  />
+                                </span>
+                              </span>
+                            </Td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+
+                  <div className="flex gap-5 pt-3">
+                    <Legend className="bg-recovering" label={result.a.label} />
+                    <Legend className="bg-degraded" label={result.b.label} />
+                  </div>
                 </div>
               </>
+            ) : (
+              !busy && (
+                <EmptyState
+                  title="No comparison yet"
+                  hint="Pick two scenarios and compare to see which failure costs more."
+                />
+              )
             )}
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
 
@@ -146,8 +205,6 @@ function ScenarioPicker({
   failure,
   onOrigin,
   onFailure,
-  side,
-  result,
 }: {
   title: string;
   assets: Asset[];
@@ -156,32 +213,20 @@ function ScenarioPicker({
   failure: FailureType;
   onOrigin: (v: string) => void;
   onFailure: (v: FailureType) => void;
-  side: "a" | "b";
-  result: Comparison | null;
 }) {
-  const data = result ? result[side] : null;
-  const accent = side === "a" ? STATE.RECOVERING.hex : STATE.DEGRADED.hex;
-
   return (
-    <section className="border border-line bg-panel">
-      <div className="border-b border-line px-4 py-3">
-        <span
-          className="font-mono text-[10px] uppercase tracking-[0.18em]"
-          style={{ color: accent }}
-        >
-          {title}
-        </span>
-      </div>
-      <div className="space-y-3 px-4 py-4">
+    <section>
+      <h2 className="pb-2 text-caption font-medium text-secondary">{title}</h2>
+      <div className="space-y-2">
         <select
           value={origin}
           onChange={(e) => onOrigin(e.target.value)}
           aria-label={`${title} target asset`}
-          className="w-full border border-line bg-raised px-2 py-2 font-mono text-[10px] text-ink focus:border-healthy/50 focus:outline-none"
+          className="h-control w-full rounded border border-border bg-surface px-2 text-small text-primary transition-colors duration-instant hover:border-border-strong focus:border-accent focus:outline-none"
         >
           {assets.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.name} · {NODE_LABEL[a.type]}
+              {a.name} — {NODE_LABEL[a.type]}
             </option>
           ))}
         </select>
@@ -189,7 +234,7 @@ function ScenarioPicker({
           value={failure}
           onChange={(e) => onFailure(e.target.value as FailureType)}
           aria-label={`${title} failure type`}
-          className="w-full border border-line bg-raised px-2 py-2 font-mono text-[10px] text-ink focus:border-healthy/50 focus:outline-none"
+          className="h-control w-full rounded border border-border bg-surface px-2 text-small text-primary transition-colors duration-instant hover:border-border-strong focus:border-accent focus:outline-none"
         >
           {types.map((t) => (
             <option key={t.value} value={t.value}>
@@ -198,106 +243,15 @@ function ScenarioPicker({
           ))}
         </select>
       </div>
-
-      {data && (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line px-4 py-4">
-          <Stat label="Assets affected" value={data.affected_assets} accent={accent} />
-          <Stat label="Blast score" value={data.blast_score} accent={accent} />
-          <Stat label="Critical dashboards" value={data.critical_dashboards} />
-          <Stat label="ML models" value={data.ml_models} />
-          <Stat label="Teams impacted" value={data.teams} />
-        </dl>
-      )}
     </section>
   );
 }
 
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent?: string;
-}) {
-  return (
-    <div>
-      <dt className="font-mono text-[8px] uppercase tracking-[0.16em] text-ink-faint">
-        {label}
-      </dt>
-      <dd
-        className="pt-0.5 font-mono text-lg tabular-nums leading-none"
-        style={{ color: accent ?? "#E6EAEC" }}
-      >
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-/** Proportional comparison bars — reads at a glance, unlike a table. */
-function CompareBars({ result }: { result: Comparison }) {
-  const rows: { label: string; a: number; b: number }[] = [
-    { label: "Assets affected", a: result.a.affected_assets, b: result.b.affected_assets },
-    { label: "Blast score", a: result.a.blast_score, b: result.b.blast_score },
-    { label: "Critical dashboards", a: result.a.critical_dashboards, b: result.b.critical_dashboards },
-    { label: "ML models", a: result.a.ml_models, b: result.b.ml_models },
-    { label: "Teams impacted", a: result.a.teams, b: result.b.teams },
-  ];
-
-  return (
-    <div className="space-y-4">
-      {rows.map((r) => {
-        const max = Math.max(r.a, r.b, 1);
-        return (
-          <div key={r.label}>
-            <div className="flex justify-between pb-1.5">
-              <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-faint">
-                {r.label}
-              </span>
-              <span className="font-mono text-[9px] tabular-nums text-ink-mute">
-                {r.a} vs {r.b}
-              </span>
-            </div>
-            <div className="flex gap-1">
-              <div className="flex flex-1 justify-end">
-                <div
-                  className="h-1.5 transition-[width] duration-700 ease-pulse"
-                  style={{
-                    width: `${(r.a / max) * 100}%`,
-                    background: STATE.RECOVERING.hex,
-                  }}
-                />
-              </div>
-              <div className="flex flex-1">
-                <div
-                  className="h-1.5 transition-[width] duration-700 ease-pulse"
-                  style={{
-                    width: `${(r.b / max) * 100}%`,
-                    background: STATE.DEGRADED.hex,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        );
-      })}
-      <div className="flex justify-center gap-6 pt-2">
-        <Legend color={STATE.RECOVERING.hex} label={result.a.label} />
-        <Legend color={STATE.DEGRADED.hex} label={result.b.label} />
-      </div>
-    </div>
-  );
-}
-
-function Legend({ color, label }: { color: string; label: string }) {
+function Legend({ className, label }: { className: string; label: string }) {
   return (
     <span className="flex items-center gap-1.5">
-      <span className="inline-block h-1 w-3" style={{ background: color }} />
-      <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-mute">
-        {label}
-      </span>
+      <span className={`h-1.5 w-4 rounded-full ${className}`} aria-hidden />
+      <span className="text-caption text-tertiary">{label}</span>
     </span>
   );
 }

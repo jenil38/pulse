@@ -2,18 +2,25 @@
 
 import { useState } from "react";
 import type { Simulation } from "@/lib/types";
-import { STATE } from "@/lib/visual";
+import { NODE_ABBR, STATE } from "@/lib/visual";
 import {
-  PanelHeading,
-  SeverityTag,
-  StateDot,
-  SimulatedTag,
+  EmptyState,
+  PanelHeader,
+  Property,
+  SeverityBadge,
+  StatusDot,
+  Tabs,
 } from "@/components/ui/primitives";
 
 /**
- * Chaos Lab — right pane. Predicted impact, derived entirely from the
- * deterministic blast-radius computation (never invented in the UI).
+ * Chaos Lab — predicted impact.
+ *
+ * Every figure here comes from the deterministic blast-radius computation; the
+ * UI never invents a number. Rows reveal progressively as the propagation wave
+ * reaches each hop, so the list and the map tell the same story in step.
  */
+type Tab = "impact" | "recovery";
+
 export function ImpactPanel({
   simulation,
   revealedHops,
@@ -21,21 +28,19 @@ export function ImpactPanel({
   simulation: Simulation | null;
   revealedHops: number;
 }) {
-  const [tab, setTab] = useState<"impact" | "recovery">("impact");
+  const [tab, setTab] = useState<Tab>("impact");
 
   if (!simulation) {
     return (
-      <aside className="flex h-full flex-col border-l border-line bg-panel">
-        <PanelHeading>Predicted impact</PanelHeading>
-        <div className="flex flex-1 items-center justify-center px-8 text-center">
-          <p className="font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ink-faint">
-            Configure a failure
-            <br />
-            and inject to see
-            <br />
-            its blast radius
-          </p>
-        </div>
+      <aside
+        data-surface
+        className="flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-canvas"
+      >
+        <PanelHeader>Predicted impact</PanelHeader>
+        <EmptyState
+          title="No simulation running"
+          hint="Choose a target and a failure type, then inject to compute the blast radius."
+        />
       </aside>
     );
   }
@@ -44,54 +49,47 @@ export function ImpactPanel({
   const impacted = br.nodes.filter((n) => n.id !== br.origin);
 
   return (
-    <aside className="flex h-full min-h-0 flex-col border-l border-line bg-panel">
-      <PanelHeading right={<SimulatedTag />}>Predicted impact</PanelHeading>
+    <aside
+      data-surface
+      className="flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-canvas"
+    >
+      <PanelHeader>Predicted impact</PanelHeader>
 
-      {/* Headline numbers */}
-      <div className="border-b border-line px-4 py-4">
+      {/* Headline */}
+      <div className="shrink-0 border-b border-border px-4 py-4">
         <div className="flex items-baseline gap-2">
-          <span className="font-mono text-3xl tabular-nums leading-none text-failed">
-            {br.total_affected}
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-mute">
-            downstream assets affected
-          </span>
+          <span className="text-title-lg tnum text-failed">{br.total_affected}</span>
+          <span className="text-small text-tertiary">downstream assets affected</span>
         </div>
-        <p className="pt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
-          {br.failure_label} · {br.mode} · origin {br.origin_name}
-        </p>
-        {simulation.parameter && (
-          <p className="pt-1 font-mono text-[10px] text-degraded">
-            {simulation.parameter}
-          </p>
-        )}
+        <dl className="pt-3">
+          <Property label="Origin">{br.origin_name}</Property>
+          <Property label="Failure">{br.failure_label}</Property>
+          {simulation.parameter && (
+            <Property label="Parameter" mono>
+              {simulation.parameter}
+            </Property>
+          )}
+          <Property label="Mode">{br.mode}</Property>
+          <Property label="Blast score" mono>
+            {br.blast_score}
+          </Property>
+        </dl>
 
-        <div className="grid grid-cols-3 gap-3 pt-4">
+        <div className="grid grid-cols-3 gap-3 pt-3">
           <Stat label="Dashboards" value={br.critical_dashboards.length} />
           <Stat label="ML models" value={br.ml_models.length} />
           <Stat label="Teams" value={br.teams.length} />
         </div>
-        <div className="pt-3">
-          <Stat label="Blast score" value={br.blast_score} wide />
-        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-line">
-        {(["impact", "recovery"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 py-2.5 font-mono text-[9px] uppercase tracking-[0.16em] transition-colors ${
-              tab === t
-                ? "border-b border-healthy text-healthy"
-                : "text-ink-faint hover:text-ink-dim"
-            }`}
-          >
-            {t === "impact" ? "Impact" : `Recovery · ${simulation.recovery.length}`}
-          </button>
-        ))}
-      </div>
+      <Tabs<Tab>
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: "impact", label: "Impact", count: impacted.length },
+          { value: "recovery", label: "Recovery", count: simulation.recovery.length },
+        ]}
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {tab === "impact" ? (
@@ -101,21 +99,19 @@ export function ImpactPanel({
               return (
                 <li
                   key={n.id}
-                  className={`flex items-center gap-2 border-b border-line/50 px-4 py-2 transition-opacity duration-500 ${
-                    revealed ? "opacity-100" : "opacity-25"
+                  className={`flex items-center gap-2.5 border-b border-border-subtle px-4 py-2 transition-opacity duration-slow ease-standard ${
+                    revealed ? "opacity-100" : "opacity-30"
                   }`}
                 >
-                  <StateDot state={n.state} size="xs" />
+                  <StatusDot state={n.state} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-mono text-[10px] text-ink-dim">
-                      {n.name}
-                    </div>
-                    <div className="font-mono text-[8px] uppercase tracking-[0.12em] text-ink-faint">
-                      hop {n.hops} · {STATE[n.state].label}
+                    <div className="truncate text-small text-primary">{n.name}</div>
+                    <div className="text-caption text-tertiary">
+                      {NODE_ABBR[n.type]} · hop {n.hops} · {STATE[n.state].label}
                       {n.untrustworthy && " · untrustworthy"}
                     </div>
                   </div>
-                  <SeverityTag severity={n.severity} />
+                  <SeverityBadge severity={n.severity} />
                 </li>
               );
             })}
@@ -125,18 +121,14 @@ export function ImpactPanel({
             {simulation.recovery.map((s) => (
               <li
                 key={s.order}
-                className="flex gap-3 border-b border-line/50 px-4 py-2.5"
+                className="flex gap-3 border-b border-border-subtle px-4 py-2.5"
               >
-                <span className="font-mono text-[10px] tabular-nums text-ink-faint">
+                <span className="w-5 shrink-0 pt-px font-mono text-caption tnum text-quaternary">
                   {String(s.order).padStart(2, "0")}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="font-mono text-[10px] leading-snug text-ink-dim">
-                    {s.action}
-                  </div>
-                  <div className="pt-0.5 font-mono text-[8px] uppercase tracking-[0.14em] text-ink-faint">
-                    {s.kind}
-                  </div>
+                  <p className="text-small leading-snug text-primary">{s.action}</p>
+                  <p className="pt-0.5 text-caption text-tertiary">{s.kind}</p>
                 </div>
               </li>
             ))}
@@ -147,25 +139,11 @@ export function ImpactPanel({
   );
 }
 
-function Stat({
-  label,
-  value,
-  wide,
-}: {
-  label: string;
-  value: number;
-  wide?: boolean;
-}) {
+function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="font-mono text-[8px] uppercase tracking-[0.16em] text-ink-faint">
-        {label}
-      </div>
-      <div
-        className={`pt-0.5 font-mono tabular-nums leading-none text-ink ${wide ? "text-base" : "text-lg"}`}
-      >
-        {value}
-      </div>
+      <div className="text-caption text-tertiary">{label}</div>
+      <div className="pt-0.5 text-heading tnum text-primary">{value}</div>
     </div>
   );
 }

@@ -1,12 +1,20 @@
 import type { Config } from "tailwindcss";
 
 /**
- * PULSE design tokens.
+ * PULSE design system.
  *
- * Identity: near-black / graphite base, mineral cyan for healthy data flow,
- * muted amber for degraded, restrained red for failure, neutral greys for type.
- * No purple AI gradients, no cyberpunk neon, no heavy glassmorphism.
+ * All colours resolve to CSS variables (see globals.css) so the entire
+ * environment can switch between `normal` and `chaos` mode via one attribute
+ * on <html>, while keeping Tailwind's opacity modifiers working.
+ *
+ * Discipline enforced here:
+ *   - 4-step surface and text scales, nothing arbitrary
+ *   - one radius ladder, default 8px, nothing above 16px
+ *   - weight 510 for emphasis (never 700)
+ *   - a small type scale with one workhorse size (14px)
  */
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",
@@ -16,77 +24,134 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // --- base: layered graphite -------------------------------------
-        void: "#060708",
-        base: "#0A0C0D",
-        panel: "#0F1214",
-        raised: "#151A1D",
-        line: "#1E2529",
-        "line-strong": "#2A3237",
+        canvas: v("canvas"),
+        surface: v("surface"),
+        subtle: v("subtle"),
+        muted: v("muted"),
+        stage: v("stage"),
 
-        // --- typography: soft neutral whites / greys ---------------------
-        ink: "#E6EAEC",
-        "ink-dim": "#9AA4AB",
-        "ink-mute": "#646E75",
-        "ink-faint": "#3D464C",
+        "border-subtle": v("border-subtle"),
+        border: v("border"),
+        "border-strong": v("border-strong"),
 
-        // --- state language ----------------------------------------------
+        primary: v("text-primary"),
+        secondary: v("text-secondary"),
+        tertiary: v("text-tertiary"),
+        quaternary: v("text-quaternary"),
+
+        accent: {
+          DEFAULT: v("accent"),
+          hover: v("accent-hover"),
+          active: v("accent-active"),
+          subtle: v("accent-subtle"),
+          border: v("accent-border"),
+          text: v("accent-text"),
+          fg: v("on-accent"),
+        },
+
         healthy: {
-          DEFAULT: "#3FC8BC", // mineral cyan / teal
-          dim: "#2A8A82",
-          faint: "#12332F",
+          DEFAULT: v("healthy"),
+          border: v("healthy-border"),
+          bg: v("healthy-bg"),
         },
         degraded: {
-          DEFAULT: "#C8933F", // muted amber
-          dim: "#8A6529",
-          faint: "#2E2413",
+          DEFAULT: v("degraded"),
+          border: v("degraded-border"),
+          bg: v("degraded-bg"),
         },
         failed: {
-          DEFAULT: "#C85A4E", // restrained red
-          dim: "#8A3E36",
-          faint: "#2E1815",
-        },
-        stale: {
-          DEFAULT: "#7E8A93", // neutral drift
-          dim: "#59636A",
-          faint: "#1E2429",
+          DEFAULT: v("failed"),
+          border: v("failed-border"),
+          bg: v("failed-bg"),
         },
         recovering: {
-          DEFAULT: "#5FA8C8", // cool transitional blue
-          dim: "#3E7189",
-          faint: "#15272E",
+          DEFAULT: v("recovering"),
+          border: v("recovering-border"),
+          bg: v("recovering-bg"),
+        },
+        stale: {
+          DEFAULT: v("stale"),
+          border: v("stale-border"),
+          bg: v("stale-bg"),
         },
       },
+
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        // Reserved for IDs, metrics, timestamps, schema versions, shortcuts.
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
+
       fontSize: {
-        micro: ["0.625rem", { lineHeight: "0.875rem", letterSpacing: "0.14em" }],
-        meta: ["0.6875rem", { lineHeight: "1rem", letterSpacing: "0.1em" }],
+        "display-xl": ["3.75rem", { lineHeight: "1", letterSpacing: "-0.03em", fontWeight: "500" }],
+        display: ["2.5rem", { lineHeight: "1.05", letterSpacing: "-0.025em", fontWeight: "500" }],
+        "title-lg": ["1.75rem", { lineHeight: "1.15", letterSpacing: "-0.02em", fontWeight: "510" }],
+        title: ["1.25rem", { lineHeight: "1.3", letterSpacing: "-0.015em", fontWeight: "510" }],
+        heading: ["1rem", { lineHeight: "1.4", letterSpacing: "-0.01em", fontWeight: "510" }],
+        body: ["0.875rem", { lineHeight: "1.5" }],
+        small: ["0.8125rem", { lineHeight: "1.45" }],
+        caption: ["0.75rem", { lineHeight: "1.35" }],
+        micro: ["0.6875rem", { lineHeight: "1.3", letterSpacing: "0.02em", fontWeight: "510" }],
+        mono: ["0.75rem", { lineHeight: "1.4" }],
       },
+
+      fontWeight: {
+        normal: "400",
+        // Emphasis without shouting — the Linear detail worth stealing.
+        medium: "510",
+        semibold: "600",
+      },
+
+      borderRadius: {
+        xs: "4px",
+        sm: "6px",
+        DEFAULT: "8px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+      },
+
+      boxShadow: {
+        raised: "var(--shadow-raised)",
+        overlay: "var(--shadow-overlay)",
+        none: "none",
+      },
+
+      spacing: {
+        // 4px base rhythm; control heights as named steps.
+        "control-xs": "24px",
+        "control-sm": "28px",
+        control: "32px",
+        "control-lg": "36px",
+      },
+
       transitionTimingFunction: {
-        // Weighted, damped motion — no bounce.
-        pulse: "cubic-bezier(0.22, 1, 0.36, 1)",
-        "pulse-in": "cubic-bezier(0.65, 0, 0.35, 1)",
+        standard: "cubic-bezier(0.2, 0, 0, 1)",
+        exit: "cubic-bezier(0.4, 0, 1, 1)",
       },
+
+      transitionDuration: {
+        instant: "100ms",
+        fast: "150ms",
+        base: "200ms",
+        slow: "300ms",
+        mode: "600ms",
+      },
+
       animation: {
-        "flow-pulse": "flowPulse 2.4s cubic-bezier(0.4,0,0.6,1) infinite",
-        "fade-up": "fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both",
-        drift: "drift 3.2s ease-in-out infinite",
+        "fade-in": "fadeIn 150ms cubic-bezier(0.2,0,0,1) both",
+        "slide-up": "slideUp 200ms cubic-bezier(0.2,0,0,1) both",
+        "scale-in": "scaleIn 150ms cubic-bezier(0.2,0,0,1) both",
       },
       keyframes: {
-        flowPulse: {
-          "0%, 100%": { opacity: "0.35" },
-          "50%": { opacity: "1" },
-        },
-        fadeUp: {
-          from: { opacity: "0", transform: "translateY(8px)" },
+        fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
+        slideUp: {
+          from: { opacity: "0", transform: "translateY(4px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
-        drift: {
-          "0%, 100%": { opacity: "0.5" },
-          "50%": { opacity: "0.85" },
+        scaleIn: {
+          from: { opacity: "0", transform: "scale(0.98)" },
+          to: { opacity: "1", transform: "scale(1)" },
         },
       },
     },

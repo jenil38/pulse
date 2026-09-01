@@ -1,22 +1,27 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { usePulse } from "@/lib/store";
+import { useChaosMode } from "@/lib/mode";
 import { usePropagation } from "@/hooks/usePropagation";
+import { useIsDesktop } from "@/hooks/useMediaQuery";
 import type { FailureType } from "@/lib/types";
+import { AppShell } from "@/components/room/AppShell";
+import { Toolbar } from "@/components/room/Toolbar";
+import { TopologyStage } from "@/components/room/TopologyStage";
 import { FailureConfig } from "@/components/chaos/FailureConfig";
 import { ImpactPanel } from "@/components/chaos/ImpactPanel";
-import { NavRail } from "@/components/room/NavRail";
-import { StatusBar } from "@/components/room/StatusBar";
 import { PropagationBar } from "@/components/chaos/PropagationBar";
+import { EmptyState } from "@/components/ui/primitives";
 
-const TopologyScene = dynamic(
-  () => import("@/components/three/TopologyScene").then((m) => m.TopologyScene),
-  { ssr: false }
-);
-
+/**
+ * Chaos Lab.
+ *
+ * Config on the left, the stage in the middle, predicted impact on the right.
+ * Running a simulation shifts the whole environment into chaos mode — the
+ * signature interaction — and exiting restores the professional workspace.
+ */
 function ChaosLabInner() {
   const loadTopology = usePulse((s) => s.loadTopology);
   const topology = usePulse((s) => s.topology);
@@ -25,8 +30,11 @@ function ChaosLabInner() {
   const select = usePulse((s) => s.select);
   const [running, setRunning] = useState(false);
   const params = useSearchParams();
+  const isDesktop = useIsDesktop();
 
   const { simulation, hops, maxHops, phase } = usePropagation();
+
+  useChaosMode(!!simulation);
 
   useEffect(() => {
     loadTopology();
@@ -50,41 +58,46 @@ function ChaosLabInner() {
     setRunning(false);
   };
 
+  if (!isDesktop) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
+        <EmptyState
+          title="Chaos Lab needs a larger screen"
+          hint="Failure simulation is a desktop workflow. Open PULSE on a wider display to run one."
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-void">
-      <StatusBar />
-      <div className="flex min-h-0 flex-1">
-        <NavRail />
-
-        <div className="hidden w-[268px] shrink-0 md:block">
+    <AppShell>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Toolbar title="Chaos Lab" />
+        <div className="flex min-h-0 flex-1">
           <FailureConfig onRun={onRun} running={running} />
-        </div>
 
-        <main className="relative min-w-0 flex-1 haze">
-          {topology ? (
-            <>
-              <TopologyScene cursor="SIMULATE" />
-              <PropagationBar
-                simulation={simulation}
-                hops={hops}
-                maxHops={maxHops}
-                phase={phase}
-              />
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
-                Loading topology…
-              </span>
-            </div>
-          )}
-        </main>
+          <div className="flex min-w-0 flex-1 flex-col">
+            {topology ? (
+              <>
+                <TopologyStage />
+                <PropagationBar
+                  simulation={simulation}
+                  hops={hops}
+                  maxHops={maxHops}
+                  phase={phase}
+                />
+              </>
+            ) : (
+              <div className="flex flex-1 items-center justify-center">
+                <span className="text-small text-quaternary">Loading topology…</span>
+              </div>
+            )}
+          </div>
 
-        <div className="hidden w-[312px] shrink-0 lg:block">
           <ImpactPanel simulation={simulation} revealedHops={hops} />
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
 
@@ -92,10 +105,8 @@ export default function ChaosLabPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center bg-void">
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
-            Loading Chaos Lab…
-          </span>
+        <div className="flex h-screen items-center justify-center bg-canvas">
+          <span className="text-small text-quaternary">Loading Chaos Lab…</span>
         </div>
       }
     >

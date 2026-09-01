@@ -1,21 +1,31 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { use, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
-import type { IncidentDetail } from "@/lib/types";
-import { NavRail } from "@/components/room/NavRail";
-import { StatusBar } from "@/components/room/StatusBar";
+import { useChaosMode } from "@/lib/mode";
+import { formatDuration } from "@/lib/visual";
+import { AppShell } from "@/components/room/AppShell";
+import { Toolbar } from "@/components/room/Toolbar";
+import { TopologyStage } from "@/components/room/TopologyStage";
 import { ReplayTimeline } from "@/components/incidents/ReplayTimeline";
-import { Button } from "@/components/ui/primitives";
+import { Button } from "@/components/ui/Button";
+import {
+  EmptyState,
+  PanelHeader,
+  Property,
+  SeverityBadge,
+} from "@/components/ui/primitives";
+import type { IncidentDetail } from "@/lib/types";
 
-const TopologyScene = dynamic(
-  () => import("@/components/three/TopologyScene").then((m) => m.TopologyScene),
-  { ssr: false }
-);
-
+/**
+ * Incident replay.
+ *
+ * Scrubbing drives the shared topology store, so the map, the event feed and
+ * the timeline all reflect the same instant. The environment sits in chaos mode
+ * for the duration — this is a failure being examined, not routine admin.
+ */
 export default function IncidentReplayPage({
   params,
 }: {
@@ -32,14 +42,16 @@ export default function IncidentReplayPage({
   const [t, setT] = useState(0);
   const [busy, setBusy] = useState(false);
 
+  useChaosMode(!!incident);
+
   useEffect(() => {
     loadTopology();
     api.incident(id).then(setIncident).catch(() => setIncident(null));
     return () => clearSimulation();
   }, [id, loadTopology, clearSimulation]);
 
-  // Feed the incident's blast radius into the shared 3D store so the topology
-  // renders the incident state, then drive it from the scrub position.
+  // Feed the incident's blast radius into the shared store so the topology
+  // renders it, then drive that from the scrub position.
   useEffect(() => {
     if (!incident) return;
     setSimulation({
@@ -66,7 +78,7 @@ export default function IncidentReplayPage({
     setPhase("settled");
   }, [incident, setSimulation, setPhase]);
 
-  // Map scrub time -> how many hops have propagated (180s per hop, per engine).
+  // 180s per hop — matches the engine's timeline generation.
   useEffect(() => {
     advance(Math.floor(t / 180));
   }, [t, advance]);
@@ -86,7 +98,7 @@ export default function IncidentReplayPage({
           : await api.resolveIncident(incident.id);
       setIncident({ ...incident, ...updated });
     } catch {
-      /* surfaced by status below */
+      /* status is reflected by the unchanged incident */
     } finally {
       setBusy(false);
     }
@@ -94,99 +106,114 @@ export default function IncidentReplayPage({
 
   if (!incident) {
     return (
-      <div className="flex h-screen flex-col bg-void">
-        <StatusBar />
-        <div className="flex flex-1 items-center justify-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">
-            Loading incident…
-          </span>
+      <AppShell>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Toolbar title="Incident" />
+          <EmptyState title="Loading incident…" />
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-void">
-      <StatusBar />
-      <div className="flex min-h-0 flex-1">
-        <NavRail />
+    <AppShell>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Toolbar title="Incident replay" />
 
-        <main className="haze relative flex min-w-0 flex-1 flex-col">
-          <div className="relative min-h-0 flex-1">
-            <TopologyScene cursor="REPLAY" />
-
-            {/* Incident header, overlaid top-left */}
-            <div className="pointer-events-none absolute left-4 top-4 max-w-md">
-              <Link
-                href="/incidents"
-                className="pointer-events-auto font-mono text-[9px] uppercase tracking-[0.16em] text-ink-faint hover:text-ink-dim"
-              >
-                ← Incidents
-              </Link>
-              <h1 className="pt-2 font-mono text-sm text-ink">{incident.title}</h1>
-              <p className="pt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
-                {incident.id} · {incident.status} · {incident.affected_assets} assets
-                affected
-              </p>
-            </div>
-
-            {/* Event log, overlaid right */}
-            <div className="absolute right-4 top-4 max-h-[60%] w-72 overflow-y-auto border border-line bg-base/92">
-              <div className="border-b border-line px-3 py-2">
-                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink-dim">
-                  Event log
-                </span>
-              </div>
-              <ol>
-                {activeEvents.map((e, i) => (
-                  <li
-                    key={i}
-                    className="animate-fade-up border-b border-line/50 px-3 py-2"
-                  >
-                    <div className="font-mono text-[9px] tabular-nums text-ink-faint">
-                      {fmt(e.t)}
-                    </div>
-                    <div className="pt-0.5 font-mono text-[10px] leading-snug text-ink-dim">
-                      {e.label}
-                    </div>
-                  </li>
-                ))}
-                {activeEvents.length === 0 && (
-                  <li className="px-3 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
-                    Scrub or play to replay
-                  </li>
-                )}
-              </ol>
-            </div>
-
-            {/* Lifecycle actions */}
-            <div className="absolute bottom-4 left-4 flex gap-2">
-              <Button
-                onClick={() => act("ack")}
-                disabled={busy || incident.status !== "open"}
-              >
-                Acknowledge
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => act("resolve")}
-                disabled={busy || incident.status === "resolved"}
-              >
-                Resolve
-              </Button>
-            </div>
+        <div className="flex min-h-0 flex-1">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopologyStage />
+            <ReplayTimeline incident={incident} t={t} onScrub={setT} />
           </div>
 
-          <ReplayTimeline incident={incident} t={t} onScrub={setT} />
-        </main>
-      </div>
-    </div>
-  );
-}
+          {/* Detail + event feed */}
+          <aside
+            data-surface
+            className="flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-canvas"
+          >
+            <PanelHeader
+              actions={
+                <Link
+                  href="/incidents"
+                  className="text-caption text-tertiary transition-colors hover:text-primary"
+                >
+                  All
+                </Link>
+              }
+            >
+              {incident.title}
+            </PanelHeader>
 
-function fmt(seconds: number): string {
-  const s = Math.max(0, Math.round(seconds));
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+            <div className="shrink-0 border-b border-border px-4 py-3">
+              <dl>
+                <Property label="ID" mono>
+                  {incident.id}
+                </Property>
+                <Property label="Status">
+                  <span className="capitalize">{incident.status}</span>
+                </Property>
+                <Property label="Severity">
+                  <SeverityBadge severity={incident.severity} />
+                </Property>
+                <Property label="Origin">{incident.origin_name}</Property>
+                <Property label="Affected" mono>
+                  {incident.affected_assets}
+                </Property>
+                {incident.teams.length > 0 && (
+                  <Property label="Teams">{incident.teams.join(", ")}</Property>
+                )}
+              </dl>
+
+              <div className="flex gap-2 pt-3">
+                <Button
+                  size="sm"
+                  onClick={() => act("ack")}
+                  disabled={busy || incident.status !== "open"}
+                >
+                  Acknowledge
+                </Button>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => act("resolve")}
+                  disabled={busy || incident.status === "resolved"}
+                >
+                  Resolve
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex h-9 shrink-0 items-center justify-between border-b border-border px-4">
+              <span className="text-micro uppercase text-quaternary">Event log</span>
+              <span className="text-caption tnum text-quaternary">
+                {activeEvents.length} / {incident.timeline.length}
+              </span>
+            </div>
+
+            <ol className="min-h-0 flex-1 overflow-y-auto">
+              {activeEvents.length === 0 ? (
+                <li className="px-4 py-3 text-small text-quaternary">
+                  Press play or scrub the timeline to replay this incident.
+                </li>
+              ) : (
+                activeEvents.map((e, i) => (
+                  <li
+                    key={i}
+                    className="flex gap-3 border-b border-border-subtle px-4 py-2"
+                  >
+                    <span className="w-10 shrink-0 pt-px font-mono text-caption tnum text-quaternary">
+                      {formatDuration(e.t)}
+                    </span>
+                    <span className="text-small leading-snug text-secondary">
+                      {e.label}
+                    </span>
+                  </li>
+                ))
+              )}
+            </ol>
+          </aside>
+        </div>
+      </div>
+    </AppShell>
+  );
 }

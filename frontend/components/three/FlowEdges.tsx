@@ -1,49 +1,42 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Asset, Dependency, HealthState } from "@/lib/types";
+import { token } from "@/lib/mode";
 import { STATE } from "@/lib/visual";
 
 /**
- * Directional dependency edges + the data particles that travel along them.
+ * Dependency edges and the data particles travelling along them.
  *
- * This is the product metaphor made literal:
- *   HEALTHY    steady, even flow
- *   DEGRADED   slower, irregular (jittered) flow
- *   STALE      barely moving
- *   FAILED     flow stopped
- *   RECOVERING flow gradually resuming
+ * This is the one animation that always earns its place: particles move along
+ * ACTUAL upstream→downstream paths, and their behaviour *is* the product's
+ * state language.
  *
- * Particles move along ACTUAL upstream->downstream paths — never decorative.
- * All particles live in a single InstancedMesh for one draw call.
+ *   HEALTHY    steady, even flow        DEGRADED   slower, stuttering
+ *   STALE      barely moving            FAILED     stopped
+ *   RECOVERING gradually resuming
+ *
+ * All particles live in one InstancedMesh — a single draw call.
  */
-
 const PARTICLES_PER_EDGE = 3;
-
-interface EdgeGeom {
-  from: THREE.Vector3;
-  to: THREE.Vector3;
-  upstream: string;
-  downstream: string;
-}
 
 export function FlowEdges({
   assets,
   dependencies,
   stateOf,
   tracedIds,
-  dimmed,
   reducedMotion,
+  modeKey,
   maxParticles = 900,
 }: {
   assets: Asset[];
   dependencies: Dependency[];
   stateOf: (id: string) => HealthState;
   tracedIds: Set<string>;
-  dimmed: boolean;
   reducedMotion: boolean;
+  modeKey: string;
   maxParticles?: number;
 }) {
   const posById = useMemo(() => {
@@ -54,74 +47,78 @@ export function FlowEdges({
     return m;
   }, [assets]);
 
-  const edges = useMemo<EdgeGeom[]>(() => {
-    const out: EdgeGeom[] = [];
+  const edges = useMemo(() => {
+    const out: { from: THREE.Vector3; to: THREE.Vector3; up: string; down: string }[] = [];
     for (const d of dependencies) {
       const from = posById.get(d.upstream);
       const to = posById.get(d.downstream);
-      if (from && to) out.push({ from, to, upstream: d.upstream, downstream: d.downstream });
+      if (from && to) out.push({ from, to, up: d.upstream, down: d.downstream });
     }
     return out;
   }, [dependencies, posById]);
 
-  // ---- static line geometry (one draw call) ------------------------------
+  // Edge + node colours come from design tokens, re-resolved on mode change.
+  const [palette, setPalette] = useState(() => ({
+    edge: token("edge"),
+    node: token("node"),
+  }));
+  useEffect(() => {
+    setPalette({ edge: token("edge"), node: token("node") });
+  }, [modeKey]);
+
   const lineGeom = useMemo(() => {
     const g = new THREE.BufferGeometry();
     const pts = new Float32Array(edges.length * 6);
-    const cols = new Float32Array(edges.length * 6);
-    edges.forEach((e, i) => {
-      pts.set([e.from.x, e.from.y, e.from.z, e.to.x, e.to.y, e.to.z], i * 6);
-      cols.set([0.16, 0.2, 0.22, 0.16, 0.2, 0.22], i * 6);
-    });
+    edges.forEach((e, i) =>
+      pts.set([e.from.x, e.from.y, e.from.z, e.to.x, e.to.y, e.to.z], i * 6)
+    );
     g.setAttribute("position", new THREE.BufferAttribute(pts, 3));
-    g.setAttribute("color", new THREE.BufferAttribute(cols, 3));
     return g;
   }, [edges]);
 
-  const lineRef = useRef<THREE.LineSegments>(null);
-
-  // ---- particles ---------------------------------------------------------
   const count = Math.min(edges.length * PARTICLES_PER_EDGE, maxParticles);
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const lineRef = useRef<THREE.LineSegments>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const color = useMemo(() => new THREE.Color(), []);
 
-  // Per-particle: which edge, and its phase offset along that edge.
-  const spec = useMemo(() => {
-    const arr: { edge: number; offset: number; speedVar: number }[] = [];
-    for (let i = 0; i < count; i++) {
-      const edge = i % edges.length;
-      const slot = Math.floor(i / edges.length);
-      arr.push({
-        edge,
-        offset: (slot + 1) / (PARTICLES_PER_EDGE + 1),
-        // Deterministic per-particle variation — no Math.random in the loop.
+  const spec = useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => ({
+        edge: i % Math.max(edges.length, 1),
+        offset: (Math.floor(i / Math.max(edges.length, 1)) + 1) / (PARTICLES_PER_EDGE + 1),
+        // Deterministic per-particle variation — never Math.random in a loop.
         speedVar: 0.85 + ((i * 37) % 30) / 100,
-      });
-    }
-    return arr;
-  }, [count, edges.length]);
+      })),
+    [count, edges.length]
+  );
 
   const progress = useRef<Float32Array>(new Float32Array(count));
   const initialized = useRef(false);
-  // Per-frame memo for node states. `stateOf` does linear scans, and the
-  // particle loop asks for both ends of an edge on every particle — without
-  // this we'd run tens of thousands of array scans per frame.
+  // Per-frame memo: `stateOf` is asked for both ends of every particle's edge,
+  // so without this we'd run tens of thousands of lookups per frame.
   const stateCache = useRef(new Map<string, HealthState>());
+  const hexCache = useRef(new Map<string, string>());
+
+  // Colour per state, resolved once per mode rather than per particle.
+  useEffect(() => {
+    const m = new Map<string, string>();
+    (Object.keys(STATE) as HealthState[]).forEach((s) => {
+      m.set(s, s === "HEALTHY" ? token("node") : token(STATE[s].varName));
+    });
+    hexCache.current = m;
+  }, [modeKey]);
 
   useFrame((s, delta) => {
     const mesh = meshRef.current;
     if (!mesh || edges.length === 0) return;
 
-    // Clamp delta so a backgrounded tab doesn't teleport every particle.
     const dt = Math.min(delta, 0.05);
     const t = s.clock.elapsedTime;
 
-    // States can change between frames (propagation), so the cache lives for
-    // exactly one frame: at most one `stateOf` call per node per frame.
     const cache = stateCache.current;
     cache.clear();
-    const cachedState = (id: string): HealthState => {
+    const stateFor = (id: string): HealthState => {
       let v = cache.get(id);
       if (v === undefined) {
         v = stateOf(id);
@@ -138,19 +135,19 @@ export function FlowEdges({
     for (let i = 0; i < count; i++) {
       const sp = spec[i];
       const e = edges[sp.edge];
-      // An edge flows at the rate of its WEAKEST end — a broken producer
-      // stops the pipe even if the consumer is nominally fine.
-      const upV = STATE[cachedState(e.upstream)];
-      const downV = STATE[cachedState(e.downstream)];
+      const upState = stateFor(e.up);
+      const downState = stateFor(e.down);
+      const upV = STATE[upState];
+      const downV = STATE[downState];
+
+      // An edge flows at the rate of its WEAKEST end — a broken producer stops
+      // the pipe even when the consumer is nominally fine.
       const flow = Math.min(upV.flow, downV.flow);
       const jitter = Math.max(upV.jitter, downV.jitter);
 
       if (flow > 0 && !reducedMotion) {
-        // Irregularity: degraded pipes stutter rather than glide.
         const stutter =
-          jitter > 0
-            ? 1 + Math.sin(t * 6.1 + sp.edge * 1.7) * jitter * 0.75
-            : 1;
+          jitter > 0 ? 1 + Math.sin(t * 6.1 + sp.edge * 1.7) * jitter * 0.75 : 1;
         progress.current[i] += dt * 0.16 * flow * sp.speedVar * Math.max(0.05, stutter);
         if (progress.current[i] > 1) progress.current[i] -= 1;
       }
@@ -158,22 +155,17 @@ export function FlowEdges({
       const p = progress.current[i];
       dummy.position.lerpVectors(e.from, e.to, p);
 
-      // Particles fade at the ends so edges don't look like hard tracks.
-      const edgeFade = Math.sin(Math.PI * p);
-      const visible = flow > 0 ? 1 : 0;
-      const scale = (0.16 + edgeFade * 0.2) * visible * (dimmed ? 0.4 : 1);
+      const fade = Math.sin(Math.PI * p);
+      const inTrace =
+        tracedIds.size === 0 || tracedIds.has(e.up) || tracedIds.has(e.down);
+      const scale = (0.2 + fade * 0.22) * (flow > 0 ? 1 : 0) * (inTrace ? 1 : 0.35);
       dummy.scale.setScalar(Math.max(scale, 0.0001));
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
 
       // Colour comes from the more severe end of the edge.
-      const worse = upV.flow <= downV.flow ? upV : downV;
-      color.set(worse.hex);
-      const traceBoost =
-        tracedIds.size > 0 && (tracedIds.has(e.upstream) || tracedIds.has(e.downstream))
-          ? 1.6
-          : 1;
-      color.multiplyScalar((dimmed ? 0.45 : 1) * traceBoost);
+      const worse = upV.flow <= downV.flow ? upState : downState;
+      color.set(hexCache.current.get(worse) ?? palette.node);
       mesh.setColorAt(i, color);
     }
 
@@ -185,15 +177,15 @@ export function FlowEdges({
     <group>
       <lineSegments ref={lineRef} geometry={lineGeom}>
         <lineBasicMaterial
-          vertexColors
+          color={palette.edge}
           transparent
-          opacity={dimmed ? 0.25 : 0.55}
+          opacity={0.9}
           depthWrite={false}
         />
       </lineSegments>
 
       <instancedMesh ref={meshRef} args={[undefined, undefined, Math.max(count, 1)]}>
-        <sphereGeometry args={[1, 6, 6]} />
+        <sphereGeometry args={[1, 8, 8]} />
         <meshBasicMaterial transparent opacity={0.95} depthWrite={false} />
       </instancedMesh>
     </group>

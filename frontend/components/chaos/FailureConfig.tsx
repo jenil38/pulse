@@ -5,25 +5,27 @@ import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
 import type { FailureType, FailureTypeInfo } from "@/lib/types";
 import { NODE_LABEL, STAGE_ORDER } from "@/lib/visual";
-import { Button, PanelHeading } from "@/components/ui/primitives";
+import { Button } from "@/components/ui/Button";
+import { PanelHeader, StatusDot } from "@/components/ui/primitives";
 
 /**
- * Chaos Lab — left pane. Configure a SAFE simulated failure.
- * Nothing here touches real data; it parameterises a graph computation.
+ * Chaos Lab — configuration panel.
+ *
+ * A proper form: labelled fields, a real select, radio-style failure list, a
+ * duration slider. Nothing here is decorated; the drama belongs to the stage,
+ * not the controls.
  */
-
-/** Suggested parameter text per failure type — becomes the incident detail. */
 const PARAM_PRESETS: Record<FailureType, string> = {
   SOURCE_OUTAGE: "endpoint unreachable",
-  SCHEMA_DRIFT: "amount: DECIMAL -> STRING",
+  SCHEMA_DRIFT: "amount: DECIMAL → STRING",
   STALE_DATA: "snapshot age > 24h",
-  VOLUME_DROP: "row count -87% vs baseline",
-  NULL_SPIKE: "null ratio -> 22%",
-  DUPLICATE_SPIKE: "duplicate keys -> 14%",
+  VOLUME_DROP: "row count −87% vs baseline",
+  NULL_SPIKE: "null ratio → 22%",
+  DUPLICATE_SPIKE: "duplicate keys → 14%",
   TRANSFORMATION_FAILURE: "model build error",
   WAREHOUSE_DELAY: "load queue backed up 3h",
   API_LATENCY: "p99 latency 8.4s",
-  DATATYPE_CHANGE: "timestamp: TIMESTAMP -> STRING",
+  DATATYPE_CHANGE: "timestamp: TIMESTAMP → STRING",
 };
 
 const MODE_NOTE: Record<string, string> = {
@@ -42,21 +44,21 @@ export function FailureConfig({
   const topology = usePulse((s) => s.topology);
   const selectedId = usePulse((s) => s.selectedId);
   const select = usePulse((s) => s.select);
+  const stateOf = usePulse((s) => s.stateOf);
 
-  const [failureTypes, setFailureTypes] = useState<FailureTypeInfo[]>([]);
+  const [types, setTypes] = useState<FailureTypeInfo[]>([]);
   const [failure, setFailure] = useState<FailureType>("SCHEMA_DRIFT");
   const [minutes, setMinutes] = useState(30);
   const [parameter, setParameter] = useState(PARAM_PRESETS.SCHEMA_DRIFT);
-  const [touchedParam, setTouchedParam] = useState(false);
+  const [touched, setTouched] = useState(false);
 
   useEffect(() => {
-    api.failureTypes().then(setFailureTypes).catch(() => setFailureTypes([]));
+    api.failureTypes().then(setTypes).catch(() => setTypes([]));
   }, []);
 
-  // Keep the parameter hint in sync unless the user has customised it.
   useEffect(() => {
-    if (!touchedParam) setParameter(PARAM_PRESETS[failure]);
-  }, [failure, touchedParam]);
+    if (!touched) setParameter(PARAM_PRESETS[failure]);
+  }, [failure, touched]);
 
   const targets = useMemo(() => {
     const list = [...(topology?.assets ?? [])];
@@ -68,52 +70,59 @@ export function FailureConfig({
     return list;
   }, [topology]);
 
-  const mode = failureTypes.find((f) => f.value === failure)?.mode;
+  const mode = types.find((f) => f.value === failure)?.mode;
   const target = targets.find((t) => t.id === selectedId);
 
   return (
-    <aside className="flex h-full min-h-0 flex-col border-r border-line bg-panel">
-      <PanelHeading>Configure failure</PanelHeading>
+    <aside
+      data-surface
+      className="flex h-full w-[288px] shrink-0 flex-col border-r border-border bg-canvas"
+    >
+      <PanelHeader>Configure failure</PanelHeader>
 
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4">
-        {/* TARGET */}
-        <Field label="Target">
+        <Field label="Target asset" htmlFor="target">
           <select
+            id="target"
             value={selectedId ?? ""}
             onChange={(e) => select(e.target.value || null)}
-            className="w-full border border-line bg-raised px-2 py-2 font-mono text-[10px] text-ink focus:border-healthy/50 focus:outline-none"
+            className="h-control w-full rounded border border-border bg-surface px-2 text-small text-primary transition-colors duration-instant hover:border-border-strong focus:border-accent focus:outline-none"
           >
-            <option value="">— select an asset —</option>
+            <option value="">Select an asset…</option>
             {targets.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.name} · {NODE_LABEL[t.type]}
+                {t.name} — {NODE_LABEL[t.type]}
               </option>
             ))}
           </select>
           {target && (
-            <p className="pt-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
-              {target.system} · {target.criticality}
+            <p className="flex items-center gap-1.5 pt-1.5">
+              <StatusDot state={stateOf(target.id)} />
+              <span className="text-caption text-tertiary">
+                {target.system} · {target.criticality.toLowerCase()} criticality
+              </span>
             </p>
           )}
         </Field>
 
-        {/* FAILURE TYPE */}
         <Field label="Failure type">
-          <div className="space-y-1">
-            {failureTypes.map((f) => {
+          <div className="space-y-px">
+            {types.map((f) => {
               const active = f.value === failure;
               return (
                 <button
                   key={f.value}
                   onClick={() => setFailure(f.value)}
-                  className={`flex w-full items-center justify-between border px-2.5 py-1.5 text-left transition-colors ${
+                  aria-pressed={active}
+                  className={[
+                    "flex h-control w-full items-center justify-between gap-2 rounded px-2.5 text-left transition-colors duration-instant",
                     active
-                      ? "border-failed/50 bg-failed/10 text-failed"
-                      : "border-line bg-raised text-ink-dim hover:border-ink-faint hover:text-ink"
-                  }`}
+                      ? "bg-muted font-medium text-primary"
+                      : "text-secondary hover:bg-subtle hover:text-primary",
+                  ].join(" ")}
                 >
-                  <span className="font-mono text-[10px]">{f.label}</span>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.12em] opacity-60">
+                  <span className="truncate text-small">{f.label}</span>
+                  <span className="shrink-0 text-micro uppercase text-quaternary">
                     {f.mode}
                   </span>
                 </button>
@@ -121,66 +130,76 @@ export function FailureConfig({
             })}
           </div>
           {mode && (
-            <p className="pt-2 font-mono text-[9px] leading-relaxed text-ink-mute">
+            <p className="pt-2 text-caption leading-relaxed text-tertiary">
               {MODE_NOTE[mode]}
             </p>
           )}
         </Field>
 
-        {/* PARAMETERS */}
-        <Field label="Parameters">
+        <Field label="Parameter" htmlFor="param">
           <input
+            id="param"
             value={parameter}
             onChange={(e) => {
               setParameter(e.target.value);
-              setTouchedParam(true);
+              setTouched(true);
             }}
-            className="w-full border border-line bg-raised px-2 py-2 font-mono text-[10px] text-ink focus:border-healthy/50 focus:outline-none"
+            className="h-control w-full rounded border border-border bg-surface px-2 font-mono text-caption text-primary transition-colors duration-instant hover:border-border-strong focus:border-accent focus:outline-none"
           />
         </Field>
 
-        {/* DURATION */}
-        <Field label={`Duration · ${minutes} min`}>
-          <input
-            type="range"
-            min={5}
-            max={240}
-            step={5}
-            value={minutes}
-            onChange={(e) => setMinutes(Number(e.target.value))}
-            className="w-full accent-healthy"
-            aria-label="Failure duration in minutes"
-          />
-          <div className="flex justify-between pt-1">
-            <span className="font-mono text-[8px] text-ink-faint">5m</span>
-            <span className="font-mono text-[8px] text-ink-faint">4h</span>
+        <Field label="Duration" htmlFor="duration">
+          <div className="flex items-center gap-3">
+            <input
+              id="duration"
+              type="range"
+              min={5}
+              max={240}
+              step={5}
+              value={minutes}
+              onChange={(e) => setMinutes(Number(e.target.value))}
+              className="flex-1 accent-accent"
+            />
+            <span className="w-12 shrink-0 text-right font-mono text-caption tnum text-secondary">
+              {minutes}m
+            </span>
           </div>
         </Field>
       </div>
 
-      <div className="space-y-2 border-t border-line p-3">
+      <div className="shrink-0 space-y-2 border-t border-border p-3">
         <Button
           variant="danger"
+          size="md"
           full
           disabled={!selectedId || running}
-          onClick={() =>
-            selectedId && onRun(selectedId, failure, minutes, parameter)
-          }
+          onClick={() => selectedId && onRun(selectedId, failure, minutes, parameter)}
         >
           {running ? "Injecting…" : "Inject failure"}
         </Button>
-        <p className="text-center font-mono text-[8px] uppercase tracking-[0.14em] text-ink-faint">
-          Safe simulation · no real data touched
+        <p className="text-center text-caption text-quaternary">
+          Safe simulation — no real data is touched
         </p>
       </div>
     </aside>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <label className="block pb-2 font-mono text-[9px] uppercase tracking-[0.18em] text-ink-faint">
+      <label
+        htmlFor={htmlFor}
+        className="block pb-1.5 text-caption font-medium text-secondary"
+      >
         {label}
       </label>
       {children}

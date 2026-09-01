@@ -3,95 +3,199 @@
 @tailwind utilities;
 
 /*
- * PULSE global styles.
- * Deep graphite base, subtle volumetric haze, film grain — the atmosphere of
- * an instrumented machine room, not a gaming HUD.
+ * PULSE design tokens.
+ *
+ * Colours are raw RGB triplets so Tailwind can apply opacity modifiers
+ * (`bg-surface/60`). The entire environment switches by setting
+ * `data-mode="chaos"` on <html> — one attribute, no re-render, and the
+ * transition animates because every surface transitions background-color.
+ *
+ * Deliberately absent: grain, haze, glow, glass, gradient borders.
  */
 
 :root {
-  --grain-opacity: 0.028;
+  /* --- surfaces (4 steps) ------------------------------------------- */
+  --canvas: 252 252 253;
+  --surface: 255 255 255;
+  --subtle: 246 247 249;
+  --muted: 237 239 243;
+
+  /* --- borders ------------------------------------------------------- */
+  --border-subtle: 236 238 241;
+  --border: 225 228 233;
+  --border-strong: 200 205 213;
+
+  /* --- text (4 steps — hierarchy by value) ---------------------------- */
+  --text-primary: 22 24 29;
+  --text-secondary: 74 80 88;
+  --text-tertiary: 115 121 133;
+  --text-quaternary: 155 161 171;
+
+  /* --- accent: deep cobalt ------------------------------------------- */
+  --accent: 43 92 224;
+  --accent-hover: 36 80 199;
+  --accent-active: 29 68 174;
+  --accent-subtle: 239 243 254;
+  --accent-border: 198 214 250;
+  --accent-text: 30 75 192;
+  --on-accent: 255 255 255;
+
+  /* --- semantic state triads ----------------------------------------- */
+  --healthy: 15 125 92;
+  --healthy-border: 169 226 201;
+  --healthy-bg: 236 250 244;
+
+  --degraded: 164 91 0;
+  --degraded-border: 240 206 142;
+  --degraded-bg: 253 246 232;
+
+  --failed: 193 59 44;
+  --failed-border: 242 187 180;
+  --failed-bg: 253 241 239;
+
+  --recovering: 37 99 199;
+  --recovering-border: 187 209 245;
+  --recovering-bg: 240 245 254;
+
+  --stale: 115 121 133;
+  --stale-border: 225 228 233;
+  --stale-bg: 246 247 249;
+
+  /* --- elevation: nearly invisible ----------------------------------- */
+  --shadow-raised: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-overlay: 0 12px 32px rgb(16 24 40 / 0.12), 0 2px 6px rgb(16 24 40 / 0.06);
+
+  /* --- topology (consumed by WebGL) ---------------------------------- */
+  --stage: 250 250 252;
+  --edge: 205 210 218;
+  --node: 62 70 82;
+}
+
+/*
+ * CHAOS MODE — the simulation environment.
+ * Same hues, re-tuned for dark ground, so the state language never changes
+ * meaning across the transition.
+ */
+:root[data-mode="chaos"] {
+  --canvas: 11 13 16;
+  --surface: 20 23 27;
+  --subtle: 27 31 36;
+  --muted: 36 42 49;
+
+  --border-subtle: 30 35 41;
+  --border: 35 40 48;
+  --border-strong: 49 56 66;
+
+  --text-primary: 242 244 247;
+  --text-secondary: 183 190 200;
+  --text-tertiary: 131 139 150;
+  --text-quaternary: 98 106 117;
+
+  --accent: 90 140 255;
+  --accent-hover: 118 160 255;
+  --accent-active: 70 120 235;
+  --accent-subtle: 22 32 54;
+  --accent-border: 43 62 104;
+  --accent-text: 138 176 255;
+  --on-accent: 8 12 20;
+
+  --healthy: 63 209 160;
+  --healthy-border: 27 74 60;
+  --healthy-bg: 14 34 28;
+
+  --degraded: 235 174 60;
+  --degraded-border: 84 62 22;
+  --degraded-bg: 38 29 12;
+
+  --failed: 255 107 91;
+  --failed-border: 92 42 36;
+  --failed-bg: 42 20 17;
+
+  --recovering: 91 166 255;
+  --recovering-border: 34 60 96;
+  --recovering-bg: 15 27 43;
+
+  --stale: 131 139 150;
+  --stale-border: 45 52 60;
+  --stale-bg: 26 30 35;
+
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-overlay: 0 16px 40px rgb(0 0 0 / 0.55), 0 2px 8px rgb(0 0 0 / 0.35);
+
+  --stage: 9 11 14;
+  --edge: 52 60 70;
+  --node: 168 178 190;
 }
 
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
   body {
-    @apply bg-void text-ink font-sans antialiased;
-    overscroll-behavior-y: none;
+    background-color: rgb(var(--canvas));
+    color: rgb(var(--text-primary));
+    @apply font-sans text-body antialiased;
+    font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1;
+  }
+
+  /* The mode shift: only the environment animates, never layout. */
+  body,
+  [data-surface] {
+    transition:
+      background-color 600ms cubic-bezier(0.2, 0, 0, 1),
+      border-color 600ms cubic-bezier(0.2, 0, 0, 1),
+      color 600ms cubic-bezier(0.2, 0, 0, 1);
   }
 
   ::selection {
-    background: rgba(63, 200, 188, 0.22);
-    color: #e6eaec;
+    background: rgb(var(--accent) / 0.18);
   }
 
-  /* Focus: visible, restrained, never a browser-default blue blob. */
+  /* Focus: a crisp accent ring, consistent everywhere. */
   :focus-visible {
-    outline: 1px solid rgba(63, 200, 188, 0.75);
-    outline-offset: 2px;
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 1px;
+    border-radius: 4px;
   }
 
-  /* Scrollbars: thin, part of the surface. */
+  ::placeholder {
+    color: rgb(var(--text-quaternary));
+  }
+
   * {
     scrollbar-width: thin;
-    scrollbar-color: #2a3237 transparent;
+    scrollbar-color: rgb(var(--border-strong)) transparent;
   }
   *::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
+    width: 10px;
+    height: 10px;
   }
   *::-webkit-scrollbar-thumb {
-    background: #1e2529;
+    background: rgb(var(--border-strong));
     border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: #2a3237;
+    background: rgb(var(--text-quaternary));
+    background-clip: content-box;
+    border: 3px solid transparent;
   }
   *::-webkit-scrollbar-track {
     background: transparent;
   }
 }
 
-@layer components {
-  /* Film grain — the reference's atmospheric signature, in our own palette. */
-  .grain::after {
-    content: "";
-    position: fixed;
-    inset: -50%;
-    pointer-events: none;
-    z-index: 60;
-    opacity: var(--grain-opacity);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  /* Volumetric haze: a soft radial lift so the scene has atmosphere/depth. */
-  .haze {
-    background:
-      radial-gradient(120% 80% at 50% 0%, rgba(63, 200, 188, 0.05) 0%, transparent 55%),
-      radial-gradient(90% 60% at 50% 100%, rgba(95, 168, 200, 0.035) 0%, transparent 60%);
-  }
-
-  .panel {
-    @apply bg-panel border border-line;
-  }
-
-  /* Editorial metadata type — hairline, letter-spaced, uppercase. */
-  .meta {
-    @apply font-mono text-meta uppercase tracking-[0.16em] text-ink-mute;
-  }
-  .micro {
-    @apply font-mono text-micro uppercase tracking-[0.18em] text-ink-faint;
-  }
-
-  .hairline {
-    @apply border-t border-line;
+@layer utilities {
+  /* Numbers that get compared must not jitter. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-/* Accessibility: honour reduced motion everywhere, including WebGL scenes. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
