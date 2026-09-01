@@ -47,17 +47,19 @@ export default function ControlRoomPage() {
 
   return (
     <AppShell>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         <Toolbar title="Control Room">
-          <Tabs<View>
+          <div className="hidden lg:block">
+            <Tabs<View>
             value={view}
             onChange={setView}
             tabs={[
               { value: "split", label: "Split" },
               { value: "map", label: "Map" },
               { value: "assets", label: "Assets" },
-            ]}
-          />
+              ]}
+            />
+          </div>
         </Toolbar>
 
         {error ? (

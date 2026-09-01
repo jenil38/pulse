@@ -4,23 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { usePulse } from "@/lib/store";
-import { STATE } from "@/lib/visual";
+import { STATE, scoreBand } from "@/lib/visual";
 import type { HealthState } from "@/lib/types";
 import { Kbd } from "@/components/ui/Button";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 /**
  * Product sidebar.
  *
- * Navigation is precise and quiet: active state is a subtle tint plus a weight
- * change, never a glowing pill. Counts sit right-aligned so the column is
- * scannable, and systems roll up their worst health as a single dot.
+ * Navigation is precise and quiet: the active item gets a tinted surface, an
+ * accent rail and a colour shift — no glowing pill. Counts are right-aligned so
+ * the column scans, and each system rolls up its worst health as a single dot.
  */
-
-const NAV = [
-  { href: "/control-room", label: "Control Room" },
-  { href: "/chaos-lab", label: "Chaos Lab" },
-  { href: "/incidents", label: "Incidents" },
-  { href: "/compare", label: "Compare" },
+const NAV: { href: string; label: string; icon: IconName }[] = [
+  { href: "/control-room", label: "Control Room", icon: "room" },
+  { href: "/chaos-lab", label: "Chaos Lab", icon: "chaos" },
+  { href: "/incidents", label: "Incidents", icon: "incident" },
+  { href: "/compare", label: "Compare", icon: "compare" },
 ];
 
 /** Worst state wins — a system is only as healthy as its weakest asset. */
@@ -53,6 +53,8 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
     return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [topology, stateOf]);
 
+  const band = overview ? scoreBand(overview.resilience_score) : null;
+
   return (
     <nav
       aria-label="Primary"
@@ -61,22 +63,23 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
     >
       {/* Workspace */}
       <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
-        <span className="grid h-5 w-5 place-items-center rounded-xs bg-primary text-[10px] font-semibold text-canvas">
+        <span className="grid h-[22px] w-[22px] place-items-center rounded-sm bg-primary text-[11px] font-semibold text-canvas">
           P
         </span>
-        <span className="truncate text-body font-medium text-primary">
+        <span className="min-w-0 flex-1 truncate text-body font-medium text-primary">
           {topology?.organization ?? "PULSE"}
         </span>
       </div>
 
-      {/* Search / command affordance */}
+      {/* Command affordance */}
       {onOpenPalette && (
         <div className="px-2 pt-2">
           <button
             onClick={onOpenPalette}
-            className="flex h-control w-full items-center justify-between rounded border border-border bg-surface px-2.5 text-small text-tertiary transition-colors duration-instant hover:border-border-strong hover:text-secondary"
+            className="group flex h-control w-full items-center gap-2 rounded border border-border bg-surface px-2.5 text-small text-tertiary transition-colors duration-instant hover:border-border-strong hover:text-secondary"
           >
-            <span>Search…</span>
+            <Icon name="search" size={14} className="text-quaternary group-hover:text-tertiary" />
+            <span className="flex-1 text-left">Search…</span>
             <Kbd>⌘K</Kbd>
           </button>
         </div>
@@ -90,20 +93,33 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
             const badge =
               item.href === "/incidents" ? overview?.active_incidents : undefined;
             return (
-              <li key={item.href}>
+              <li key={item.href} className="relative">
+                {active && (
+                  <span
+                    className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-accent"
+                    aria-hidden
+                  />
+                )}
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={[
-                    "flex h-control items-center justify-between gap-2 rounded px-2.5 text-small transition-colors duration-instant",
+                    "flex h-control items-center gap-2.5 rounded px-2.5 text-small transition-colors duration-instant",
                     active
                       ? "bg-muted font-medium text-primary"
                       : "text-secondary hover:bg-subtle hover:text-primary",
                   ].join(" ")}
                 >
-                  <span className="truncate">{item.label}</span>
+                  <Icon
+                    name={item.icon}
+                    size={15}
+                    className={active ? "text-accent" : "text-quaternary"}
+                  />
+                  <span className="flex-1 truncate">{item.label}</span>
                   {!!badge && (
-                    <span className="tnum text-caption text-tertiary">{badge}</span>
+                    <span className="rounded-xs bg-failed-bg px-1.5 text-micro tnum text-failed">
+                      {badge}
+                    </span>
                   )}
                 </Link>
               </li>
@@ -118,7 +134,7 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
             {systemFilter && (
               <button
                 onClick={() => setSystemFilter(null)}
-                className="text-caption text-tertiary transition-colors hover:text-primary"
+                className="text-caption text-accent transition-colors hover:text-accent-hover"
               >
                 Clear
               </button>
@@ -133,7 +149,7 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
                     onClick={() => setSystemFilter(active ? null : name)}
                     aria-pressed={active}
                     className={[
-                      "flex h-control w-full items-center gap-2 rounded px-2.5 text-small transition-colors duration-instant",
+                      "flex h-control w-full items-center gap-2.5 rounded px-2.5 text-small transition-colors duration-instant",
                       active
                         ? "bg-muted font-medium text-primary"
                         : "text-secondary hover:bg-subtle hover:text-primary",
@@ -153,12 +169,37 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
         </div>
       </div>
 
-      {/* Provenance — stated once, permanently, and quietly. */}
-      <div className="shrink-0 border-t border-border px-3 py-2.5">
-        <p className="text-caption text-quaternary">
-          Demo workspace · simulated telemetry
-        </p>
-      </div>
+      {/* Resilience — the one number that summarises the workspace */}
+      {overview && band && (
+        <div className="shrink-0 border-t border-border px-3 py-3">
+          <div className="flex items-baseline justify-between">
+            <span className="text-caption text-tertiary">Resilience</span>
+            <span className="text-caption text-quaternary">{band.label}</span>
+          </div>
+          <div className="flex items-baseline gap-1 pt-1">
+            <span className={`text-title tnum ${band.text}`}>
+              {overview.resilience_score}
+            </span>
+            <span className="text-caption text-quaternary">/ 100</span>
+          </div>
+          {/* A quiet proportional rule, not a chart */}
+          <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className={`h-full rounded-full ${
+                overview.resilience_score >= 80
+                  ? "bg-healthy"
+                  : overview.resilience_score >= 60
+                    ? "bg-degraded"
+                    : "bg-failed"
+              }`}
+              style={{ width: `${overview.resilience_score}%` }}
+            />
+          </div>
+          <p className="pt-2 text-caption text-quaternary">
+            Demo workspace · simulated telemetry
+          </p>
+        </div>
+      )}
     </nav>
   );
 }

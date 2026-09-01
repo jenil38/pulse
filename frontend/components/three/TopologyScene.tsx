@@ -163,6 +163,8 @@ function SceneContents({ mode }: { mode: string }) {
       />
       <directionalLight position={[-60, 20, -40]} intensity={chaos ? 0.3 : 0.35} />
 
+      <GroundPlane mode={mode} />
+
       <FlowEdges
         assets={assets}
         dependencies={dependencies}
@@ -202,6 +204,37 @@ function SceneContents({ mode }: { mode: string }) {
       <HoverLabel />
       <CameraRig focusId={selectedId} mode={mode} />
     </>
+  );
+}
+
+/**
+ * Ground plane — a faint grid the graph sits on.
+ *
+ * The cheapest honest way to give a 2.5D diagram depth: it establishes a floor,
+ * so nodes read as objects in space rather than shapes floating in a void. It
+ * is drawn from the border token and sits far below the content in contrast, so
+ * it never competes with the data.
+ */
+function GroundPlane({ mode }: { mode: string }) {
+  const [color, setColor] = useState(() => token("border"));
+  useEffect(() => setColor(token("border")), [mode]);
+
+  const grid = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    const pts: number[] = [];
+    const halfX = 130;
+    const halfZ = 78;
+    const step = 13;
+    for (let x = -halfX; x <= halfX; x += step) pts.push(x, 0, -halfZ, x, 0, halfZ);
+    for (let z = -halfZ; z <= halfZ; z += step) pts.push(-halfX, 0, z, halfX, 0, z);
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, []);
+
+  return (
+    <lineSegments geometry={grid} position={[10, -24, 0]}>
+      <lineBasicMaterial color={color} transparent opacity={0.55} depthWrite={false} />
+    </lineSegments>
   );
 }
 

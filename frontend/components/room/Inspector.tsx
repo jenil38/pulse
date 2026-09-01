@@ -13,6 +13,7 @@ import {
   formatCount,
 } from "@/lib/visual";
 import { Button } from "@/components/ui/Button";
+import { Icon, NodeGlyph } from "@/components/ui/Icon";
 import {
   Badge,
   EmptyState,
@@ -63,7 +64,7 @@ export function Inspector() {
     return (
       <aside
         data-surface
-        className="flex h-full w-[304px] shrink-0 flex-col border-l border-border bg-canvas"
+        className="hidden h-full w-[304px] shrink-0 flex-col border-l border-border bg-canvas xl:flex"
       >
         <PanelHeader>Inspector</PanelHeader>
         <EmptyState
@@ -82,12 +83,18 @@ export function Inspector() {
   return (
     <aside
       data-surface
-      className="flex h-full w-[304px] shrink-0 flex-col border-l border-border bg-canvas"
+      className={[
+        "flex h-full flex-col border-l border-border bg-canvas",
+        // Below xl the inspector would squeeze the main column, so it becomes
+        // an overlay drawer instead of a permanent third pane.
+        "absolute right-0 top-0 z-30 w-[304px] shadow-overlay",
+        "xl:static xl:z-auto xl:w-[304px] xl:shrink-0 xl:shadow-none",
+      ].join(" ")}
     >
       <PanelHeader
         actions={
           <Button size="xs" variant="ghost" onClick={() => select(null)} aria-label="Close inspector">
-            ✕
+            <Icon name="close" size={14} />
           </Button>
         }
       >
@@ -100,11 +107,14 @@ export function Inspector() {
         <>
           {/* Identity */}
           <div className="shrink-0 px-4 pb-3 pt-4">
-            <div className="flex items-start gap-2">
-              <StatusDot state={st} className="mt-[7px]" />
-              <div className="min-w-0">
-                <h3 className="text-heading text-primary">{a.name}</h3>
-                <p className="pt-0.5 text-caption text-tertiary">
+            <div className="flex items-start gap-2.5">
+              <span className="mt-[3px] grid h-7 w-7 shrink-0 place-items-center rounded border border-border bg-subtle text-tertiary">
+                <NodeGlyph type={a.type} size={15} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-heading text-primary">{a.name}</h3>
+                <p className="flex items-center gap-1.5 pt-0.5 text-caption text-tertiary">
+                  <StatusDot state={st} />
                   {NODE_LABEL[a.type]} · {a.system}
                 </p>
               </div>
@@ -234,6 +244,7 @@ export function Inspector() {
             <Button
               size="sm"
               full
+              icon={<Icon name="trace" size={14} />}
               onClick={() => {
                 if (traced) return clearTrace();
                 trace([
@@ -249,6 +260,7 @@ export function Inspector() {
               size="sm"
               variant="danger"
               full
+              icon={<Icon name="chaos" size={14} />}
               onClick={() => router.push(`/chaos-lab?target=${selectedId}`)}
             >
               Simulate failure

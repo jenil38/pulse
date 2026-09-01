@@ -14,6 +14,7 @@ import {
   formatCount,
 } from "@/lib/visual";
 import { Badge, StatusDot, Table, Td, Th, Tr } from "@/components/ui/primitives";
+import { NodeGlyph } from "@/components/ui/Icon";
 
 /**
  * Dense, sortable asset table.
@@ -178,7 +179,10 @@ export function AssetTable() {
                 </span>
               </Td>
               <Td>
-                <span className="text-tertiary">{NODE_ABBR[a.type as NodeType]}</span>
+                <span className="flex items-center gap-1.5 text-tertiary">
+                  <NodeGlyph type={a.type as NodeType} className="text-quaternary" />
+                  {NODE_ABBR[a.type as NodeType]}
+                </span>
               </Td>
               <Td>
                 <span className={STATE[st].text}>{STATE[st].label}</span>
@@ -193,7 +197,24 @@ export function AssetTable() {
                 )}
               </Td>
               <Td align="right" mono className={stale ? "text-degraded" : "text-secondary"}>
-                {m ? formatAge(m.freshness_seconds) : "—"}
+                {m ? (
+                  <span className="inline-flex items-center justify-end gap-1.5">
+                    <span
+                      className="h-[3px] w-8 overflow-hidden rounded-full bg-muted"
+                      title={`${formatAge(m.freshness_seconds)} of ${formatAge(m.freshness_target)} budget`}
+                    >
+                      <span
+                        className={`block h-full rounded-full ${stale ? "bg-degraded" : "bg-healthy"}`}
+                        style={{
+                          width: `${Math.min(100, (m.freshness_seconds / Math.max(m.freshness_target, 1)) * 100)}%`,
+                        }}
+                      />
+                    </span>
+                    {formatAge(m.freshness_seconds)}
+                  </span>
+                ) : (
+                  "—"
+                )}
               </Td>
               <Td align="right" mono className="hidden text-secondary xl:table-cell">
                 {m ? `${m.latency_ms}ms` : "—"}
