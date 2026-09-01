@@ -8,6 +8,7 @@ import type {
   FailureType,
   HealthOverview,
   HealthState,
+  NodeImpact,
   Simulation,
   Topology,
 } from "./types";
@@ -47,6 +48,26 @@ interface PulseState {
   /** Effective health state for a node, accounting for any active simulation. */
   stateOf: (id: string) => HealthState;
   assetById: (id: string) => Asset | undefined;
+
+  /**
+   * Lookup indexes, rebuilt whenever the topology or simulation changes.
+   * These are read on every animation frame (camera focus, particle flow), so
+   * they must not be linear scans.
+   */
+  _assetIndex: Map<string, Asset>;
+  _impactIndex: Map<string, NodeImpact>;
+}
+
+function indexAssets(t: Topology | null): Map<string, Asset> {
+  const m = new Map<string, Asset>();
+  for (const a of t?.assets ?? []) m.set(a.id, a);
+  return m;
+}
+
+function indexImpacts(sim: Simulation | null): Map<string, NodeImpact> {
+  const m = new Map<string, NodeImpact>();
+  for (const n of sim?.blast_radius.nodes ?? []) m.set(n.id, n);
+  return m;
 }
 
 export const usePulse = create<PulseState>((set, get) => ({
@@ -62,6 +83,8 @@ export const usePulse = create<PulseState>((set, get) => ({
   simPhase: "idle",
   propagationHops: 0,
   tracedIds: new Set<string>(),
+  _assetIndex: new Map<string, Asset>(),
+  _impactIndex: new Map<string, NodeImpact>(),
 
   loadTopology: async () => {
     set({ loading: true, error: null });
@@ -70,7 +93,12 @@ export const usePulse = create<PulseState>((set, get) => ({
         api.topology(),
         api.healthOverview(),
       ]);
-      set({ topology, overview, loading: false });
+      set({
+        topology,
+        overview,
+        loading: false,
+        _assetIndex: indexAssets(topology),
+      });
     } catch (e) {
       set({ error: (e as Error).message, loading: false });
     }
@@ -89,7 +117,12 @@ export const usePulse = create<PulseState>((set, get) => ({
         duration_minutes: minutes,
         parameter,
       });
-      set({ simulation: sim, simPhase: "propagating", propagationHops: 0 });
+      set({
+        simulation: sim,
+        simPhase: "propagating",
+        propagationHops: 0,
+        _impactIndex: indexImpacts(sim),
+      });
       return sim;
     } catch (e) {
       set({ error: (e as Error).message });
@@ -102,25 +135,30 @@ export const usePulse = create<PulseState>((set, get) => ({
       simulation: sim,
       simPhase: sim ? "propagating" : "idle",
       propagationHops: 0,
+      _impactIndex: indexImpacts(sim),
     }),
 
   advancePropagation: (hops) => set({ propagationHops: hops }),
   setSimPhase: (p) => set({ simPhase: p }),
   clearSimulation: () =>
-    set({ simulation: null, simPhase: "idle", propagationHops: 0 }),
+    set({
+      simulation: null,
+      simPhase: "idle",
+      propagationHops: 0,
+      _impactIndex: new Map(),
+    }),
 
   stateOf: (id) => {
-    const { simulation, propagationHops, topology } = get();
+    const { simulation, propagationHops, _impactIndex, _assetIndex } = get();
     if (simulation) {
-      const impact = simulation.blast_radius.nodes.find((n) => n.id === id);
+      const impact = _impactIndex.get(id);
       // Only reveal nodes the propagation wave has reached yet.
       if (impact && impact.hops <= propagationHops) return impact.state;
     }
-    const asset = topology?.assets.find((a) => a.id === id);
-    return asset?.health_state ?? "HEALTHY";
+    return _assetIndex.get(id)?.health_state ?? "HEALTHY";
   },
 
-  assetById: (id) => get().topology?.assets.find((a) => a.id === id),
+  assetById: (id) => get()._assetIndex.get(id),
 }));
 
 /** Max hop distance in the current simulation (propagation completion target). */
