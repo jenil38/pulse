@@ -2,22 +2,23 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { IncidentDetail } from "@/lib/types";
-import { STATE } from "@/lib/visual";
-import { Button } from "@/components/ui/primitives";
+import { formatDuration } from "@/lib/visual";
+import { Button } from "@/components/ui/Button";
 
 /**
  * Incident replay scrubber.
  *
- * The timeline is generated from the same deterministic engine output as the
- * blast radius, so scrubbing replays the real propagation sequence rather than
- * a scripted animation.
+ * The timeline comes from the same deterministic engine output as the blast
+ * radius, so scrubbing replays the real propagation sequence rather than a
+ * scripted animation. Event ticks are rendered on the track so the user can see
+ * where the interesting moments are before dragging to them.
  */
-const KIND_COLOR: Record<string, string> = {
-  inject: STATE.FAILED.hex,
-  propagate: STATE.DEGRADED.hex,
-  impact: STATE.FAILED.hex,
-  recover: STATE.RECOVERING.hex,
-  resolve: STATE.HEALTHY.hex,
+const KIND_CLASS: Record<string, string> = {
+  inject: "bg-failed",
+  propagate: "bg-degraded",
+  impact: "bg-failed",
+  recover: "bg-recovering",
+  resolve: "bg-healthy",
 };
 
 export function ReplayTimeline({
@@ -32,7 +33,7 @@ export function ReplayTimeline({
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(60); // simulated seconds per real second
   const raf = useRef<number | null>(null);
-  const last = useRef<number>(0);
+  const last = useRef(0);
 
   const events = incident.timeline;
   const maxT = events.length ? events[events.length - 1].t : 0;
@@ -65,14 +66,14 @@ export function ReplayTimeline({
     };
   }, [playing, tick, t, maxT]);
 
-  const active = events.filter((e) => e.t <= t);
-  const current = active[active.length - 1];
+  const current = events.filter((e) => e.t <= t).slice(-1)[0];
 
   return (
-    <div className="border-t border-line bg-panel">
-      {/* Controls */}
-      <div className="flex items-center gap-4 border-b border-line px-4 py-2.5">
+    <div data-surface className="shrink-0 border-t border-border bg-canvas">
+      <div className="flex items-center gap-3 px-4 py-2.5">
         <Button
+          size="sm"
+          variant={playing ? "secondary" : "primary"}
           onClick={() => {
             if (t >= maxT) onScrub(0);
             setPlaying((p) => !p);
@@ -81,6 +82,7 @@ export function ReplayTimeline({
           {playing ? "Pause" : t >= maxT ? "Replay" : "Play"}
         </Button>
         <Button
+          size="sm"
           variant="ghost"
           onClick={() => {
             setPlaying(false);
@@ -90,21 +92,22 @@ export function ReplayTimeline({
           Reset
         </Button>
 
-        <span className="font-mono text-[11px] tabular-nums text-ink">
-          {fmt(t)}
+        <span className="font-mono text-small tnum text-primary">{formatDuration(t)}</span>
+        <span className="font-mono text-caption tnum text-quaternary">
+          / {formatDuration(maxT)}
         </span>
-        <span className="font-mono text-[9px] text-ink-faint">/ {fmt(maxT)}</span>
 
-        <div className="ml-auto flex items-center gap-2">
-          <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-ink-faint">
-            Speed
-          </span>
+        <div className="ml-auto flex items-center gap-1">
+          <span className="pr-1 text-caption text-tertiary">Speed</span>
           {[30, 60, 180].map((s) => (
             <button
               key={s}
               onClick={() => setSpeed(s)}
-              className={`px-1.5 py-0.5 font-mono text-[9px] transition-colors ${
-                speed === s ? "text-healthy" : "text-ink-faint hover:text-ink-dim"
+              aria-pressed={speed === s}
+              className={`h-6 rounded px-1.5 font-mono text-caption transition-colors duration-instant ${
+                speed === s
+                  ? "bg-muted font-medium text-primary"
+                  : "text-tertiary hover:bg-subtle hover:text-secondary"
               }`}
             >
               {s / 60}×
@@ -113,8 +116,7 @@ export function ReplayTimeline({
         </div>
       </div>
 
-      {/* Scrubber with event ticks */}
-      <div className="px-4 py-4">
+      <div className="px-4 pb-3">
         <div className="relative">
           <input
             type="range"
@@ -127,46 +129,30 @@ export function ReplayTimeline({
               onScrub(Number(e.target.value));
             }}
             aria-label="Scrub incident timeline"
-            className="w-full accent-healthy"
+            className="w-full accent-accent"
           />
-          {/* Event markers */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-full">
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 h-full -translate-y-1/2">
             {events.map((e, i) => (
               <span
                 key={i}
-                className="absolute top-1/2 h-2 w-px -translate-y-1/2"
-                style={{
-                  left: `${maxT ? (e.t / maxT) * 100 : 0}%`,
-                  background: KIND_COLOR[e.kind] ?? "#3D464C",
-                  opacity: e.t <= t ? 0.9 : 0.3,
-                }}
+                className={`absolute top-1/2 h-2 w-px -translate-y-1/2 ${KIND_CLASS[e.kind] ?? "bg-border-strong"} ${
+                  e.t <= t ? "opacity-90" : "opacity-30"
+                }`}
+                style={{ left: `${maxT ? (e.t / maxT) * 100 : 0}%` }}
               />
             ))}
           </div>
         </div>
 
         {current && (
-          <p className="pt-3 font-mono text-[10px] text-ink-dim">
-            <span
-              className="mr-2 font-mono text-[9px] uppercase tracking-[0.14em]"
-              style={{ color: KIND_COLOR[current.kind] }}
-            >
-              {fmt(current.t)}
+          <p className="flex items-baseline gap-2 pt-2">
+            <span className="font-mono text-caption tnum text-quaternary">
+              {formatDuration(current.t)}
             </span>
-            {current.label}
+            <span className="text-small text-secondary">{current.label}</span>
           </p>
         )}
       </div>
     </div>
   );
-}
-
-function fmt(seconds: number): string {
-  const s = Math.max(0, Math.round(seconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return h > 0
-    ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
-    : `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }

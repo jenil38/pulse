@@ -1,30 +1,52 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
-import type { Asset, Lineage } from "@/lib/types";
-import { NODE_LABEL, STAGE_ORDER, STATE, formatAge } from "@/lib/visual";
-import { SimulatedTag, StateDot } from "@/components/ui/primitives";
+import type { Asset, HealthState, Lineage } from "@/lib/types";
+import {
+  CRITICALITY_LABEL,
+  NODE_LABEL,
+  STATE,
+  formatAge,
+  scoreBand,
+} from "@/lib/visual";
+import { Badge, Property, StatusDot, Tabs } from "@/components/ui/primitives";
 
 /**
- * Mobile Control Room — 2D-first (DESIGN.md §31).
+ * Mobile Control Room — clean, professional 2D. No WebGL.
  *
- * Same product, no WebGL: health rollup, system list, and lineage cards that
- * show upstream/downstream as lists rather than a 3D graph.
+ * Same information architecture as the desktop room, expressed as lists and
+ * expandable rows. 3D is an enhancement, never a requirement.
  */
+const RANK: Record<HealthState, number> = {
+  HEALTHY: 0,
+  RECOVERING: 1,
+  STALE: 2,
+  DEGRADED: 3,
+  FAILED: 4,
+};
+
+type Tab = "assets" | "systems";
+
 export function MobileRoom() {
+  const loadTopology = usePulse((s) => s.loadTopology);
   const topology = usePulse((s) => s.topology);
   const overview = usePulse((s) => s.overview);
   const stateOf = usePulse((s) => s.stateOf);
+
+  const [tab, setTab] = useState<Tab>("assets");
   const [openId, setOpenId] = useState<string | null>(null);
   const [lineage, setLineage] = useState<Lineage | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
-    if (!openId) {
-      setLineage(null);
-      return;
-    }
+    loadTopology();
+  }, [loadTopology]);
+
+  useEffect(() => {
+    if (!openId) return setLineage(null);
     let cancelled = false;
     api
       .asset(openId)
@@ -35,179 +57,206 @@ export function MobileRoom() {
     };
   }, [openId]);
 
-  const grouped = useMemo(() => {
-    const m = new Map<string, Asset[]>();
-    for (const a of topology?.assets ?? []) {
-      const list = m.get(a.system) ?? [];
-      list.push(a);
-      m.set(a.system, list);
-    }
-    for (const [k, list] of m) {
-      list.sort(
-        (x, y) =>
-          STAGE_ORDER.indexOf(x.type) - STAGE_ORDER.indexOf(y.type) ||
-          x.name.localeCompare(y.name)
+  const assets = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (topology?.assets ?? [])
+      .filter((a) => !q || a.name.toLowerCase().includes(q))
+      .sort(
+        (a, b) =>
+          RANK[stateOf(b.id)] - RANK[stateOf(a.id)] || a.name.localeCompare(b.name)
       );
-      m.set(k, list);
+  }, [topology, query, stateOf]);
+
+  const systems = useMemo(() => {
+    const m = new Map<string, { count: number; worst: HealthState }>();
+    for (const a of topology?.assets ?? []) {
+      const cur = m.get(a.system) ?? { count: 0, worst: "HEALTHY" as HealthState };
+      const st = stateOf(a.id);
+      m.set(a.system, {
+        count: cur.count + 1,
+        worst: RANK[st] > RANK[cur.worst] ? st : cur.worst,
+      });
     }
-    return m;
-  }, [topology]);
+    return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
+  }, [topology, stateOf]);
+
+  const band = overview ? scoreBand(overview.resilience_score) : null;
 
   return (
-    <div className="min-h-screen bg-void pb-16">
-      {/* Vitals */}
-      <section className="border-b border-line bg-panel px-5 py-5">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[11px] tracking-[0.24em] text-ink">
-            PULSE
+    <div className="min-h-screen bg-canvas pb-10">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-canvas/95 backdrop-blur-sm">
+        <div className="flex h-12 items-center gap-2 px-4">
+          <span className="grid h-5 w-5 place-items-center rounded-xs bg-primary text-[10px] font-semibold text-canvas">
+            P
           </span>
-          <SimulatedTag text="Demo data" />
+          <span className="text-body font-medium text-primary">
+            {topology?.organization ?? "PULSE"}
+          </span>
+          <Link
+            href="/incidents"
+            className="ml-auto text-small text-tertiary transition-colors hover:text-primary"
+          >
+            Incidents
+          </Link>
         </div>
-        <p className="pt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-faint">
-          Control Room · {topology?.organization ?? "—"}
-        </p>
+      </header>
 
-        {overview && (
-          <>
-            <div className="flex items-baseline gap-2 pt-5">
-              <span className="font-mono text-3xl tabular-nums leading-none text-ink">
-                {overview.resilience_score}
-              </span>
-              <span className="font-mono text-[10px] text-ink-faint">/ 100</span>
-              <span className="pl-2 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-mute">
-                Resilience
-              </span>
-            </div>
-            {overview.weakest_component && (
-              <p className="pt-2 font-mono text-[10px] text-ink-mute">
-                Weakest: {overview.weakest_component}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-x-5 gap-y-2 pt-4">
-              {Object.entries(overview.counts)
-                .filter(([, n]) => n > 0)
-                .map(([k, n]) => (
-                  <span key={k} className="flex items-center gap-1.5">
-                    <span
-                      className="h-1 w-1 rounded-full"
-                      style={{ background: STATE[k as keyof typeof STATE]?.hex }}
-                    />
-                    <span className="font-mono text-[11px] tabular-nums text-ink-dim">
-                      {n}
-                    </span>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-ink-faint">
-                      {k}
-                    </span>
-                  </span>
-                ))}
-            </div>
-          </>
-        )}
-      </section>
+      {/* Vitals */}
+      {overview && band && (
+        <section className="border-b border-border px-4 py-4">
+          <div className="flex items-baseline gap-2">
+            <span className={`text-title-lg tnum ${band.text}`}>
+              {overview.resilience_score}
+            </span>
+            <span className="text-caption text-quaternary">/ 100</span>
+            <span className="text-small text-tertiary">Resilience · {band.label}</span>
+          </div>
+          {overview.weakest_component && (
+            <p className="pt-1 text-small text-secondary">
+              Weakest: {overview.weakest_component}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-x-4 gap-y-2 pt-3">
+            {(Object.entries(overview.counts) as [HealthState, number][])
+              .filter(([, n]) => n > 0)
+              .map(([k, n]) => (
+                <span key={k} className="flex items-center gap-1.5">
+                  <StatusDot state={k} />
+                  <span className="text-small tnum text-secondary">{n}</span>
+                  <span className="text-caption text-tertiary">{STATE[k].label}</span>
+                </span>
+              ))}
+          </div>
+        </section>
+      )}
 
-      {/* Systems & assets */}
-      {[...grouped.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([system, assets]) => (
-          <section key={system} className="border-b border-line">
-            <h2 className="px-5 py-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim">
-              {system}
-            </h2>
-            <ul>
-              {assets.map((a) => {
-                const open = openId === a.id;
-                return (
-                  <li key={a.id} className="border-t border-line/60">
-                    <button
-                      onClick={() => setOpenId(open ? null : a.id)}
-                      aria-expanded={open}
-                      className="flex w-full items-center gap-3 px-5 py-3 text-left"
-                    >
-                      <StateDot state={stateOf(a.id)} size="xs" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-mono text-[11px] text-ink-dim">
-                          {a.name}
-                        </span>
-                        <span className="block font-mono text-[8px] uppercase tracking-[0.14em] text-ink-faint">
-                          {NODE_LABEL[a.type]} · {a.criticality}
-                        </span>
-                      </span>
-                      <span className="font-mono text-[10px] text-ink-faint">
-                        {open ? "−" : "+"}
-                      </span>
-                    </button>
+      <Tabs<Tab>
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: "assets", label: "Assets", count: assets.length },
+          { value: "systems", label: "Systems", count: systems.length },
+        ]}
+      />
 
-                    {open && lineage && lineage.asset.id === a.id && (
-                      <div className="bg-panel px-5 pb-4 pt-1">
-                        {a.description && (
-                          <p className="pb-3 text-[11px] leading-relaxed text-ink-mute">
-                            {a.description}
-                          </p>
-                        )}
-                        <div className="flex gap-6 pb-3">
-                          <Metric n={lineage.upstream_count} label="Upstream" />
-                          <Metric n={lineage.downstream_count} label="Downstream" />
-                          {lineage.metric && (
-                            <Metric
-                              text={formatAge(lineage.metric.freshness_seconds)}
-                              label="Freshness"
-                            />
-                          )}
-                        </div>
-                        <LineList title="Direct upstream" items={lineage.upstream} />
-                        <LineList title="Direct downstream" items={lineage.downstream} />
-                        {lineage.business_consumers.length > 0 && (
-                          <LineList
-                            title="Business consumers"
-                            items={lineage.business_consumers}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))}
+      {tab === "assets" ? (
+        <>
+          <div className="border-b border-border px-4 py-2">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter assets…"
+              aria-label="Filter assets"
+              className="h-control w-full rounded border border-border bg-surface px-2.5 text-small text-primary focus:border-accent focus:outline-none"
+            />
+          </div>
+          <ul>
+            {assets.map((a) => (
+              <AssetRow
+                key={a.id}
+                asset={a}
+                state={stateOf(a.id)}
+                open={openId === a.id}
+                lineage={openId === a.id ? lineage : null}
+                onToggle={() => setOpenId(openId === a.id ? null : a.id)}
+              />
+            ))}
+          </ul>
+        </>
+      ) : (
+        <ul>
+          {systems.map(([name, info]) => (
+            <li
+              key={name}
+              className="flex items-center gap-2.5 border-b border-border-subtle px-4 py-3"
+            >
+              <StatusDot state={info.worst} />
+              <span className="flex-1 text-small text-primary">{name}</span>
+              <span className="text-caption tnum text-tertiary">{info.count}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <p className="px-5 py-6 font-mono text-[9px] uppercase leading-relaxed tracking-[0.14em] text-ink-faint">
-        The 3D system map is available on larger screens.
+      <p className="px-4 pt-6 text-caption text-quaternary">
+        The interactive system map and Chaos Lab are available on larger screens.
+        Telemetry shown here is simulated demo data.
       </p>
     </div>
   );
 }
 
-function Metric({ n, text, label }: { n?: number; text?: string; label: string }) {
+function AssetRow({
+  asset,
+  state,
+  open,
+  lineage,
+  onToggle,
+}: {
+  asset: Asset;
+  state: HealthState;
+  open: boolean;
+  lineage: Lineage | null;
+  onToggle: () => void;
+}) {
   return (
-    <div>
-      <div className="font-mono text-base tabular-nums leading-none text-ink">
-        {text ?? n}
-      </div>
-      <div className="pt-1 font-mono text-[8px] uppercase tracking-[0.14em] text-ink-faint">
-        {label}
-      </div>
-    </div>
-  );
-}
+    <li className="border-b border-border-subtle">
+      <button
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2.5 px-4 py-3 text-left"
+      >
+        <StatusDot state={state} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-small text-primary">{asset.name}</span>
+          <span className="block text-caption text-tertiary">
+            {NODE_LABEL[asset.type]} · {asset.system}
+          </span>
+        </span>
+        <span className="text-caption text-quaternary" aria-hidden>
+          {open ? "−" : "+"}
+        </span>
+      </button>
 
-function LineList({ title, items }: { title: string; items: Asset[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div className="pt-2">
-      <div className="font-mono text-[8px] uppercase tracking-[0.16em] text-ink-faint">
-        {title}
-      </div>
-      <ul className="flex flex-wrap gap-1.5 pt-1.5">
-        {items.map((i) => (
-          <li
-            key={i.id}
-            className="border border-line px-2 py-1 font-mono text-[9px] text-ink-mute"
-          >
-            {i.name}
-          </li>
-        ))}
-      </ul>
-    </div>
+      {open && (
+        <div className="bg-subtle px-4 pb-4 pt-1">
+          {asset.description && (
+            <p className="pb-2 text-small leading-relaxed text-secondary">
+              {asset.description}
+            </p>
+          )}
+          <dl>
+            <Property label="Criticality">{CRITICALITY_LABEL[asset.criticality]}</Property>
+            <Property label="Owner">{asset.owner}</Property>
+            {lineage && (
+              <>
+                <Property label="Upstream" mono>
+                  {lineage.upstream_count}
+                </Property>
+                <Property label="Downstream" mono>
+                  {lineage.downstream_count}
+                </Property>
+                {lineage.metric && (
+                  <Property label="Freshness" mono>
+                    {formatAge(lineage.metric.freshness_seconds)}
+                  </Property>
+                )}
+              </>
+            )}
+          </dl>
+          {lineage && lineage.business_consumers.length > 0 && (
+            <div className="pt-2">
+              <p className="pb-1.5 text-caption text-tertiary">Business consumers</p>
+              <div className="flex flex-wrap gap-1">
+                {lineage.business_consumers.map((c) => (
+                  <Badge key={c.id}>{c.name}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </li>
   );
 }

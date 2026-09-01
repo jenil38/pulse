@@ -4,8 +4,11 @@ import type { Simulation } from "@/lib/types";
 import type { SimPhase } from "@/lib/store";
 
 /**
- * Overlay showing the propagation wave travelling outward from the origin,
- * hop by hop. Sits at the bottom of the map — cinematic but readable.
+ * Propagation progress — a thin status strip under the stage.
+ *
+ * It exists to answer "how far has this travelled, and what did it cost?"
+ * while the wave is still moving. Once settled it states the business
+ * consequence in plain language, which is the whole point of the product.
  */
 export function PropagationBar({
   simulation,
@@ -24,48 +27,49 @@ export function PropagationBar({
   const revealed = simulation.blast_radius.nodes.filter(
     (n) => n.id !== simulation.origin && n.hops <= hops
   ).length;
+  const settled = phase === "settled";
+  const dashboards = simulation.blast_radius.critical_dashboards.length;
+  const teams = simulation.business_impact.teams;
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4">
-      <div className="border border-line bg-base/92 px-4 py-3">
-        <div className="flex items-baseline justify-between">
-          <div className="flex items-baseline gap-2.5">
-            <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-failed">
-              {phase === "propagating" ? "Propagating" : "Blast radius settled"}
-            </span>
-            <span className="font-mono text-[10px] text-ink-dim">
-              {simulation.origin_name} · {simulation.failure_label}
-            </span>
-          </div>
-          <span className="font-mono text-[9px] tabular-nums text-ink-mute">
-            {revealed} / {simulation.blast_radius.total_affected} affected · hop{" "}
-            {Math.min(hops, maxHops)} of {maxHops}
+    <div
+      data-surface
+      className="shrink-0 border-t border-border bg-canvas px-4 py-2.5"
+    >
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="flex items-baseline gap-2">
+          <span className="text-small font-medium text-primary">
+            {settled ? "Blast radius settled" : "Propagating"}
           </span>
-        </div>
-
-        {/* Propagation progress — the wave front. */}
-        <div className="mt-2.5 h-px w-full bg-line">
-          <div
-            className="h-px bg-failed transition-[width] duration-500 ease-pulse"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-
-        {/* Business consequence, stated plainly. */}
-        {phase === "settled" && (
-          <p className="animate-fade-up pt-2.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-mute">
-            {simulation.blast_radius.critical_dashboards.length > 0 && (
-              <>
-                {simulation.blast_radius.critical_dashboards.length} critical dashboard
-                {simulation.blast_radius.critical_dashboards.length > 1 ? "s" : ""} untrustworthy
-              </>
-            )}
-            {simulation.business_impact.teams.length > 0 && (
-              <> · {simulation.business_impact.teams.join(", ")} impacted</>
-            )}
-          </p>
-        )}
+          <span className="text-caption text-tertiary">
+            hop {Math.min(hops, maxHops)} of {maxHops}
+          </span>
+        </span>
+        <span className="text-caption tnum text-tertiary">
+          {revealed} / {simulation.blast_radius.total_affected} affected
+        </span>
       </div>
+
+      {/* Wave front */}
+      <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-failed transition-[width] duration-slow ease-standard"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      {settled && (dashboards > 0 || teams.length > 0) && (
+        <p className="animate-fade-in pt-2 text-caption text-secondary">
+          {dashboards > 0 && (
+            <>
+              {dashboards} critical dashboard{dashboards > 1 ? "s" : ""}{" "}
+              {dashboards > 1 ? "become" : "becomes"} untrustworthy
+            </>
+          )}
+          {dashboards > 0 && teams.length > 0 && " · "}
+          {teams.length > 0 && <>{teams.join(", ")} impacted</>}
+        </p>
+      )}
     </div>
   );
 }

@@ -4,11 +4,11 @@ import { usePulse } from "@/lib/store";
 import { NODE_LABEL, STATE } from "@/lib/visual";
 
 /**
- * Screen-reader announcement for the current selection, plus a visible hint
- * for the keyboard lineage controls.
+ * Screen-reader announcement for the current selection, plus a discoverable
+ * hint for the keyboard lineage controls.
  *
- * The 3D canvas is inert to assistive tech, so this is what tells a
- * non-visual user what they just navigated to and how it is connected.
+ * The WebGL canvas is inert to assistive tech, so this is what tells a
+ * non-visual user what they navigated to and how it connects.
  */
 export function SelectionAnnouncer() {
   const selectedId = usePulse((s) => s.selectedId);
@@ -17,7 +17,6 @@ export function SelectionAnnouncer() {
   const topology = usePulse((s) => s.topology);
 
   const asset = selectedId ? assetById(selectedId) : undefined;
-
   const up = topology?.dependencies.filter((d) => d.downstream === selectedId).length ?? 0;
   const down = topology?.dependencies.filter((d) => d.upstream === selectedId).length ?? 0;
 
@@ -31,11 +30,22 @@ export function SelectionAnnouncer() {
           : "No asset selected."}
       </div>
 
-      {/* Visible affordance for the keyboard controls. */}
-      <div className="pointer-events-none absolute left-1/2 top-4 hidden -translate-x-1/2 xl:block">
-        <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-faint">
-          ← → lineage · ↑ ↓ siblings · home sources · esc clear
-        </p>
+      <div className="hidden shrink-0 items-center gap-4 border-t border-border px-4 py-1.5 xl:flex">
+        <span className="text-caption text-quaternary">
+          <kbd className="font-mono">←</kbd> <kbd className="font-mono">→</kbd> lineage
+        </span>
+        <span className="text-caption text-quaternary">
+          <kbd className="font-mono">↑</kbd> <kbd className="font-mono">↓</kbd> branch
+        </span>
+        <span className="text-caption text-quaternary">
+          <kbd className="font-mono">Home</kbd> sources
+        </span>
+        <span className="text-caption text-quaternary">
+          <kbd className="font-mono">Esc</kbd> clear
+        </span>
+        <span className="ml-auto text-caption text-quaternary">
+          <kbd className="font-mono">⌘K</kbd> commands
+        </span>
       </div>
     </>
   );

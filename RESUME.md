@@ -1,7 +1,8 @@
 # PULSE — Resume Notes
 
-**To continue this build:** open Claude Code in `D:\PULSE` and say **"continue building PULSE"**.
-Everything needed is on disk. Read `docs/DESIGN.md` first (full A–N architecture).
+**To continue:** open Claude Code in `D:\PULSE` and say **"continue building PULSE"**.
+Read `docs/DESIGN-SYSTEM.md` (current visual direction) and `docs/DESIGN.md`
+(product architecture) first.
 
 ---
 
@@ -10,67 +11,68 @@ Everything needed is on disk. Read `docs/DESIGN.md` first (full A–N architectu
 **PULSE — Data Resilience Digital Twin.** *"See failure before it spreads."*
 Model a data system as a dependency graph → simulate failures → compute
 deterministic blast radius, recovery plan, resilience score.
-Demo company: **NOVA COMMERCE** (43 assets, 47 dependencies). All telemetry is
+Demo company **NOVA COMMERCE** (43 assets, 47 dependencies). All telemetry is
 **SIMULATED / DEMO** — never claim real monitoring.
 
-## Confirmed visual identity (do not deviate)
+## Visual direction (v2 — CURRENT, do not revert)
 
-- near-black / graphite base, layered depth, subtle volumetric haze
-- **healthy** `#3FC8BC` · **degraded** `#C8933F` · **failed** `#C85A4E`
-  · **stale** `#7E8A93` · **recovering** `#5FA8C8`
-- soft neutral whites/greys for type
-- NO purple AI gradients, NO cyberpunk/gaming HUD, NO heavy glassmorphism
-- Reference (seunghyuk.com) informs **motion, pacing, composition, polish only** — never colors
-- Metaphor: healthy = smooth flow · degraded = irregular flow · failed = stopped · recovery = returning
+Informed by **Linear** and **Raycast**; principles extracted, nothing copied.
+Target ratio **70% professional product / 30% cinematic**.
 
-## Status — ALL MAJOR FEATURES BUILT ✅
+- **Light is the default.** `--canvas #FCFCFD`, 4-step surface + 4-step text scales.
+- **Colour means state.** Chrome is neutral; hue appears only for health or the
+  single cobalt accent `#2B5CE0` on a primary action.
+- **Structure before surfaces.** Sections, hairlines, lists, tables — a card must
+  justify itself.
+- **Motion must explain.** Flow, propagation, selection, navigation. Nothing else.
+- Radius ladder tops out at 16px. Weight 510 for emphasis, never 700.
+- **Chaos mode** (`data-mode="chaos"` on `<html>`) darkens the whole environment
+  *only* while a simulation runs or an incident is replayed. This is the
+  signature interaction; the contrast is the point.
+
+**Banned** (enforced by `tests/design-system.test.ts`): gradients, glassmorphism,
+glow/emissive, `rounded-2xl`+, hard-coded hex in components, mono-everywhere,
+uppercase-everywhere.
+
+## Status — REDESIGN COMPLETE ✅
 
 | Phase | State |
 |---|---|
-| 1. Engine | ✅ deterministic, zero runtime deps |
-| 2. API | ✅ FastAPI, all routes |
-| 3. Control Room | ✅ 3D topology + systems panel + inspector |
-| 4. Chaos Lab | ✅ configure/inject, hop-by-hop propagation |
-| 5. Incident Replay | ✅ scrubable timeline drives topology |
-| 6. Scenario Comparison | ✅ split config + proportional bars + verdict |
-| 7. Cinematic Landing | ✅ 9 scenes, scroll-driven camera |
-| 8. Responsive/a11y/perf | ✅ MobileRoom, MobileStory, cursor, offscreen pause |
-| 9. Docker/CI/README/dbt/Airflow | ✅ (Docker authored but unrunnable here) |
+| 1. Foundation (tokens, globals, fonts, mode) | ✅ |
+| 2. Primitives (Button, Status, Badge, Table, Tabs, Property…) | ✅ |
+| 3. Control Room (sidebar / toolbar / stage / table / inspector) | ✅ |
+| 4. Command palette (⌘K, `/`) | ✅ |
+| 5. Topology 2.5D + chaos-mode transition | ✅ |
+| 6. Chaos Lab, Incidents, Replay, Compare | ✅ |
+| 7. Landing | ✅ |
+| 8. Responsive / MobileRoom | ✅ |
+| 9. Accessibility (skip link, landmarks, focus trap/restore, aria-live) | ✅ |
+| 10. Performance (indexed lookups, per-frame memo, DPR cap, offscreen pause) | ✅ |
+| 11. QA | ✅ |
 
-**Tests: 36 backend + 41 frontend, all passing. Typecheck clean (incl. `--noUnusedLocals`). Build clean (7 routes).**
+**Tests: 36 backend + 31 frontend. Typecheck clean. Build clean (7 routes).**
 
-Per the stop condition: **no more major features.** Remaining work is bugs,
-performance, testing, documentation and polish only.
+Discipline metrics (before → after): `font-mono` 158→22 · `uppercase` 87→8 ·
+bordered panels 49→17 · gradients 0 · `rounded-2xl+` 0 · emissive 0.
 
-## Verified end-to-end (screenshots taken while browser pane was visible)
+## Verified visually
 
-- Control Room: topology renders, node selection focuses camera, Inspector shows
-  Orders API with **0 upstream / 19 downstream** (matches engine)
-- Chaos Lab: `stg_payments` schema drift → **8 downstream affected**, amber
-  propagation, Exec Revenue Dashboard + Finance Team CRITICAL
-- Compare: Payments 11/102 vs Orders 19/156 → **verdict 1.53×**
-- Incident Replay: scrubbing to 15:00 shows the STALE cascade through payments
-  lineage ending at "Fraud Detection Model becomes untrustworthy"
-- Landing: scene 1 renders cinematically; scene 1→2 transition confirmed via DOM
+- Control Room: light, dense, Linear-like; sortable asset table; topology renders
+  graphite-on-paper; inspector with tabs
+- Chaos Lab → **Inject failure** → whole environment inverts to dark, topology
+  gains depth, 8 affected / hop 4 of 4, "1 critical dashboard becomes
+  untrustworthy · Finance Team, Risk Team impacted"
+- Command palette: Navigate / Filter groups, asset search, ↑↓/⏎ footer
+- Landing: real engine output (11 assets, real hop sequence)
+- Mobile (375px): 2D room, no WebGL
 
-## Known gaps / next steps
+## Known gaps
 
-1. **Landing scenes 3–9 never visually confirmed by eye.** The browser pane never
-   composited (rAF stays paused), so screenshots come back black. Mitigated two
-   ways: the camera path is unit-tested (`frontend/tests/story.test.ts`) and
-   *geometrically* verified — `backend/tools/check_camera_framing.py` projects
-   all 43 nodes through each keyframe's real frustum and proves every scene
-   frames its subject. **The user is reviewing it in their own browser**; retune
-   `CAMERA_KEYS` in `frontend/lib/story.ts` based on their feedback.
+1. **Browser pane screenshots are unreliable** here (rAF pauses when the pane is
+   not compositing), so WebGL frames often capture blank. DOM verification was
+   used instead. Worth a real-browser pass on the landing hero + topology.
 2. Docker compose/Dockerfiles authored but never executed (Docker not installed).
 3. Incidents are in-memory; SQLAlchemy models exist but aren't wired up.
-
-## Recently completed
-
-- Keyboard lineage navigation (← → lineage, ↑ ↓ branch alternatives, Home, Esc)
-  plus an aria-live announcer, since the WebGL canvas is inert to assistive tech.
-- Perf: store keeps Map indexes; particle loop memoises node state per frame
-  (was ~24k array scans/frame).
 
 ## Run it
 
@@ -90,8 +92,6 @@ python -m pytest backend/tests -q
 cd frontend && npm test && npx tsc --noEmit && npm run build
 ```
 
-App → http://localhost:3000 · API docs → http://127.0.0.1:8000/docs
-
 ## Key engine facts (verified — don't re-derive)
 
 - Resilience **65/100**, weakest = **Orders API** (19 downstream, 3 critical dashboards)
@@ -101,7 +101,7 @@ App → http://localhost:3000 · API docs → http://127.0.0.1:8000/docs
 ## Environment notes
 
 - Windows, Node 24, Python 3.12. **Docker NOT installed.**
-- Next.js 16.3.4 + React 19.2.8 (upgraded off 15.1.6 for CVE-2025-66478).
-- R3F v9 + drei v10 (drei v9 is incompatible with fiber 9).
-- Tailwind JIT occasionally misses classes in newly created files → restart `npm run dev`.
+- Next.js 16.3.4 + React 19.2.8 · R3F v9 + drei v10.
+- **Deleting components requires clearing `.next`** — Tailwind caches the file
+  list and throws ENOENT on removed files otherwise.
 - `next dev` regenerates `frontend/AGENTS.md` / `CLAUDE.md`; both are gitignored.

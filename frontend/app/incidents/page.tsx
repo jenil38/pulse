@@ -1,25 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
 import type { Incident } from "@/lib/types";
-import { NavRail } from "@/components/room/NavRail";
-import { StatusBar } from "@/components/room/StatusBar";
-import { SeverityTag, SimulatedTag } from "@/components/ui/primitives";
+import { formatRelative } from "@/lib/visual";
+import { AppShell } from "@/components/room/AppShell";
+import { Toolbar } from "@/components/room/Toolbar";
+import {
+  Badge,
+  EmptyState,
+  SeverityBadge,
+  Table,
+  Tabs,
+  Td,
+  Th,
+  Tr,
+} from "@/components/ui/primitives";
 
-const STATUS_COLOR: Record<string, string> = {
-  open: "#C85A4E",
-  acknowledged: "#C8933F",
-  recovering: "#5FA8C8",
-  resolved: "#3FC8BC",
+/**
+ * Incidents — a real table, not a stack of cards.
+ *
+ * Status is a small dot + label; severity is a restrained chip. Everything is
+ * scannable in one pass, and the row is the click target.
+ */
+const STATUS_DOT: Record<string, string> = {
+  open: "bg-failed",
+  acknowledged: "bg-degraded",
+  recovering: "bg-recovering",
+  resolved: "bg-healthy",
 };
+
+type Filter = "all" | "active" | "resolved";
 
 export default function IncidentsPage() {
   const loadTopology = usePulse((s) => s.loadTopology);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>("all");
 
   useEffect(() => {
     loadTopology();
@@ -30,71 +49,114 @@ export default function IncidentsPage() {
       .finally(() => setLoading(false));
   }, [loadTopology]);
 
-  return (
-    <div className="flex h-screen flex-col overflow-hidden bg-void">
-      <StatusBar />
-      <div className="flex min-h-0 flex-1">
-        <NavRail />
-        <main className="haze min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-4xl px-8 py-10">
-            <header className="pb-8">
-              <div className="flex items-center gap-3">
-                <h1 className="font-mono text-lg tracking-[0.16em] text-ink">
-                  INCIDENTS
-                </h1>
-                <SimulatedTag text="Demo history" />
-              </div>
-              <p className="pt-2 text-[11px] leading-relaxed text-ink-mute">
-                Past and active incidents. Open one to replay how the failure
-                propagated through the system.
-              </p>
-            </header>
+  const counts = useMemo(
+    () => ({
+      all: incidents.length,
+      active: incidents.filter((i) => i.status !== "resolved").length,
+      resolved: incidents.filter((i) => i.status === "resolved").length,
+    }),
+    [incidents]
+  );
 
-            {loading ? (
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">
-                Loading…
-              </p>
-            ) : incidents.length === 0 ? (
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">
-                No incidents recorded.
-              </p>
-            ) : (
-              <ul className="border border-line">
-                {incidents.map((i) => (
-                  <li key={i.id} className="border-b border-line last:border-b-0">
-                    <Link
-                      href={`/incidents/${i.id}`}
-                      className="group flex items-center gap-4 px-4 py-4 transition-colors hover:bg-raised/60"
-                    >
-                      <span
-                        className="h-1.5 w-1.5 shrink-0 rounded-full"
-                        style={{ background: STATUS_COLOR[i.status] }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate font-mono text-[12px] text-ink group-hover:text-healthy">
-                          {i.title}
-                        </div>
-                        <div className="pt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
-                          {i.id} · {i.started_at.replace("T", " ").replace("Z", "")} ·{" "}
-                          {i.affected_assets} assets affected
-                          {i.teams.length > 0 && ` · ${i.teams.join(", ")}`}
-                        </div>
-                      </div>
-                      <SeverityTag severity={i.severity} />
-                      <span
-                        className="w-24 shrink-0 text-right font-mono text-[9px] uppercase tracking-[0.14em]"
-                        style={{ color: STATUS_COLOR[i.status] }}
-                      >
-                        {i.status}
-                      </span>
-                    </Link>
-                  </li>
+  const rows = useMemo(
+    () =>
+      incidents.filter((i) =>
+        filter === "all"
+          ? true
+          : filter === "active"
+            ? i.status !== "resolved"
+            : i.status === "resolved"
+      ),
+    [incidents, filter]
+  );
+
+  return (
+    <AppShell>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Toolbar title="Incidents" />
+
+        <Tabs<Filter>
+          value={filter}
+          onChange={setFilter}
+          tabs={[
+            { value: "all", label: "All", count: counts.all },
+            { value: "active", label: "Active", count: counts.active },
+            { value: "resolved", label: "Resolved", count: counts.resolved },
+          ]}
+        />
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex h-full items-center justify-center">
+              <span className="text-small text-quaternary">Loading incidents…</span>
+            </div>
+          ) : rows.length === 0 ? (
+            <EmptyState
+              title="No incidents"
+              hint="Run a simulation in the Chaos Lab to see how a failure would propagate."
+            />
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Incident</Th>
+                  <Th width="104px">Status</Th>
+                  <Th width="92px">Severity</Th>
+                  <Th align="right" width="76px">Assets</Th>
+                  <Th width="180px">Teams</Th>
+                  <Th align="right" width="92px">Started</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((i) => (
+                  <IncidentRow key={i.id} incident={i} />
                 ))}
-              </ul>
-            )}
-          </div>
-        </main>
+              </tbody>
+            </Table>
+          )}
+        </div>
       </div>
-    </div>
+    </AppShell>
+  );
+}
+
+function IncidentRow({ incident: i }: { incident: Incident }) {
+  return (
+    <Tr>
+      <Td>
+        <Link href={`/incidents/${i.id}`} className="flex min-w-0 items-center gap-2">
+          <span className="min-w-0">
+            <span className="block truncate text-primary">{i.title}</span>
+            <span className="block font-mono text-caption text-quaternary">{i.id}</span>
+          </span>
+        </Link>
+      </Td>
+      <Td>
+        <span className="flex items-center gap-1.5">
+          <span
+            className={`h-[6px] w-[6px] shrink-0 rounded-full ${STATUS_DOT[i.status]}`}
+            aria-hidden
+          />
+          <span className="capitalize text-secondary">{i.status}</span>
+        </span>
+      </Td>
+      <Td>
+        <SeverityBadge severity={i.severity} />
+      </Td>
+      <Td align="right" mono className="text-secondary">
+        {i.affected_assets}
+      </Td>
+      <Td>
+        <span className="flex flex-wrap gap-1">
+          {i.teams.slice(0, 2).map((t) => (
+            <Badge key={t}>{t}</Badge>
+          ))}
+          {i.teams.length > 2 && <Badge>+{i.teams.length - 2}</Badge>}
+        </span>
+      </Td>
+      <Td align="right" className="text-tertiary">
+        {formatRelative(i.started_at)}
+      </Td>
+    </Tr>
   );
 }

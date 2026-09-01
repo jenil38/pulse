@@ -1,4 +1,4 @@
-/** PULSE — client state (topology, selection, active simulation). */
+/** PULSE — client state (topology, selection, filters, active simulation). */
 "use client";
 
 import { create } from "zustand";
@@ -24,6 +24,8 @@ interface PulseState {
 
   selectedId: string | null;
   hoveredId: string | null;
+  systemFilter: string | null;
+  query: string;
 
   simulation: Simulation | null;
   simPhase: SimPhase;
@@ -35,11 +37,17 @@ interface PulseState {
   loadTopology: () => Promise<void>;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
+  setSystemFilter: (s: string | null) => void;
+  setQuery: (q: string) => void;
   trace: (ids: string[]) => void;
   clearTrace: () => void;
 
-  runSimulation: (origin: string, failure: FailureType, minutes?: number,
-                  parameter?: string | null) => Promise<Simulation | null>;
+  runSimulation: (
+    origin: string,
+    failure: FailureType,
+    minutes?: number,
+    parameter?: string | null
+  ) => Promise<Simulation | null>;
   setSimulation: (sim: Simulation | null) => void;
   advancePropagation: (hops: number) => void;
   setSimPhase: (p: SimPhase) => void;
@@ -48,6 +56,8 @@ interface PulseState {
   /** Effective health state for a node, accounting for any active simulation. */
   stateOf: (id: string) => HealthState;
   assetById: (id: string) => Asset | undefined;
+  /** Assets after the current system/query filters. */
+  visibleAssets: () => Asset[];
 
   /**
    * Lookup indexes, rebuilt whenever the topology or simulation changes.
@@ -78,6 +88,8 @@ export const usePulse = create<PulseState>((set, get) => ({
 
   selectedId: null,
   hoveredId: null,
+  systemFilter: null,
+  query: "",
 
   simulation: null,
   simPhase: "idle",
@@ -106,6 +118,8 @@ export const usePulse = create<PulseState>((set, get) => ({
 
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
+  setSystemFilter: (s) => set({ systemFilter: s }),
+  setQuery: (q) => set({ query: q }),
   trace: (ids) => set({ tracedIds: new Set(ids) }),
   clearTrace: () => set({ tracedIds: new Set<string>() }),
 
@@ -159,6 +173,20 @@ export const usePulse = create<PulseState>((set, get) => ({
   },
 
   assetById: (id) => get()._assetIndex.get(id),
+
+  visibleAssets: () => {
+    const { topology, systemFilter, query } = get();
+    const q = query.trim().toLowerCase();
+    return (topology?.assets ?? []).filter((a) => {
+      if (systemFilter && a.system !== systemFilter) return false;
+      if (!q) return true;
+      return (
+        a.name.toLowerCase().includes(q) ||
+        a.id.toLowerCase().includes(q) ||
+        a.owner.toLowerCase().includes(q)
+      );
+    });
+  },
 }));
 
 /** Max hop distance in the current simulation (propagation completion target). */
