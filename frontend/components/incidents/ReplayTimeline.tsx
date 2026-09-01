@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { IncidentDetail } from "@/lib/types";
 import { formatDuration } from "@/lib/visual";
 import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
 
 /**
  * Incident replay scrubber.
@@ -79,6 +80,7 @@ export function ReplayTimeline({
             setPlaying((p) => !p);
           }}
         >
+          <Icon name={playing ? "pause" : t >= maxT ? "reset" : "play"} size={13} />
           {playing ? "Pause" : t >= maxT ? "Replay" : "Play"}
         </Button>
         <Button
@@ -88,6 +90,7 @@ export function ReplayTimeline({
             setPlaying(false);
             onScrub(0);
           }}
+          icon={<Icon name="reset" size={13} />}
         >
           Reset
         </Button>

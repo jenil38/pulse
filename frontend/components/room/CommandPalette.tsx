@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { usePulse } from "@/lib/store";
 import { NODE_LABEL, STATE } from "@/lib/visual";
 import { Kbd } from "@/components/ui/Button";
+import { Icon, NodeGlyph } from "@/components/ui/Icon";
 
 /**
  * Command palette (⌘K).
@@ -242,7 +243,8 @@ export function CommandPalette({
         onKeyDown={onKeyDown}
         className="w-full max-w-[560px] overflow-hidden rounded-lg border border-border bg-surface shadow-overlay animate-scale-in"
       >
-        <div className="flex h-12 items-center gap-3 border-b border-border px-4">
+        <div className="flex h-12 items-center gap-2.5 border-b border-border px-4">
+          <Icon name="search" size={16} className="text-quaternary" />
           <input
             ref={inputRef}
             value={query}
@@ -306,6 +308,7 @@ export function CommandPalette({
                 onClick={() => run(i)}
               >
                 <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${STATE[st].dot}`} />
+                <NodeGlyph type={a.type} className="text-quaternary" />
                 <span className="truncate text-small text-primary">{a.name}</span>
                 <span className="ml-auto shrink-0 text-caption text-quaternary">
                   {NODE_LABEL[a.type]}

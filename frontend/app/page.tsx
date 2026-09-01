@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import type { Simulation, Topology } from "@/lib/types";
 import { STATE } from "@/lib/visual";
 import { Button, Kbd } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
 import { StatusDot } from "@/components/ui/primitives";
 
 const LandingTopology = dynamic(
@@ -59,7 +60,10 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="mx-auto max-w-[1120px] px-6 pb-10 pt-16 md:pt-24">
-        <p className="text-caption text-tertiary">Data resilience, before the incident</p>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-caption text-tertiary">
+          <span className="h-[6px] w-[6px] rounded-full bg-healthy" aria-hidden />
+          Data resilience, before the incident
+        </span>
         <h1 className="max-w-[18ch] pt-4 text-[2.5rem] font-medium leading-[1.05] tracking-[-0.03em] text-primary md:text-display-xl">
           See failure before it spreads.
         </h1>
@@ -70,18 +74,33 @@ export default function Landing() {
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-7">
           <Link href="/control-room">
-            <Button size="lg" variant="primary">
+            <Button size="lg" variant="primary" trailing={<Icon name="arrowRight" size={14} />}>
               Open Control Room
             </Button>
           </Link>
           <Link href="/chaos-lab">
-            <Button size="lg">Run a simulation</Button>
+            <Button size="lg" icon={<Icon name="chaos" size={14} />}>
+              Run a simulation
+            </Button>
           </Link>
           <span className="hidden items-center gap-1.5 pl-2 text-caption text-quaternary sm:flex">
             <Kbd>⌘K</Kbd> for commands
           </span>
         </div>
       </section>
+
+      {/* Scale of the modelled system — real numbers, quietly presented */}
+      {topology && (
+        <section className="mx-auto max-w-[1120px] px-6 pb-10">
+          <dl className="flex flex-wrap gap-x-12 gap-y-4 border-t border-border pt-6">
+            <Stat value={topology.assets.length} label="Modelled assets" />
+            <Stat value={topology.dependencies.length} label="Dependencies" />
+            <Stat value={topology.systems.length} label="Systems" />
+            <Stat value={10} label="Failure types" />
+            <Stat value={3} label="Propagation modes" />
+          </dl>
+        </section>
+      )}
 
       {/* Product-truthful hero visual */}
       <section className="mx-auto max-w-[1120px] px-6">
@@ -115,16 +134,19 @@ export default function Landing() {
         <h2 className="max-w-[20ch] text-[2rem] font-medium leading-tight tracking-[-0.025em] text-primary md:text-display">
           Lineage shows connections. PULSE shows consequences.
         </h2>
-        <div className="grid gap-10 pt-10 md:grid-cols-3">
+        <div className="grid gap-8 pt-10 md:grid-cols-3">
           <Feature
+            icon="room"
             title="Model the system"
             body="Sources, ingestion, transformations, warehouse tables, models, dashboards, ML systems and the teams that depend on them — as one directed graph."
           />
           <Feature
+            icon="chaos"
             title="Break it on purpose"
             body="Ten failure types across three propagation modes. Schema drift breaks differently from an outage, and PULSE models that difference explicitly."
           />
           <Feature
+            icon="compare"
             title="Read the consequence"
             body="Deterministic blast radius, a recovery order derived from the topology, and an explainable resilience score. No probabilities, no invented precision."
           />
@@ -214,11 +236,32 @@ export default function Landing() {
   );
 }
 
-function Feature({ title, body }: { title: string; body: string }) {
+function Feature({
+  icon,
+  title,
+  body,
+}: {
+  icon: "room" | "chaos" | "compare";
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="border-t border-border pt-4">
+      <span className="grid h-8 w-8 place-items-center rounded border border-border bg-subtle text-secondary">
+        <Icon name={icon} size={16} />
+      </span>
+      <h3 className="pt-3 text-heading text-primary">{title}</h3>
+      <p className="pt-1.5 text-small leading-relaxed text-secondary">{body}</p>
+    </div>
+  );
+}
+
+function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div>
-      <h3 className="text-heading text-primary">{title}</h3>
-      <p className="pt-2 text-small leading-relaxed text-secondary">{body}</p>
+      <dt className="sr-only">{label}</dt>
+      <dd className="text-title-lg tnum text-primary">{value}</dd>
+      <p className="pt-0.5 text-caption text-tertiary">{label}</p>
     </div>
   );
 }

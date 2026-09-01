@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <Sidebar onOpenPalette={open} />
 
-      <main id="main" className="flex min-w-0 flex-1">
+      <main id="main" className="relative flex min-w-0 flex-1 overflow-hidden">
         {children}
       </main>
 
