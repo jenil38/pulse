@@ -3,7 +3,9 @@
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { usePulse } from "@/lib/store";
+import { useGraphKeyboard } from "@/hooks/useGraphKeyboard";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { SelectionAnnouncer } from "@/components/room/SelectionAnnouncer";
 import { Inspector } from "@/components/room/Inspector";
 import { MobileRoom } from "@/components/room/MobileRoom";
 import { NavRail } from "@/components/room/NavRail";
@@ -31,21 +33,15 @@ export default function ControlRoomPage() {
   const loading = usePulse((s) => s.loading);
   const error = usePulse((s) => s.error);
   const topology = usePulse((s) => s.topology);
-  const select = usePulse((s) => s.select);
   const isDesktop = useIsDesktop();
 
   useEffect(() => {
     loadTopology();
   }, [loadTopology]);
 
-  // Escape clears selection — keyboard parity with clicking empty space.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") select(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [select]);
+  // Traverse lineage with the keyboard (arrows/Home/Escape) — the 3D map is
+  // pointer-driven, so this is what makes the graph navigable without a mouse.
+  useGraphKeyboard(isDesktop);
 
   // Mobile: 2D-first room. WebGL is never forced onto a phone.
   if (!isDesktop) return <MobileRoom />;
@@ -86,6 +82,7 @@ export default function ControlRoomPage() {
             <>
               <TopologyScene />
               <TopologyLegend />
+              <SelectionAnnouncer />
             </>
           )}
         </main>

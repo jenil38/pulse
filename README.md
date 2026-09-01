@@ -219,7 +219,7 @@ docker compose up --build
 python -m pytest backend/tests -q
 ```
 
-**35 tests, all passing** — 15 engine, 20 API:
+**36 tests, all passing** — 15 engine, 20 API, 1 camera-framing:
 
 - graph traversal, acyclicity, ancestors/descendants
 - blast-radius propagation per mode, unaffected-branch isolation
@@ -228,6 +228,9 @@ python -m pytest backend/tests -q
 - resilience score range, penalty accounting, SPOF detection
 - all six demo scenarios, timeline ordering
 - API validation (404s, 422s, 409 on double-resolve) and the full incident lifecycle
+- landing camera framing: every scene's subject is geometrically proven to be on
+  screen by projecting all 43 nodes through each keyframe's perspective frustum
+  (`backend/tools/check_camera_framing.py`)
 
 Frontend:
 
@@ -235,7 +238,7 @@ Frontend:
 cd frontend && npm test && npx tsc --noEmit && npm run build
 ```
 
-**31 tests passing**, typecheck clean (including `--noUnusedLocals`), 7 routes
+**41 tests passing**, typecheck clean (including `--noUnusedLocals`), 7 routes
 build successfully. The frontend tests guard the parts where a silent regression
 would change what the product *communicates*:
 
@@ -248,6 +251,8 @@ would change what the product *communicates*:
   blast-radius pull-back stays the film's largest gesture
 - story phases: the system is fully revealed before the failure starts, fully
   propagated before recovery begins, and fully recovered by the final scene
+- keyboard lineage traversal: deterministic upstream/downstream walks that
+  terminate at roots, and branch cycling that visits every alternative once
 
 ## Demo Scenarios
 
