@@ -163,23 +163,31 @@ Verified on Nova Commerce: **Orders outage 19 affected / score 156 / 3 critical 
 
 ---
 
-## I. Landing Page Storyboard (scroll-driven, 9 scenes)
+## I. Landing Page (as built)
 
-| Scene | Beat | Camera / graph |
-|---|---|---|
-| 1 Dark system | near-black, tiny signals; **PULSE / See failure before it spreads** | pinhole on a single node |
-| 2 Sources appear | Orders/Payments/Inventory/Customers/Marketing float in | pull back, sources ignite |
-| 3 Data flow | particles flow source→ingest→raw→transform→warehouse→dashboard | dolly along the pipe |
-| 4 Healthy system | full topology, everything flowing — *"Your business runs on invisible dependencies."* | wide establishing orbit |
-| 5 Failure | **Payments API** degrades, flow stops | push toward origin |
-| 6 Blast radius | downstream nodes illuminate in sequence — *"7 downstream assets affected."* | slow pull-back |
-| 7 Business impact | trail resolves to **Executive Revenue Dashboard → Finance Team** — *"A broken column can become a broken decision."* | rack focus to consumer |
-| 8 Recovery | recovery path activates, nodes return to healthy | reverse sweep |
-| 9 Final | **Map. Break. Understand. Recover.** → **OPEN CONTROL ROOM** | settle wide |
+> **Superseded.** This section originally described a nine-scene cinematic
+> scroll film. That design was replaced during the v2 redesign; what follows
+> describes the **actual implementation**.
 
-Scroll drives camera + graph state via a normalized progress value; never hard-hijacked (native scroll with damping).
+The landing is a professional marketing page with **one** scroll-driven
+sequence, not a full-page film:
 
----
+| Element | Behaviour |
+|---|---|
+| Hero | Static. Status chip, headline, body, two CTAs, ⌘K hint |
+| Stats band | Real engine numbers (43 assets / 47 dependencies / 6 systems / 10 failure types / 3 modes) |
+| **Story scroll** | A pinned topology stage over ~460vh with **five** captioned scenes: the system → normal flow → the failure → blast radius → recovery |
+| Feature blocks | Static, three columns with glyphs |
+| Worked example | Static list of the real hop-by-hop propagation from the API |
+| Close | Static CTA + honest footer |
+
+The scroll drives the **real simulation state machine** — the same one the
+product uses — so the visitor advances actual engine output rather than a
+scripted animation. The camera makes exactly one move: a slow pull-back as the
+blast radius opens. Under `prefers-reduced-motion` the pinned canvas is dropped
+entirely and the five scenes render as a plain list.
+
+See `docs/DESIGN-SYSTEM.md` for the current visual system.
 
 ## J. Control Room Design
 
@@ -292,7 +300,7 @@ irregular/slower flow · failed = broken/stopped flow · recovery = flow returni
 4. **Chaos Lab.**
 5. **Incident Replay.**
 6. **Scenario Comparison.**
-7. **Cinematic Landing** (9 scenes, scroll choreography).
+7. **Landing** (five-scene scroll story — see section I).
 8. **Responsive/mobile 2D, a11y, perf pass.**
 9. **Docker, CI, README, demo scenarios, polish.**
 

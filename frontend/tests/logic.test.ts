@@ -8,6 +8,8 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { resolveAsyncState } from "../components/ui/AsyncState";
+
 import {
   CRITICALITY_RANK,
   NODE_ABBR,
@@ -135,5 +137,47 @@ describe("formatting", () => {
     expect(scoreBand(92).label).toBe("Resilient");
     expect(scoreBand(65).label).toBe("Moderate"); // our actual demo score
     expect(scoreBand(30).label).toBe("Fragile");
+  });
+});
+
+// ---------------------------------------------------------------------------
+//  Async state precedence
+// ---------------------------------------------------------------------------
+describe("async state precedence", () => {
+  it("shows an error rather than an empty state when a request failed", () => {
+    // The regression this guards: a failed /incidents call rendering
+    // "No incidents", which tells the user their system is fine when it is not.
+    expect(
+      resolveAsyncState({ loading: false, hasError: true, hasData: false, isEmpty: false })
+    ).toBe("error");
+    // Even if data arrived earlier and is now empty, a live error still wins.
+    expect(
+      resolveAsyncState({ loading: false, hasError: true, hasData: true, isEmpty: true })
+    ).toBe("error");
+  });
+
+  it("shows empty only when the request genuinely succeeded with no rows", () => {
+    expect(
+      resolveAsyncState({ loading: false, hasError: false, hasData: true, isEmpty: true })
+    ).toBe("empty");
+  });
+
+  it("shows loading before any data has arrived", () => {
+    expect(
+      resolveAsyncState({ loading: true, hasError: false, hasData: false, isEmpty: false })
+    ).toBe("loading");
+  });
+
+  it("keeps showing content while a background refresh is in flight", () => {
+    expect(
+      resolveAsyncState({ loading: true, hasError: false, hasData: true, isEmpty: false })
+    ).toBe("content");
+  });
+
+  it("keeps content on screen when a refresh fails but data is still good", () => {
+    // The page should not be wiped; the failure surfaces as a banner instead.
+    expect(
+      resolveAsyncState({ loading: false, hasError: true, hasData: true, isEmpty: false })
+    ).toBe("content");
   });
 });

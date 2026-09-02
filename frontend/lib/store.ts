@@ -20,7 +20,7 @@ interface PulseState {
   topology: Topology | null;
   overview: HealthOverview | null;
   loading: boolean;
-  error: string | null;
+  error: unknown;
 
   selectedId: string | null;
   hoveredId: string | null;
@@ -48,7 +48,15 @@ interface PulseState {
     minutes?: number,
     parameter?: string | null
   ) => Promise<Simulation | null>;
-  setSimulation: (sim: Simulation | null) => void;
+  /**
+   * Load a simulation into the shared state.
+   *
+   * `immediate` reveals the whole blast radius at once. The hop-by-hop reveal
+   * is a Chaos Lab affordance — it explains propagation while you watch it.
+   * Everywhere else (scenario runs, deep links) the result should already be
+   * complete, otherwise the summary counts under-report the real impact.
+   */
+  setSimulation: (sim: Simulation | null, immediate?: boolean) => void;
   advancePropagation: (hops: number) => void;
   setSimPhase: (p: SimPhase) => void;
   clearSimulation: () => void;
@@ -58,6 +66,17 @@ interface PulseState {
   assetById: (id: string) => Asset | undefined;
   /** Assets after the current system/query filters. */
   visibleAssets: () => Asset[];
+  /**
+   * THE source of truth for health counts.
+   *
+   * Derived from `stateOf`, so it automatically reflects an active simulation
+   * (including how far propagation has advanced) rather than the baseline the
+   * API reported at load. Toolbar, sidebar, mobile header and any summary all
+   * read this, so they can never disagree with the topology.
+   */
+  healthCounts: () => Record<HealthState, number>;
+  /** Assets impacted by the currently-revealed portion of a simulation. */
+  impactedCount: () => number;
 
   /**
    * Lookup indexes, rebuilt whenever the topology or simulation changes.
@@ -112,7 +131,8 @@ export const usePulse = create<PulseState>((set, get) => ({
         _assetIndex: indexAssets(topology),
       });
     } catch (e) {
-      set({ error: (e as Error).message, loading: false });
+      // Keep the ApiError itself so the UI can distinguish network from auth.
+      set({ error: e, loading: false });
     }
   },
 
@@ -139,16 +159,16 @@ export const usePulse = create<PulseState>((set, get) => ({
       });
       return sim;
     } catch (e) {
-      set({ error: (e as Error).message });
+      set({ error: e });
       return null;
     }
   },
 
-  setSimulation: (sim) =>
+  setSimulation: (sim, immediate = false) =>
     set({
       simulation: sim,
-      simPhase: sim ? "propagating" : "idle",
-      propagationHops: 0,
+      simPhase: sim ? (immediate ? "settled" : "propagating") : "idle",
+      propagationHops: sim && immediate ? maxHops(sim) : 0,
       _impactIndex: indexImpacts(sim),
     }),
 
@@ -173,6 +193,27 @@ export const usePulse = create<PulseState>((set, get) => ({
   },
 
   assetById: (id) => get()._assetIndex.get(id),
+
+  healthCounts: () => {
+    const { topology, stateOf } = get();
+    const counts: Record<HealthState, number> = {
+      HEALTHY: 0,
+      RECOVERING: 0,
+      STALE: 0,
+      DEGRADED: 0,
+      FAILED: 0,
+    };
+    for (const a of topology?.assets ?? []) counts[stateOf(a.id)] += 1;
+    return counts;
+  },
+
+  impactedCount: () => {
+    const { simulation, propagationHops } = get();
+    if (!simulation) return 0;
+    return simulation.blast_radius.nodes.filter(
+      (n) => n.id !== simulation.origin && n.hops <= propagationHops
+    ).length;
+  },
 
   visibleAssets: () => {
     const { topology, systemFilter, query } = get();

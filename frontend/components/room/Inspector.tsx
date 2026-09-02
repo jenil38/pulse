@@ -8,7 +8,6 @@ import type { Asset, Lineage } from "@/lib/types";
 import {
   CRITICALITY_LABEL,
   NODE_LABEL,
-  STATE,
   formatAge,
   formatCount,
 } from "@/lib/visual";

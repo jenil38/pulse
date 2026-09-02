@@ -215,17 +215,41 @@ export function Divider({ className = "" }: { className?: string }) {
 
 /* --------------------------------------------------------------------- tabs */
 
+/**
+ * Tabs with proper keyboard semantics: roving tabindex, arrow-key navigation,
+ * and Home/End — the pattern assistive tech expects from a tablist.
+ */
 export function Tabs<T extends string>({
   tabs,
   value,
   onChange,
+  label = "Views",
 }: {
   tabs: { value: T; label: string; count?: number }[];
   value: T;
   onChange: (v: T) => void;
+  label?: string;
 }) {
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const i = tabs.findIndex((t) => t.value === value);
+    let next = -1;
+    if (e.key === "ArrowRight") next = (i + 1) % tabs.length;
+    else if (e.key === "ArrowLeft") next = (i - 1 + tabs.length) % tabs.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = tabs.length - 1;
+    if (next >= 0) {
+      e.preventDefault();
+      onChange(tabs[next].value);
+    }
+  };
+
   return (
-    <div role="tablist" className="flex h-9 items-stretch gap-4 border-b border-border px-4">
+    <div
+      role="tablist"
+      aria-label={label}
+      onKeyDown={onKeyDown}
+      className="flex h-9 items-stretch gap-4 border-b border-border px-4"
+    >
       {tabs.map((t) => {
         const active = t.value === value;
         return (
@@ -233,6 +257,7 @@ export function Tabs<T extends string>({
             key={t.value}
             role="tab"
             aria-selected={active}
+            tabIndex={active ? 0 : -1}
             onClick={() => onChange(t.value)}
             className={[
               "relative -mb-px inline-flex items-center gap-1.5 border-b text-small transition-colors duration-fast ease-standard",
@@ -308,6 +333,13 @@ export function Td({
   );
 }
 
+/**
+ * A table row that can be activated.
+ *
+ * When `onClick` is supplied the row becomes a real interactive control:
+ * keyboard focusable, activated by Enter or Space, with a visible focus ring.
+ * A click-only row is invisible to keyboard users, which is the bug this fixes.
+ */
 export function Tr({
   children,
   selected,
@@ -317,14 +349,29 @@ export function Tr({
   selected?: boolean;
   onClick?: () => void;
 }) {
+  const interactive = !!onClick;
   return (
     <tr
       onClick={onClick}
-      aria-selected={selected}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick!();
+              }
+            }
+          : undefined
+      }
+      tabIndex={interactive ? 0 : undefined}
+      role={interactive ? "button" : undefined}
+      aria-selected={interactive ? selected : undefined}
       className={[
         "transition-colors duration-instant",
-        onClick ? "cursor-pointer" : "",
-        selected ? "bg-accent-subtle" : "hover:bg-subtle",
+        interactive
+          ? "cursor-pointer focus:outline-none focus-visible:bg-accent-subtle focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+          : "",
+        selected ? "bg-accent-subtle" : interactive ? "hover:bg-subtle" : "",
       ].join(" ")}
     >
       {children}

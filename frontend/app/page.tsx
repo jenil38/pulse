@@ -5,14 +5,14 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Simulation, Topology } from "@/lib/types";
-import { STATE } from "@/lib/visual";
 import { Button, Kbd } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { StatusDot } from "@/components/ui/primitives";
+import { STATE } from "@/lib/visual";
 
-const LandingTopology = dynamic(
-  () => import("@/components/marketing/LandingTopology").then((m) => m.LandingTopology),
-  { ssr: false, loading: () => <div className="h-full w-full bg-stage" /> }
+const StoryScroll = dynamic(
+  () => import("@/components/marketing/StoryScroll").then((m) => m.StoryScroll),
+  { ssr: false, loading: () => <div className="h-[60vh]" /> }
 );
 
 /**
@@ -102,32 +102,8 @@ export default function Landing() {
         </section>
       )}
 
-      {/* Product-truthful hero visual */}
-      <section className="mx-auto max-w-[1120px] px-6">
-        <figure className="overflow-hidden rounded-xl border border-border bg-stage">
-          <div className="flex h-9 items-center gap-2 border-b border-border bg-canvas px-3">
-            <span className="text-caption text-tertiary">Nova Commerce</span>
-            <span className="text-caption text-quaternary">/ system topology</span>
-            <span className="ml-auto flex items-center gap-3">
-              {(["HEALTHY", "DEGRADED", "STALE", "FAILED"] as const).map((s) => (
-                <span key={s} className="flex items-center gap-1.5">
-                  <StatusDot state={s} />
-                  <span className="hidden text-caption text-tertiary sm:inline">
-                    {STATE[s].label}
-                  </span>
-                </span>
-              ))}
-            </span>
-          </div>
-          <div className="h-[380px] md:h-[460px]">
-            {topology && <LandingTopology topology={topology} simulation={sim} />}
-          </div>
-        </figure>
-        <figcaption className="pt-2 text-caption text-quaternary">
-          Live output from the PULSE engine — 43 assets, 47 dependencies, running
-          a simulated Payments API outage. Demo data.
-        </figcaption>
-      </section>
+      {/* Scroll-driven product story — the real engine, advanced by the reader */}
+      <StoryScroll topology={topology} simulation={sim} />
 
       {/* The question */}
       <section className="mx-auto max-w-[1120px] px-6 pb-6 pt-24">
