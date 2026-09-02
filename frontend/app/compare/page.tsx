@@ -9,6 +9,7 @@ import { AppShell } from "@/components/room/AppShell";
 import { Toolbar } from "@/components/room/Toolbar";
 import { Button } from "@/components/ui/Button";
 import { EmptyState, Table, Td, Th } from "@/components/ui/primitives";
+import { ErrorState, Spinner } from "@/components/ui/AsyncState";
 
 /**
  * Scenario comparison.
@@ -29,6 +30,8 @@ export default function ComparePage() {
   const [bFail, setBFail] = useState<FailureType>("SOURCE_OUTAGE");
   const [result, setResult] = useState<Comparison | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
     loadTopology();
@@ -37,6 +40,7 @@ export default function ComparePage() {
 
   const run = useCallback(async () => {
     setBusy(true);
+    setError(null);
     try {
       setResult(
         await api.compare({
@@ -46,17 +50,20 @@ export default function ComparePage() {
           b_failure_type: bFail,
         })
       );
-    } catch {
+    } catch (e) {
+      // A failed comparison must not masquerade as "nothing to show yet".
+      setError(e);
       setResult(null);
     } finally {
       setBusy(false);
+      setHasRun(true);
     }
   }, [aOrigin, aFail, bOrigin, bFail]);
 
   // Run the headline comparison once the topology is available.
   useEffect(() => {
-    if (topology && !result) run();
-  }, [topology, result, run]);
+    if (topology && !hasRun) run();
+  }, [topology, hasRun, run]);
 
   const assets = useMemo(
     () =>
@@ -84,7 +91,7 @@ export default function ComparePage() {
         <Toolbar title="Compare scenarios" />
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-[880px] px-8 py-8">
+          <div className="mx-auto max-w-[880px] px-4 py-6 md:px-8 md:py-8">
             <p className="max-w-prose text-body text-secondary">
               Compare the blast radius of two failures to find which component is
               the greater liability.
@@ -112,9 +119,15 @@ export default function ComparePage() {
               />
             </div>
 
-            <div className="pt-5">
+            <div className="flex items-center gap-3 pt-5">
               <Button variant="primary" onClick={run} disabled={busy}>
-                {busy ? "Computing…" : "Compare blast radius"}
+                {busy ? (
+                  <>
+                    <Spinner size={13} /> Computing…
+                  </>
+                ) : (
+                  "Compare blast radius"
+                )}
               </Button>
             </div>
 
@@ -182,6 +195,15 @@ export default function ComparePage() {
                   </div>
                 </div>
               </>
+            ) : error ? (
+              <div className="pt-6">
+                <ErrorState
+                  error={error}
+                  onRetry={run}
+                  what="the scenario comparison"
+                  compact
+                />
+              </div>
             ) : (
               !busy && (
                 <EmptyState

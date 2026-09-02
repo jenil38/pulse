@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
+import { useAsync } from "@/hooks/useAsync";
+import { Async, ErrorBanner } from "@/components/ui/AsyncState";
 import { usePulse } from "@/lib/store";
 import type { Incident } from "@/lib/types";
 import { formatRelative } from "@/lib/visual";
@@ -36,17 +38,12 @@ type Filter = "all" | "active" | "resolved";
 
 export default function IncidentsPage() {
   const loadTopology = usePulse((s) => s.loadTopology);
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
+  const req = useAsync<Incident[]>(() => api.incidents(), []);
+  const incidents = req.data ?? [];
 
   useEffect(() => {
     loadTopology();
-    api
-      .incidents()
-      .then(setIncidents)
-      .catch(() => setIncidents([]))
-      .finally(() => setLoading(false));
   }, [loadTopology]);
 
   const counts = useMemo(
@@ -75,6 +72,10 @@ export default function IncidentsPage() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Toolbar title="Incidents" />
 
+        {!!req.error && !!req.data && (
+          <ErrorBanner error={req.error} onRetry={req.reload} onDismiss={req.dismissError} />
+        )}
+
         <Tabs<Filter>
           value={filter}
           onChange={setFilter}
@@ -86,17 +87,22 @@ export default function IncidentsPage() {
         />
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex h-full items-center justify-center">
-              <span className="text-small text-quaternary">Loading incidents…</span>
-            </div>
-          ) : rows.length === 0 ? (
-            <EmptyState
-              title="No incidents"
-              hint="Run a simulation in the Chaos Lab to see how a failure would propagate."
-            />
-          ) : (
-            <Table>
+          <Async
+            loading={req.loading}
+            error={req.error}
+            data={req.data}
+            onRetry={req.reload}
+            what="incidents"
+            isEmpty={() => rows.length === 0}
+            empty={
+              <EmptyState
+                title={filter === "all" ? "No incidents" : `No ${filter} incidents`}
+                hint="Run a simulation in the Chaos Lab to see how a failure would propagate."
+              />
+            }
+          >
+            {() => (
+              <Table>
               <thead>
                 <tr>
                   <Th>Incident</Th>
@@ -111,9 +117,10 @@ export default function IncidentsPage() {
                 {rows.map((i) => (
                   <IncidentRow key={i.id} incident={i} />
                 ))}
-              </tbody>
-            </Table>
-          )}
+                </tbody>
+              </Table>
+            )}
+          </Async>
         </div>
       </div>
     </AppShell>

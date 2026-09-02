@@ -12,11 +12,11 @@ import { TopologyStage } from "@/components/room/TopologyStage";
 import { ReplayTimeline } from "@/components/incidents/ReplayTimeline";
 import { Button } from "@/components/ui/Button";
 import {
-  EmptyState,
   PanelHeader,
   Property,
   SeverityBadge,
 } from "@/components/ui/primitives";
+import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 import type { IncidentDetail } from "@/lib/types";
 
 /**
@@ -41,14 +41,25 @@ export default function IncidentReplayPage({
   const [incident, setIncident] = useState<IncidentDetail | null>(null);
   const [t, setT] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState<unknown>(null);
+  const [actionError, setActionError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useChaosMode(!!incident);
 
   useEffect(() => {
+    let cancelled = false;
     loadTopology();
-    api.incident(id).then(setIncident).catch(() => setIncident(null));
-    return () => clearSimulation();
-  }, [id, loadTopology, clearSimulation]);
+    setLoadError(null);
+    api
+      .incident(id)
+      .then((d) => !cancelled && setIncident(d))
+      .catch((e) => !cancelled && setLoadError(e));
+    return () => {
+      cancelled = true;
+      clearSimulation();
+    };
+  }, [id, reloadKey, loadTopology, clearSimulation]);
 
   // Feed the incident's blast radius into the shared store so the topology
   // renders it, then drive that from the scrub position.
@@ -97,19 +108,36 @@ export default function IncidentReplayPage({
           ? await api.acknowledgeIncident(incident.id)
           : await api.resolveIncident(incident.id);
       setIncident({ ...incident, ...updated });
-    } catch {
-      /* status is reflected by the unchanged incident */
+      setActionError(null);
+    } catch (e) {
+      // Surface it — silently failing an acknowledge is worse than an error.
+      setActionError(e);
     } finally {
       setBusy(false);
     }
   };
+
+  if (loadError) {
+    return (
+      <AppShell>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Toolbar title="Incident" />
+          <ErrorState
+            error={loadError}
+            onRetry={() => setReloadKey((k) => k + 1)}
+            what="this incident"
+          />
+        </div>
+      </AppShell>
+    );
+  }
 
   if (!incident) {
     return (
       <AppShell>
         <div className="flex min-w-0 flex-1 flex-col">
           <Toolbar title="Incident" />
-          <EmptyState title="Loading incident…" />
+          <LoadingState label="Loading incident…" />
         </div>
       </AppShell>
     );
@@ -120,8 +148,8 @@ export default function IncidentReplayPage({
       <div className="flex min-w-0 flex-1 flex-col">
         <Toolbar title="Incident replay" />
 
-        <div className="flex min-h-0 flex-1">
-          <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col xl:flex-row">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <TopologyStage />
             <ReplayTimeline incident={incident} t={t} onScrub={setT} />
           </div>
@@ -129,7 +157,7 @@ export default function IncidentReplayPage({
           {/* Detail + event feed */}
           <aside
             data-surface
-            className="flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-canvas"
+            className="flex max-h-[45vh] w-full shrink-0 flex-col border-t border-border bg-canvas xl:h-full xl:max-h-none xl:w-[320px] xl:border-l xl:border-t-0"
           >
             <PanelHeader
               actions={
@@ -163,6 +191,12 @@ export default function IncidentReplayPage({
                   <Property label="Teams">{incident.teams.join(", ")}</Property>
                 )}
               </dl>
+
+              {!!actionError && (
+                <p role="alert" className="pt-2 text-caption text-failed">
+                  That action could not be completed. Please try again.
+                </p>
+              )}
 
               <div className="flex gap-2 pt-3">
                 <Button

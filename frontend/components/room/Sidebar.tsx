@@ -8,6 +8,7 @@ import { STATE, scoreBand } from "@/lib/visual";
 import type { HealthState } from "@/lib/types";
 import { Kbd } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { UserMenu } from "./UserMenu";
 
 /**
  * Product sidebar.
@@ -18,8 +19,10 @@ import { Icon, type IconName } from "@/components/ui/Icon";
  */
 const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/control-room", label: "Control Room", icon: "room" },
+  { href: "/scenarios", label: "Scenarios", icon: "filter" },
   { href: "/chaos-lab", label: "Chaos Lab", icon: "chaos" },
   { href: "/incidents", label: "Incidents", icon: "incident" },
+  { href: "/resilience", label: "Resilience", icon: "check" },
   { href: "/compare", label: "Compare", icon: "compare" },
 ];
 
@@ -32,7 +35,14 @@ const RANK: Record<HealthState, number> = {
   FAILED: 4,
 };
 
-export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
+export function Sidebar({
+  onOpenPalette,
+  onNavigate,
+}: {
+  onOpenPalette?: () => void;
+  /** Set when the sidebar is rendered inside the mobile drawer. */
+  onNavigate?: () => void;
+}) {
   const path = usePathname();
   const topology = usePulse((s) => s.topology);
   const overview = usePulse((s) => s.overview);
@@ -102,6 +112,7 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
                 )}
                 <Link
                   href={item.href}
+                  onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
                   className={[
                     "flex h-control items-center gap-2.5 rounded px-2.5 text-small transition-colors duration-instant",
@@ -146,7 +157,10 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
               return (
                 <li key={name}>
                   <button
-                    onClick={() => setSystemFilter(active ? null : name)}
+                    onClick={() => {
+                      setSystemFilter(active ? null : name);
+                      onNavigate?.();
+                    }}
                     aria-pressed={active}
                     className={[
                       "flex h-control w-full items-center gap-2.5 rounded px-2.5 text-small transition-colors duration-instant",
@@ -195,11 +209,15 @@ export function Sidebar({ onOpenPalette }: { onOpenPalette?: () => void }) {
               style={{ width: `${overview.resilience_score}%` }}
             />
           </div>
-          <p className="pt-2 text-caption text-quaternary">
-            Demo workspace · simulated telemetry
-          </p>
         </div>
       )}
+
+      <div className="shrink-0 border-t border-border p-2">
+        <UserMenu />
+        <p className="px-2 pb-1 pt-1.5 text-caption text-quaternary">
+          Demo workspace · simulated telemetry
+        </p>
+      </div>
     </nav>
   );
 }

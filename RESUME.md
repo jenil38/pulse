@@ -34,7 +34,19 @@ Target ratio **70% professional product / 30% cinematic**.
 glow/emissive, `rounded-2xl`+, hard-coded hex in components, mono-everywhere,
 uppercase-everywhere.
 
-## Status — REDESIGN COMPLETE ✅
+## Status — APPLICATION COMPLETE ✅
+
+**v3 (completeness pass)** added: demo authentication + login + user menu + route
+guard, one shared responsive AppShell across every route (mobile drawer),
+loading/error/retry primitives (`Async`, `ErrorState`, `ErrorBanner`, `useAsync`),
+live simulation health counts, `/resilience` (score breakdown + SPOFs),
+`/scenarios` (library, read/run only), topology reset + selected-node context +
+smart labels, replay responsive + error states, palette/table/tab a11y, and a
+five-scene scroll story on the landing.
+
+**Tests: 48 backend + 36 frontend. Typecheck clean. Build clean (10 routes).**
+
+### Earlier: REDESIGN COMPLETE ✅
 
 | Phase | State |
 |---|---|

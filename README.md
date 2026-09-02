@@ -5,13 +5,17 @@
 > **See failure before it spreads.**
 > Break your data system before reality does.
 
-PULSE models a company's data platform as a living dependency network, then lets
-you **break it on purpose** — simulating failures and computing, deterministically,
-exactly what would go wrong downstream.
+PULSE is an **interactive infrastructure resilience and failure-propagation
+simulation prototype**. It models a data platform as a dependency graph, then
+lets you break it on purpose and computes — deterministically — exactly what
+would go wrong downstream.
 
-> **All telemetry in PULSE is SIMULATION / DEMO data** generated from a synthetic
-> topology (NOVA COMMERCE). PULSE does not monitor real external systems, and
-> simulations never touch real data.
+> **What this is, precisely.** All telemetry is SIMULATION / DEMO data generated
+> from a synthetic topology (NOVA COMMERCE). PULSE does not monitor real systems,
+> the simulation engine is rule-based and deterministic (not machine learning or
+> prediction), authentication is demo authentication (see below), and the
+> scenario library is predefined rather than user-authored. Nothing here is
+> production infrastructure software.
 
 ---
 
@@ -46,11 +50,14 @@ Lineage graphs show you connections. PULSE shows you **consequences**.
 
 | Surface | What it proves |
 |---|---|
-| **Control Room** | Live 3D topology, health rollups, asset inspector with real lineage counts |
+| **Sign in** | Demo authentication against a real signed-token API |
+| **Control Room** | 2.5D topology, live health rollups, dense asset table, asset inspector |
+| **Scenarios** | Predefined scenario library — list and run (read-only by design) |
+| **Resilience** | Full score breakdown, contributing factors, and every single point of failure |
 | **Chaos Lab** | Configure and inject a failure; watch propagation travel the graph hop by hop |
 | **Incident Replay** | Scrub a timeline and watch the failure spread and recover |
 | **Scenario Comparison** | Quantified verdict: *"Orders DB outage has 1.53× greater blast radius"* |
-| **Landing** | A nine-scene scroll film of one system failing and recovering |
+| **Landing** | A five-scene scroll story driven by the real engine output |
 
 ### Verified demo numbers
 
@@ -181,6 +188,33 @@ and resolve.
 **Data** — dbt models + contracts · Airflow DAG mirroring the topology · SQL
 **Frontend** — Next.js 16 · React 19 · TypeScript · Tailwind · React Three Fiber · Framer Motion · Zustand
 **Infra** — Docker Compose · GitHub Actions
+
+## Authentication
+
+PULSE ships with **demo authentication**, implemented honestly rather than faked
+in the browser:
+
+- credentials are verified **server-side** (`backend/app/api/auth.py`)
+- the session is a real **HMAC-signed, expiring token**, validated on every
+  protected request; tampered and expired tokens are rejected
+- passwords are salted and hashed with PBKDF2
+
+What makes it a *demo* and not production auth:
+
+- the user list is fixed and seeded — there is **no registration**
+- every demo account shares **one published password**
+- `SECRET_KEY` defaults to a well-known development value
+- the token is stored in `localStorage`/`sessionStorage`, not an httpOnly cookie
+- roles are **labels only** and do not restrict access
+
+| Account | Role | Password |
+|---|---|---|
+| `analyst@pulse.demo` | Analyst | `pulse-demo` |
+| `operator@pulse.demo` | Operator | `pulse-demo` |
+| `admin@pulse.demo` | Admin | `pulse-demo` |
+
+A production version would need a real user store, password reset, rate limiting,
+key rotation and cookie-based sessions. None of that is claimed.
 
 ## Local Setup
 

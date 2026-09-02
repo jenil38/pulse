@@ -11,6 +11,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { NODE_LABEL, STATE } from "@/lib/visual";
 import { FlowEdges } from "./FlowEdges";
 import { NodeMesh } from "./NodeMesh";
+import { NodeLabels } from "./NodeLabels";
 
 /**
  * The PULSE system map.
@@ -82,6 +83,15 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
   useEffect(() => {
     userMoved.current = false;
   }, [mode]);
+
+  // "Reset view" from the stage chrome hands framing back to the rig.
+  useEffect(() => {
+    const onReset = () => {
+      userMoved.current = false;
+    };
+    window.addEventListener("pulse:reset-view", onReset);
+    return () => window.removeEventListener("pulse:reset-view", onReset);
+  }, []);
 
   useFrame(() => {
     const view = mode === "chaos" ? VIEW.chaos : VIEW.normal;
@@ -201,6 +211,7 @@ function SceneContents({ mode }: { mode: string }) {
         );
       })}
 
+      <NodeLabels />
       <HoverLabel />
       <CameraRig focusId={selectedId} mode={mode} />
     </>

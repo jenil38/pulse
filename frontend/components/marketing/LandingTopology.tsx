@@ -25,9 +25,16 @@ const CYCLE = 16; // seconds for a full healthy → failure → recovery loop
 export function LandingTopology({
   topology,
   simulation,
+  progressRef,
 }: {
   topology: Topology;
   simulation: Simulation | null;
+  /**
+   * When supplied, scroll position drives the story instead of a timed loop —
+   * the visitor advances the failure themselves. Omit it and the scene loops
+   * on its own (used where there is nothing to scroll).
+   */
+  progressRef?: React.RefObject<number>;
 }) {
   const reduced = useReducedMotion();
   const { ref, visible } = useOnScreen<HTMLDivElement>();
@@ -47,7 +54,12 @@ export function LandingTopology({
         <ambientLight intensity={0.85} />
         <directionalLight position={[60, 90, 60]} intensity={1.1} />
         <directionalLight position={[-60, 20, -40]} intensity={0.3} />
-        <Scene topology={topology} simulation={simulation} reduced={reduced} />
+        <Scene
+          topology={topology}
+          simulation={simulation}
+          reduced={reduced}
+          progressRef={progressRef}
+        />
       </Canvas>
     </div>
   );
@@ -57,10 +69,12 @@ function Scene({
   topology,
   simulation,
   reduced,
+  progressRef,
 }: {
   topology: Topology;
   simulation: Simulation | null;
   reduced: boolean;
+  progressRef?: React.RefObject<number>;
 }) {
   const group = useRef<THREE.Group>(null);
   const phase = useRef(0);
@@ -84,9 +98,19 @@ function Scene({
     return { hops, states, max };
   }, [simulation]);
 
-  // A slow, bounded drift — enough to read as three-dimensional, never busy.
+  // Scroll drives the story when a progress ref is supplied; otherwise the
+  // scene loops on its own. Either way the drift stays slow and bounded.
   useFrame((s, delta) => {
-    phase.current = (phase.current + delta) % CYCLE;
+    if (progressRef) {
+      const target = (progressRef.current ?? 0) * CYCLE;
+      // Damped follow, so scrubbing quickly still reads as motion, not a cut.
+      phase.current += (target - phase.current) * (reduced ? 1 : 0.12);
+      // Camera eases back as the blast radius opens up — the one camera move.
+      const pullback = 1 + (progressRef.current ?? 0) * 0.18;
+      s.camera.position.z += (235 * pullback - s.camera.position.z) * 0.05;
+    } else {
+      phase.current = (phase.current + delta) % CYCLE;
+    }
     if (group.current && !reduced) {
       group.current.rotation.y = Math.sin(s.clock.elapsedTime * 0.06) * 0.09;
     }

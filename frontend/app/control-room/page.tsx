@@ -13,7 +13,7 @@ import { SelectionAnnouncer } from "@/components/room/SelectionAnnouncer";
 import { Toolbar } from "@/components/room/Toolbar";
 import { TopologyStage } from "@/components/room/TopologyStage";
 import { Tabs } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/Button";
+import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 
 /**
  * Control Room — the primary product surface.
@@ -62,21 +62,10 @@ export default function ControlRoomPage() {
           </div>
         </Toolbar>
 
-        {error ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
-            <p className="text-body text-failed">Cannot reach the PULSE API</p>
-            <p className="max-w-md text-small text-tertiary">{error}</p>
-            <code className="rounded border border-border bg-subtle px-2 py-1 font-mono text-caption text-secondary">
-              python -m uvicorn backend.app.main:app --port 8000
-            </code>
-            <Button size="sm" onClick={() => loadTopology()}>
-              Retry
-            </Button>
-          </div>
+        {error && !topology ? (
+          <ErrorState error={error} onRetry={loadTopology} what="the system topology" />
         ) : loading && !topology ? (
-          <div className="flex flex-1 items-center justify-center">
-            <span className="text-small text-quaternary">Loading topology…</span>
-          </div>
+          <LoadingState label="Loading topology…" />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
             {view !== "assets" && <TopologyStage />}

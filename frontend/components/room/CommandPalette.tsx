@@ -251,12 +251,26 @@ export function CommandPalette({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search assets or run a command…"
             aria-label="Search assets or run a command"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="command-list"
+            aria-autocomplete="list"
+            aria-activedescendant={rows.length ? `command-row-${active}` : undefined}
             className="h-full flex-1 bg-transparent text-body text-primary outline-none"
           />
           <Kbd>Esc</Kbd>
         </div>
 
-        <div ref={listRef} className="max-h-[52vh] overflow-y-auto py-1.5">
+        <div
+          ref={listRef}
+          id="command-list"
+          role="listbox"
+          aria-label="Commands and assets"
+          className="max-h-[52vh] overflow-y-auto py-1.5"
+        >
+          <p aria-live="polite" className="sr-only">
+            {rows.length} result{rows.length === 1 ? "" : "s"}
+          </p>
           {rows.length === 0 && (
             <p className="px-4 py-6 text-center text-small text-quaternary">
               No matches for “{query}”
@@ -271,7 +285,7 @@ export function CommandPalette({
             return (
               <div key={c.id}>
                 {showGroup && (
-                  <p className="px-4 pb-1 pt-2 text-micro uppercase text-quaternary">
+                  <p role="presentation" className="px-4 pb-1 pt-2 text-micro uppercase text-quaternary">
                     {c.group}
                   </p>
                 )}
@@ -293,7 +307,7 @@ export function CommandPalette({
           })}
 
           {matchedAssets.length > 0 && (
-            <p className="px-4 pb-1 pt-2 text-micro uppercase text-quaternary">Assets</p>
+            <p role="presentation" className="px-4 pb-1 pt-2 text-micro uppercase text-quaternary">Assets</p>
           )}
           {matchedAssets.map((a) => {
             cursor += 1;
@@ -346,15 +360,18 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <div
+      id={`command-row-${index}`}
       data-index={index}
+      role="option"
+      aria-selected={active}
       onMouseMove={onHover}
       onClick={onClick}
-      className={`mx-1.5 flex h-9 w-[calc(100%-12px)] items-center gap-2.5 rounded px-2.5 text-left transition-colors duration-instant ${
+      className={`mx-1.5 flex h-9 w-[calc(100%-12px)] cursor-pointer items-center gap-2.5 rounded px-2.5 text-left transition-colors duration-instant ${
         active ? "bg-muted" : ""
       }`}
     >
       {children}
-    </button>
+    </div>
   );
 }
