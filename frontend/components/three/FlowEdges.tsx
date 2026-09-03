@@ -158,7 +158,7 @@ export function FlowEdges({
       const fade = Math.sin(Math.PI * p);
       const inTrace =
         tracedIds.size === 0 || tracedIds.has(e.up) || tracedIds.has(e.down);
-      const scale = (0.2 + fade * 0.22) * (flow > 0 ? 1 : 0) * (inTrace ? 1 : 0.35);
+      const scale = (0.28 + fade * 0.3) * (flow > 0 ? 1 : 0) * (inTrace ? 1 : 0.35);
       dummy.scale.setScalar(Math.max(scale, 0.0001));
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
@@ -179,7 +179,7 @@ export function FlowEdges({
         <lineBasicMaterial
           color={palette.edge}
           transparent
-          opacity={0.9}
+          opacity={1}
           depthWrite={false}
         />
       </lineSegments>

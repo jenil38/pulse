@@ -20,16 +20,16 @@ from .states import NodeType
 # Kept tighter than the Z/Y spread so the graph reads as a VOLUME rather than a
 # flat horizontal ribbon when viewed from the establishing camera.
 _STAGE_X = {
-    NodeType.SOURCE: -52.0,
-    NodeType.INGESTION: -37.0,
-    NodeType.RAW_TABLE: -22.0,
-    NodeType.TRANSFORMATION: -7.0,
-    NodeType.WAREHOUSE_TABLE: 9.0,
-    NodeType.DATA_MODEL: 25.0,
-    NodeType.DASHBOARD: 42.0,
-    NodeType.ML_MODEL: 42.0,
-    NodeType.BUSINESS_PROCESS: 57.0,
-    NodeType.TEAM: 72.0,
+    NodeType.SOURCE: -44.0,
+    NodeType.INGESTION: -31.5,
+    NodeType.RAW_TABLE: -19.0,
+    NodeType.TRANSFORMATION: -6.5,
+    NodeType.WAREHOUSE_TABLE: 7.0,
+    NodeType.DATA_MODEL: 21.0,
+    NodeType.DASHBOARD: 35.5,
+    NodeType.ML_MODEL: 35.5,
+    NodeType.BUSINESS_PROCESS: 48.0,
+    NodeType.TEAM: 60.0,
 }
 
 # Z lane per system — separate pipelines occupy distinct planes in depth.
@@ -45,15 +45,15 @@ _SYSTEM_Z = {
 # Each system lane also sits at its own height, so the four source pipelines
 # read as stacked strata instead of one flat plane.
 _SYSTEM_Y = {
-    "Payments": 9.0,
-    "Commerce": 3.0,
-    "Inventory": -3.0,
-    "Marketing": -9.0,
+    "Payments": 20.0,
+    "Commerce": 7.0,
+    "Inventory": -7.0,
+    "Marketing": -20.0,
     "Analytics": 0.0,
     "Business": 0.0,
 }
 
-_Y_SPREAD = 7.0
+_Y_SPREAD = 11.0
 
 
 @dataclass(frozen=True)

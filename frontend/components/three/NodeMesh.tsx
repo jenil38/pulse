@@ -46,8 +46,10 @@ export function NodeMesh({
 
   const pos = asset.position ?? { x: 0, y: 0, z: 0 };
   const shape = NODE_SHAPE[asset.type];
+  // Larger overall, with more separation between tiers — at a diagram-like
+  // camera distance the previous sizes read as indistinct specks.
   const baseScale =
-    asset.criticality === "CRITICAL" ? 1.2 : asset.criticality === "HIGH" ? 1.06 : 0.92;
+    asset.criticality === "CRITICAL" ? 1.5 : asset.criticality === "HIGH" ? 1.28 : 1.08;
 
   // Resolve the state colour from CSS variables so both modes stay in sync
   // with the design system rather than duplicating hex values here.
@@ -94,22 +96,22 @@ export function NodeMesh({
   const geom = () => {
     switch (shape) {
       case "octahedron":
-        return <octahedronGeometry args={[1.7, 0]} />;
+        return <octahedronGeometry args={[2.4, 0]} />;
       case "connector":
-        return <cylinderGeometry args={[0.55, 0.55, 2.4, 6]} />;
+        return <cylinderGeometry args={[0.8, 0.8, 3.4, 6]} />;
       case "block":
-        return <boxGeometry args={[2.2, 1.5, 2.2]} />;
+        return <boxGeometry args={[3.1, 2.1, 3.1]} />;
       case "slab":
-        return <boxGeometry args={[2.8, 0.8, 2.8]} />;
+        return <boxGeometry args={[3.9, 1.1, 3.9]} />;
       case "lens":
-        return <cylinderGeometry args={[1.6, 1.6, 0.75, 24]} />;
+        return <cylinderGeometry args={[2.25, 2.25, 1.05, 24]} />;
       case "plane":
-        return <boxGeometry args={[3.0, 2.0, 0.28]} />;
+        return <boxGeometry args={[4.2, 2.8, 0.4]} />;
       case "sphere":
-        return <icosahedronGeometry args={[1.5, 1]} />;
+        return <icosahedronGeometry args={[2.1, 1]} />;
       case "marker":
       default:
-        return <coneGeometry args={[1.3, 2.3, 4]} />;
+        return <coneGeometry args={[1.85, 3.2, 4]} />;
     }
   };
 
@@ -131,16 +133,16 @@ export function NodeMesh({
         <meshStandardMaterial
           ref={mat}
           color={stateHex}
-          roughness={0.68}
-          metalness={0.05}
+          roughness={0.42}
+          metalness={0.12}
           transparent
           opacity={1}
         />
       </mesh>
 
       {/* Selection: a thin drawn ring on the ground plane. */}
-      <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} scale={0} position={[0, -2.2, 0]}>
-        <ringGeometry args={[2.5, 2.62, 64]} />
+      <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} scale={0} position={[0, -3.0, 0]}>
+        <ringGeometry args={[3.4, 3.55, 64]} />
         <meshBasicMaterial
           color={colors.ring}
           transparent
@@ -150,8 +152,8 @@ export function NodeMesh({
       </mesh>
 
       {traced && !selected && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, 0]}>
-          <ringGeometry args={[2.3, 2.38, 48]} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3.0, 0]}>
+          <ringGeometry args={[3.15, 3.25, 48]} />
           <meshBasicMaterial
             color={colors.ring}
             transparent

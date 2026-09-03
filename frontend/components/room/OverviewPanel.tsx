@@ -75,13 +75,13 @@ export function OverviewPanel() {
   return (
     <aside
       data-surface
-      className="flex h-full w-[304px] shrink-0 flex-col border-l border-border bg-canvas"
+      className="flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-canvas"
     >
       <PanelHeader>Overview</PanelHeader>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {/* Estate health composition */}
-        <section className="border-b border-border px-4 py-4">
+        <section className="border-b border-border px-5 py-5">
           <div className="flex items-baseline justify-between">
             <h3 className="text-caption text-tertiary">Estate health</h3>
             <span className="text-caption tnum text-quaternary">{total} assets</span>
@@ -110,7 +110,7 @@ export function OverviewPanel() {
         </section>
 
         {/* Resilience trend */}
-        <section className="border-b border-border px-4 py-4">
+        <section className="border-b border-border px-5 py-5">
           <div className="flex items-baseline justify-between">
             <h3 className="text-caption text-tertiary">Resilience · 30 days</h3>
             {delta !== null && (
@@ -166,7 +166,7 @@ export function OverviewPanel() {
         </section>
 
         {/* Needs attention */}
-        <section className="border-b border-border px-4 py-4">
+        <section className="border-b border-border px-5 py-5">
           <h3 className="text-caption text-tertiary">Needs attention</h3>
           {attention.length === 0 ? (
             <p className="pt-2 text-caption text-quaternary">
@@ -195,7 +195,7 @@ export function OverviewPanel() {
         </section>
 
         {/* Incident frequency */}
-        <section className="border-b border-border px-4 py-4">
+        <section className="border-b border-border px-5 py-5">
           <div className="flex items-baseline justify-between">
             <h3 className="text-caption text-tertiary">Incidents · 30 days</h3>
             {freq.data && (
@@ -238,7 +238,7 @@ export function OverviewPanel() {
         </section>
 
         {/* Fragility */}
-        <section className="px-4 py-4">
+        <section className="px-5 py-5">
           <h3 className="text-caption text-tertiary">Most fragile</h3>
           {topSpofs.length === 0 ? (
             <p className="pt-2 text-caption text-quaternary">

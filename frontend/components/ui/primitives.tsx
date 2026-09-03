@@ -158,7 +158,7 @@ export function Property({
   mono?: boolean;
 }) {
   return (
-    <div className="flex min-h-[28px] items-baseline gap-3 py-1">
+    <div className="flex min-h-[30px] items-baseline gap-3 py-1.5">
       <dt className="w-[92px] shrink-0 text-caption text-tertiary">{label}</dt>
       <dd
         className={`min-w-0 flex-1 text-small text-primary ${mono ? "font-mono tnum" : ""}`}
@@ -302,7 +302,7 @@ export function Th({
     <th
       scope="col"
       style={width ? { width } : undefined}
-      className={`sticky top-0 z-10 border-b border-border bg-canvas px-3 py-2 text-micro font-medium uppercase text-quaternary ${
+      className={`sticky top-0 z-10 border-b border-border bg-canvas/95 px-3.5 py-2.5 text-micro font-medium uppercase text-quaternary backdrop-blur-sm ${
         align === "right" ? "text-right" : "text-left"
       } ${className}`}
     >
@@ -324,7 +324,7 @@ export function Td({
 }) {
   return (
     <td
-      className={`border-b border-border-subtle px-3 py-2 align-middle ${
+      className={`border-b border-border-subtle px-3.5 py-2.5 align-middle ${
         align === "right" ? "text-right" : "text-left"
       } ${mono ? "font-mono tnum text-caption" : ""} ${className}`}
     >

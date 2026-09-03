@@ -115,7 +115,7 @@ export function Inspector() {
       ) : (
         <>
           {/* Identity */}
-          <div className="shrink-0 px-4 pb-3 pt-4">
+          <div className="shrink-0 px-5 pb-4 pt-5">
             <div className="flex items-start gap-2.5">
               <span className="mt-[3px] grid h-7 w-7 shrink-0 place-items-center rounded border border-border bg-subtle text-tertiary">
                 <NodeGlyph type={a.type} size={15} />
@@ -145,7 +145,7 @@ export function Inspector() {
             ]}
           />
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             {tab === "overview" && (
               <dl>
                 <Property label="Status">
