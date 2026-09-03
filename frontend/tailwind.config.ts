@@ -113,6 +113,7 @@ const config: Config = {
 
       boxShadow: {
         raised: "var(--shadow-raised)",
+        card: "var(--shadow-card)",
         overlay: "var(--shadow-overlay)",
         none: "none",
       },

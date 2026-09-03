@@ -7,6 +7,17 @@ import { api } from "@/lib/api";
 import type { Simulation, Topology } from "@/lib/types";
 import { Button, Kbd } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import {
+  CapabilityRow,
+  Engineering,
+  FAQ,
+  HowItWorks,
+  MockAssetTable,
+  MockBlastRadius,
+  MockRecovery,
+  MockWindow,
+  SiteFooter,
+} from "@/components/marketing/Sections";
 import { StatusDot } from "@/components/ui/primitives";
 import { STATE } from "@/lib/visual";
 
@@ -129,6 +140,66 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Capabilities — real interface fragments, not illustrations */}
+      <section className="mx-auto max-w-[1120px] px-6">
+        <CapabilityRow
+          eyebrow="Control Room"
+          title="Every asset, its health, and its trend — in one pass."
+          body="A dense, sortable inventory of the whole estate: freshness against target, latency, row volume, ownership and downstream weight, with a sparkline on every row."
+          bullets={[
+            "Freshness measured against each asset's own target, not a global one",
+            "Sorted by health so what is broken surfaces first",
+            "Selecting a row focuses that node in the topology",
+          ]}
+          href="/control-room"
+          linkLabel="Open the Control Room"
+          visual={
+            <MockWindow title="Nova Commerce / assets">
+              <MockAssetTable />
+            </MockWindow>
+          }
+        />
+
+        <CapabilityRow
+          reverse
+          eyebrow="Blast radius"
+          title="Failure does not stay where it starts."
+          body="Pick any node, pick a failure, and PULSE walks the dependency graph to compute exactly what degrades — technical assets first, then the dashboards and teams that depend on them."
+          bullets={[
+            "Ten failure types across three propagation modes",
+            "Dashboards become untrustworthy rather than simply failing",
+            "Unrelated branches of the graph stay healthy",
+          ]}
+          href="/chaos-lab"
+          linkLabel="Open the Chaos Lab"
+          visual={
+            <MockWindow title="Payments API — source outage">
+              <MockBlastRadius />
+            </MockWindow>
+          }
+        />
+
+        <CapabilityRow
+          eyebrow="Recovery"
+          title="And an order to put it back together."
+          body="The recovery plan is derived from the topology, not written by hand: restore the origin, validate what lands, backfill the gap, rebuild in dependency order, then verify each consumer."
+          bullets={[
+            "Rebuild order comes from a topological sort of the affected subgraph",
+            "Backfill appears only for failures that starved data",
+            "Consumers are verified only after their upstreams are rebuilt",
+          ]}
+          href="/incidents"
+          linkLabel="See an incident replay"
+          visual={
+            <MockWindow title="Recovery plan — 7 steps">
+              <MockRecovery />
+            </MockWindow>
+          }
+        />
+      </section>
+
+      <HowItWorks />
+
       {/* Real propagation — the product's actual output */}
       {sim && (
         <section className="mx-auto max-w-[1120px] px-6 pb-6 pt-20">
@@ -178,6 +249,10 @@ export default function Landing() {
         </section>
       )}
 
+      <Engineering />
+
+      <FAQ />
+
       {/* Close */}
       <section className="mx-auto max-w-[1120px] px-6 py-24">
         <div className="border-t border-border pt-10">
@@ -199,15 +274,9 @@ export default function Landing() {
           </div>
         </div>
 
-        <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-16">
-          <span className="text-caption text-quaternary">
-            PULSE — a portfolio project by Jenil Parmar
-          </span>
-          <span className="text-caption text-quaternary">
-            Nova Commerce is a fictional company; all telemetry is simulated.
-          </span>
-        </footer>
       </section>
+
+      <SiteFooter />
     </div>
   );
 }

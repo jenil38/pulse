@@ -145,6 +145,11 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
 }
 
 function SceneContents({ mode }: { mode: string }) {
+  // Bounce light is resolved from a design token, never a literal — otherwise
+  // it would not re-tune when the environment switches to chaos mode.
+  const [groundTone, setGroundTone] = useState(() => token("border-strong"));
+  useEffect(() => setGroundTone(token("border-strong")), [mode]);
+
   const topology = usePulse((s) => s.topology);
   const selectedId = usePulse((s) => s.selectedId);
   const hoveredId = usePulse((s) => s.hoveredId);
@@ -165,13 +170,13 @@ function SceneContents({ mode }: { mode: string }) {
   return (
     <>
       {/* Lighting: one key, one fill. Physically believable, never theatrical. */}
-      <ambientLight intensity={chaos ? 0.5 : 0.85} />
-      <directionalLight
-        position={[60, 90, 60]}
-        intensity={chaos ? 0.85 : 1.15}
-        castShadow={false}
-      />
-      <directionalLight position={[-60, 20, -40]} intensity={chaos ? 0.3 : 0.35} />
+      {/* Key / fill / rim — enough modelling for the solids to read as objects
+          rather than flat silhouettes, without becoming theatrical. */}
+      <ambientLight intensity={chaos ? 0.32 : 0.55} />
+      <hemisphereLight intensity={chaos ? 0.25 : 0.5} groundColor={groundTone} />
+      <directionalLight position={[70, 95, 55]} intensity={chaos ? 1.0 : 1.35} />
+      <directionalLight position={[-70, 30, -45]} intensity={chaos ? 0.4 : 0.45} />
+      <directionalLight position={[0, -40, 70]} intensity={chaos ? 0.22 : 0.18} />
 
       <GroundPlane mode={mode} />
 
@@ -233,7 +238,7 @@ function GroundPlane({ mode }: { mode: string }) {
   const grid = useMemo(() => {
     const g = new THREE.BufferGeometry();
     const pts: number[] = [];
-    const halfX = 130;
+    const halfX = 108;
     const halfZ = 78;
     const step = 13;
     for (let x = -halfX; x <= halfX; x += step) pts.push(x, 0, -halfZ, x, 0, halfZ);
@@ -243,7 +248,7 @@ function GroundPlane({ mode }: { mode: string }) {
   }, []);
 
   return (
-    <lineSegments geometry={grid} position={[10, -24, 0]}>
+    <lineSegments geometry={grid} position={[8, -34, 0]}>
       <lineBasicMaterial color={color} transparent opacity={0.55} depthWrite={false} />
     </lineSegments>
   );
@@ -295,7 +300,7 @@ export function TopologyScene({ className = "" }: { className?: string }) {
       <Canvas
         dpr={[1, 1.75]}
         gl={{ antialias: true, powerPreference: "high-performance", alpha: false }}
-        camera={{ position: [4, 34, 250], fov: 26, near: 1, far: 1200 }}
+        camera={{ position: [2, 26, 178], fov: 26, near: 1, far: 1200 }}
         // Pause when reduced motion is requested or the map is offscreen.
         frameloop={reduced || !visible ? "demand" : "always"}
       >
