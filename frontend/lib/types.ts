@@ -85,6 +85,8 @@ export interface HealthMetric {
   latency_ms: number;
   last_run_status: string;
   last_updated_iso: string;
+  /** Short freshness history for sparklines. */
+  trend: number[];
   source: "SIMULATED";
 }
 
@@ -244,4 +246,42 @@ export interface FailureTypeInfo {
   value: FailureType;
   label: string;
   mode: "STARVE" | "BREAK" | "CORRUPT";
+}
+
+/** Time-series point. `t` is seconds relative to now (negative = past). */
+export interface SeriesPoint {
+  t: number;
+  value: number;
+}
+
+export interface HealthHistory {
+  simulated: boolean;
+  points: {
+    t: number;
+    healthy: number;
+    degraded: number;
+    stale: number;
+    failed: number;
+    recovering: number;
+  }[];
+}
+
+export interface ResilienceHistory {
+  simulated: boolean;
+  current: number;
+  points: SeriesPoint[];
+}
+
+export interface IncidentFrequency {
+  simulated: boolean;
+  total: number;
+  points: { t: number; count: number }[];
+}
+
+export interface AssetHistory {
+  asset_id: string;
+  simulated: boolean;
+  freshness: SeriesPoint[];
+  volume: SeriesPoint[];
+  latency: SeriesPoint[];
 }

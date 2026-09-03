@@ -15,6 +15,7 @@ import {
 } from "@/lib/visual";
 import { Badge, StatusDot, Table, Td, Th, Tr } from "@/components/ui/primitives";
 import { NodeGlyph } from "@/components/ui/Icon";
+import { Sparkline } from "@/components/ui/Chart";
 
 /**
  * Dense, sortable asset table.
@@ -151,6 +152,7 @@ export function AssetTable() {
           {header("state", "Health", "left", "108px")}
           {header("criticality", "Criticality", "left", "96px", "hidden lg:table-cell")}
           {header("freshness", "Freshness", "right", "88px")}
+          <Th width="72px" className="hidden lg:table-cell">Trend</Th>
           {header("latency", "Latency", "right", "80px", "hidden xl:table-cell")}
           <Th align="right" width="80px" className="hidden 2xl:table-cell">Rows</Th>
           {header("downstream", "Down", "right", "68px")}
@@ -214,6 +216,19 @@ export function AssetTable() {
                   </span>
                 ) : (
                   "—"
+                )}
+              </Td>
+              <Td className="hidden lg:table-cell">
+                {m && m.trend?.length ? (
+                  <Sparkline
+                    points={m.trend.map((v, i) => ({ t: i, value: v }))}
+                    width={60}
+                    height={16}
+                    tone={stale ? "degraded" : "healthy"}
+                    title={`${a.name} freshness trend`}
+                  />
+                ) : (
+                  <span className="text-quaternary">—</span>
                 )}
               </Td>
               <Td align="right" mono className="hidden text-secondary xl:table-cell">

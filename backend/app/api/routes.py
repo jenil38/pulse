@@ -15,6 +15,12 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..engine import compute_blast_radius, compute_resilience, find_spofs
 from ..engine.health import rollup, snapshot
+from ..engine.history import (
+    asset_history,
+    health_history,
+    incident_history,
+    resilience_history,
+)
 from ..engine.recovery import generate_recovery_plan
 from ..engine.scenarios import DEMO_SCENARIOS, SCENARIOS_BY_ID, compare, run_scenario
 from ..engine.simulation import run_simulation
@@ -196,9 +202,21 @@ def health_overview():
 
 
 @router.get("/health/metrics", response_model=list[HealthMetricOut], tags=["health"])
-def health_metrics():
+def health_metrics(trend_points: int = Query(12, ge=0, le=48)):
+    """
+    Current metrics for every asset, each with a short freshness trend so the
+    asset table can draw sparklines from a single request rather than issuing
+    one call per row.
+    """
     g = store.graph()
-    return [metric_out(m) for m in snapshot(g).values()]
+    out = []
+    for m in snapshot(g).values():
+        row = metric_out(m)
+        if trend_points:
+            hist = asset_history(g, m.asset_id, points=trend_points, step_seconds=3600)
+            row.trend = [p.value for p in hist.freshness]
+        out.append(row)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -375,3 +393,64 @@ def get_incident_recovery(incident_id: str):
     g = store.graph()
     br = compute_blast_radius(g, inc.origin, inc.failure_type)
     return {"incident": incident_id, "steps": recovery_out(generate_recovery_plan(g, br))}
+
+
+# --------------------------------------------------------------------------- #
+#  History / trends  (SIMULATED, deterministic — see engine/history.py)
+# --------------------------------------------------------------------------- #
+@router.get("/health/history", tags=["health"])
+def get_health_history(
+    points: int = Query(48, ge=8, le=168),
+    step_seconds: int = Query(1800, ge=300, le=86400),
+):
+    """Fleet-wide health counts over the recent window."""
+    return {
+        "simulated": True,
+        "points": health_history(store.graph(), points=points, step_seconds=step_seconds),
+    }
+
+
+@router.get("/health/resilience-history", tags=["health"])
+def get_resilience_history(days: int = Query(30, ge=7, le=90)):
+    """
+    Daily resilience score, converging on today's real computed value so the
+    trend can never contradict the number displayed beside it.
+    """
+    current = compute_resilience(store.graph()).score
+    series = resilience_history(points=days, current=current)
+    return {
+        "simulated": True,
+        "current": current,
+        "points": [{"t": p.t, "value": p.value} for p in series],
+    }
+
+
+@router.get("/incidents/stats/frequency", tags=["incidents"])
+def get_incident_frequency(days: int = Query(30, ge=7, le=90)):
+    """Incidents per day — the frequency chart every operations tool has."""
+    points = incident_history(days=days)
+    return {
+        "simulated": True,
+        "total": sum(p["count"] for p in points),
+        "points": points,
+    }
+
+
+@router.get("/assets/{asset_id}/history", tags=["assets"])
+def get_asset_history(
+    asset_id: str,
+    points: int = Query(48, ge=8, le=168),
+    step_seconds: int = Query(1800, ge=300, le=86400),
+):
+    """Per-asset freshness / volume / latency history."""
+    g = store.graph()
+    if asset_id not in g:
+        raise HTTPException(404, f"unknown asset: {asset_id}")
+    h = asset_history(g, asset_id, points=points, step_seconds=step_seconds)
+    return {
+        "asset_id": asset_id,
+        "simulated": True,
+        "freshness": [{"t": p.t, "value": p.value} for p in h.freshness],
+        "volume": [{"t": p.t, "value": p.value} for p in h.volume],
+        "latency": [{"t": p.t, "value": p.value} for p in h.latency],
+    }

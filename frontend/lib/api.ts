@@ -5,12 +5,16 @@ import type {
   Comparison,
   FailureType,
   FailureTypeInfo,
+  AssetHistory,
+  HealthHistory,
   HealthMetric,
   HealthOverview,
+  IncidentFrequency,
   Incident,
   IncidentDetail,
   Lineage,
   Resilience,
+  ResilienceHistory,
   Scenario,
   Simulation,
   SystemSummary,
@@ -138,6 +142,16 @@ export const api = {
   healthOverview: () => req<HealthOverview>("/health/overview"),
   healthMetrics: () => req<HealthMetric[]>("/health/metrics"),
   resilience: () => req<Resilience>("/resilience"),
+
+  // --- history / trends (SIMULATED, deterministic) ----------------------
+  healthHistory: (points = 48) =>
+    req<HealthHistory>(`/health/history?points=${points}`),
+  resilienceHistory: (days = 30) =>
+    req<ResilienceHistory>(`/health/resilience-history?days=${days}`),
+  incidentFrequency: (days = 30) =>
+    req<IncidentFrequency>(`/incidents/stats/frequency?days=${days}`),
+  assetHistory: (id: string, points = 48) =>
+    req<AssetHistory>(`/assets/${id}/history?points=${points}`),
 
   failureTypes: () => req<FailureTypeInfo[]>("/failure-types"),
 
