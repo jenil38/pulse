@@ -64,6 +64,9 @@ class HealthMetricOut(BaseModel):
     latency_ms: int
     last_run_status: str
     last_updated_iso: str
+    #: Short freshness history so a table can draw a sparkline without issuing
+    #: one request per asset. Deterministic; see engine/history.py.
+    trend: list[float] = []
     source: Literal["SIMULATED"] = "SIMULATED"
 
 

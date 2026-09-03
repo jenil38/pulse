@@ -8,6 +8,7 @@ import { useIsDesktop } from "@/hooks/useMediaQuery";
 import { AppShell } from "@/components/room/AppShell";
 import { AssetTable } from "@/components/room/AssetTable";
 import { Inspector } from "@/components/room/Inspector";
+import { OverviewPanel } from "@/components/room/OverviewPanel";
 import { MobileRoom } from "@/components/room/MobileRoom";
 import { SelectionAnnouncer } from "@/components/room/SelectionAnnouncer";
 import { Toolbar } from "@/components/room/Toolbar";
@@ -30,6 +31,7 @@ export default function ControlRoomPage() {
   const error = usePulse((s) => s.error);
   const topology = usePulse((s) => s.topology);
   const simulation = usePulse((s) => s.simulation);
+  const selectedId = usePulse((s) => s.selectedId);
   const isDesktop = useIsDesktop();
   const [view, setView] = useState<View>("split");
 
@@ -85,7 +87,7 @@ export default function ControlRoomPage() {
         <SelectionAnnouncer />
       </div>
 
-      <Inspector />
+      {selectedId ? <Inspector /> : <OverviewPanel />}
     </AppShell>
   );
 }

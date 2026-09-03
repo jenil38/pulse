@@ -13,6 +13,9 @@ import {
 } from "@/lib/visual";
 import { Button } from "@/components/ui/Button";
 import { Icon, NodeGlyph } from "@/components/ui/Icon";
+import { AreaChart } from "@/components/ui/Chart";
+import { useAsync } from "@/hooks/useAsync";
+import type { AssetHistory } from "@/lib/types";
 import {
   Badge,
   EmptyState,
@@ -43,6 +46,13 @@ export function Inspector() {
 
   const [lineage, setLineage] = useState<Lineage | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
+
+  // History is only fetched once the telemetry tab is actually opened.
+  const history = useAsync<AssetHistory>(
+    () => api.assetHistory(selectedId!, 48),
+    [selectedId, tab],
+    { enabled: !!selectedId && tab === "telemetry" }
+  );
 
   useEffect(() => {
     if (!selectedId) {
@@ -185,6 +195,36 @@ export function Inspector() {
                   items={lineage.downstream}
                   onSelect={select}
                   empty="Nothing consumes this asset."
+                />
+              </div>
+            )}
+
+            {tab === "telemetry" && history.data && (
+              <div className="space-y-4 pb-4">
+                <AreaChart
+                  label="Freshness · last 24h"
+                  points={history.data.freshness}
+                  height={64}
+                  tone={m && m.freshness_seconds > m.freshness_target ? "degraded" : "healthy"}
+                  formatValue={(v) => formatAge(v)}
+                  baseline={m?.freshness_target}
+                  baselineLabel="target"
+                />
+                {history.data.volume.length > 0 && (
+                  <AreaChart
+                    label="Row volume · last 24h"
+                    points={history.data.volume}
+                    height={64}
+                    tone="accent"
+                    formatValue={(v) => formatCount(v)}
+                  />
+                )}
+                <AreaChart
+                  label="Latency · last 24h"
+                  points={history.data.latency}
+                  height={64}
+                  tone="accent"
+                  formatValue={(v) => Math.round(v) + "ms"}
                 />
               </div>
             )}
