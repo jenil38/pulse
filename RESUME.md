@@ -36,6 +36,23 @@ uppercase-everywhere.
 
 ## Status — APPLICATION COMPLETE ✅
 
+**v4 (visual craft + telemetry)**
+- time-series throughout: `engine/history.py` (deterministic, hash-seeded) plus
+  `/health/history`, `/health/resilience-history`, `/incidents/stats/frequency`,
+  `/assets/{id}/history`; `/health/metrics` carries a trend so the table draws
+  43 sparklines from one request
+- `components/ui/Chart.tsx`: Sparkline, AreaChart, BarSeries, StackedBar
+- `OverviewPanel` fills the previously-empty inspector column
+- visual pass: darker text scale (the UI read washed out), real elevation,
+  roomier tables/panels
+- topology: layout aspect 5.2:1 -> 2.6:1, node geometry +40%, three-point
+  lighting, camera pulled in
+- landing: 6.8 -> 10.2 viewports (capabilities with real UI fragments, how it
+  works, engineering, FAQ, full footer)
+
+**Tests: 48 backend + 36 frontend. Build clean (10 routes).**
+
+
 **v3 (completeness pass)** added: demo authentication + login + user menu + route
 guard, one shared responsive AppShell across every route (mobile drawer),
 loading/error/retry primitives (`Async`, `ErrorState`, `ErrorBanner`, `useAsync`),
