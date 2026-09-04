@@ -79,7 +79,7 @@ five-scene scroll story on the landing.
 | 10. Performance (indexed lookups, per-frame memo, DPR cap, offscreen pause) | ✅ |
 | 11. QA | ✅ |
 
-**Tests: 36 backend + 31 frontend. Typecheck clean. Build clean (7 routes).**
+**Tests: 91 backend + 52 frontend. Typecheck clean. Build clean (13 routes).**
 
 Discipline metrics (before → after): `font-mono` 158→22 · `uppercase` 87→8 ·
 bordered panels 49→17 · gradients 0 · `rounded-2xl+` 0 · emissive 0.

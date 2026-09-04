@@ -109,11 +109,20 @@ const config: Config = {
         md: "8px",
         lg: "12px",
         xl: "16px",
+        // Floating chrome sits on a softer ladder than inline controls: a
+        // panel that hovers over content reads as an object, and objects have
+        // rounder corners than the boxes ruled into a page.
+        "2xl": "20px",
+        "3xl": "26px",
+        pill: "9999px",
       },
 
       boxShadow: {
         raised: "var(--shadow-raised)",
         card: "var(--shadow-card)",
+        // `float` is reserved for chrome that hovers over content.
+        float: "var(--shadow-float)",
+        lift: "var(--shadow-lift)",
         overlay: "var(--shadow-overlay)",
         none: "none",
       },
@@ -137,6 +146,8 @@ const config: Config = {
         base: "200ms",
         slow: "300ms",
         mode: "600ms",
+        // The house lights coming up are the slowest thing in the product.
+        room: "1600ms",
       },
 
       animation: {

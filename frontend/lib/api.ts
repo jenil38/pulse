@@ -1,5 +1,16 @@
 /** PULSE — typed API client. */
 import { authToken } from "./auth";
+import { DEMO_SYSTEM_ID, activeSystemId } from "./workspace";
+import type {
+  ComponentDraft,
+  ComponentTypeInfo,
+  DependencyDraft,
+  SavedScenario,
+  SystemDetail,
+  // `types.ts` already calls a system's internal lanes SystemSummary; this one
+  // is a whole system in the workspace.
+  SystemSummary as WorkspaceSystem,
+} from "./workspace";
 import type {
   Asset,
   Comparison,
@@ -67,12 +78,30 @@ function classify(status: number): ApiErrorKind {
   return "server";
 }
 
+/**
+ * Analysis routes read whichever system the workspace is pointed at.
+ *
+ * Stamping it here rather than at every call site is what let the topology,
+ * health, simulation and incident screens become multi-system without being
+ * rewritten. Auth and workspace routes are exempt: the first has no system,
+ * and the second names its own in the path.
+ */
+function scoped(path: string): string {
+  if (path.startsWith("/auth") || path.startsWith("/workspace")) return path;
+  // A caller that named a system already means it — the landing page pins the
+  // demo this way so a signed-in visitor's own system never rewrites the story.
+  if (path.includes("system=")) return path;
+  const id = activeSystemId();
+  if (id === DEMO_SYSTEM_ID) return path;
+  return `${path}${path.includes("?") ? "&" : "?"}system=${encodeURIComponent(id)}`;
+}
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const token = authToken();
   let res: Response;
 
   try {
-    res = await fetch(`${BASE}/api${path}`, {
+    res = await fetch(`${BASE}/api${scoped(path)}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
@@ -97,6 +126,8 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(classify(res.status), res.status, detail);
   }
 
+  // 204 from a delete carries no body to parse.
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
@@ -128,11 +159,85 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  register: (name: string, email: string, password: string) =>
+    req<LoginResponse>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    }),
   me: () => req<LoginResponse["user"]>("/auth/me"),
   logout: () => req<{ ok: boolean }>("/auth/logout", { method: "POST" }),
 
+  // --- workspace: the systems a user owns -------------------------------
+  mySystems: () => req<WorkspaceSystem[]>("/workspace/systems"),
+  demoSystem: () => req<WorkspaceSystem>("/workspace/demo"),
+  system: (id: string) => req<SystemDetail>(`/workspace/systems/${id}`),
+  componentTypes: () => req<ComponentTypeInfo[]>("/workspace/component-types"),
+  createSystem: (body: {
+    name: string;
+    description?: string;
+    components: ComponentDraft[];
+    dependencies: DependencyDraft[];
+  }) =>
+    req<SystemDetail>("/workspace/systems", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  saveSystemGraph: (
+    id: string,
+    body: { components: ComponentDraft[]; dependencies: DependencyDraft[] }
+  ) =>
+    req<SystemDetail>(`/workspace/systems/${id}/graph`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  renameSystem: (id: string, body: { name?: string; description?: string }) =>
+    req<SystemDetail>(`/workspace/systems/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  deleteSystem: (id: string) =>
+    req<void>(`/workspace/systems/${id}`, { method: "DELETE" }),
+  validateSystem: (body: {
+    components: ComponentDraft[];
+    dependencies: DependencyDraft[];
+  }) =>
+    req<{ ok: boolean; error?: string; component_count?: number; dependency_count?: number }>(
+      "/workspace/systems/validate",
+      { method: "POST", body: JSON.stringify(body) }
+    ),
+
+  savedScenarios: (id: string) =>
+    req<SavedScenario[]>(`/workspace/systems/${id}/scenarios`),
+  saveScenario: (
+    id: string,
+    body: {
+      name: string;
+      origin: string;
+      failure_type: FailureType;
+      duration_minutes?: number;
+      parameter?: string | null;
+    }
+  ) =>
+    req<SavedScenario>(`/workspace/systems/${id}/scenarios`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  deleteScenario: (id: string, scenarioId: string) =>
+    req<void>(`/workspace/systems/${id}/scenarios/${scenarioId}`, { method: "DELETE" }),
+
   // --- topology ---------------------------------------------------------
   topology: () => req<Topology>("/systems/topology"),
+  /** The demo topology regardless of which system the workspace is on. */
+  demoTopology: () => req<Topology>(`/systems/topology?system=${DEMO_SYSTEM_ID}`),
+  demoSimulate: (body: {
+    origin: string;
+    failure_type: FailureType;
+    duration_minutes?: number;
+  }) =>
+    req<Simulation>(`/simulations?system=${DEMO_SYSTEM_ID}`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   systems: () => req<SystemSummary[]>("/systems"),
   assets: () => req<Asset[]>("/assets"),
   asset: (id: string) => req<Lineage>(`/assets/${id}`),
@@ -180,6 +285,12 @@ export const api = {
   // --- incidents --------------------------------------------------------
   incidents: () => req<Incident[]>("/incidents"),
   incident: (id: string) => req<IncidentDetail>(`/incidents/${id}`),
+  /** Keep a simulation as an incident on the active system. */
+  recordIncident: (body: {
+    origin: string;
+    failure_type: FailureType;
+    duration_minutes?: number;
+  }) => req<Incident>("/incidents", { method: "POST", body: JSON.stringify(body) }),
   acknowledgeIncident: (id: string) =>
     req<Incident>(`/incidents/${id}/acknowledge`, { method: "POST" }),
   resolveIncident: (id: string) =>

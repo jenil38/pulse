@@ -76,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
+    <div className="app-ground flex h-screen overflow-hidden">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[70] focus:rounded focus:border focus:border-border focus:bg-surface focus:px-3 focus:py-2 focus:text-small focus:text-primary focus:shadow-overlay"
@@ -84,8 +84,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      {/* Desktop: persistent sidebar */}
-      {isDesktop && <Sidebar onOpenPalette={openPalette} />}
+      {/* Desktop: persistent sidebar, floating clear of the ground */}
+      {isDesktop && (
+        <div className="relative z-10 h-full shrink-0 p-2 pr-0">
+          <Sidebar onOpenPalette={openPalette} />
+        </div>
+      )}
 
       {/* Below desktop: drawer, rendered over the content */}
       {!isDesktop && navOpen && (
@@ -99,14 +103,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             role="dialog"
             aria-modal="true"
             aria-label="Navigation"
-            className="fixed inset-y-0 left-0 z-50 shadow-overlay"
+            className="fixed inset-y-0 left-0 z-50 p-2"
           >
             <Sidebar onOpenPalette={openPalette} onNavigate={() => setNavOpen(false)} />
           </div>
         </>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
         {!isDesktop && (
           <MobileHeader
             onOpenNav={() => setNavOpen(true)}

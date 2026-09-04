@@ -35,15 +35,38 @@ function code(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 }
 
+/**
+ * The auth scene is the one place with a licence the rest of the app does not
+ * have: it is a lit room, so it needs gradients for its lamps, vignette and
+ * floor, and a panel large enough to carry a 20px radius. Confining that licence
+ * to these files is what stops it leaking back into the product surfaces.
+ */
+const SCENE = /^\/(components\/auth|app\/(login|signup))\//;
+
 describe("no AI-SaaS visual tropes", () => {
-  it("uses no gradients", () => {
-    const bad = FILES.filter((f) => /gradient-to-|bg-gradient|linear-gradient/.test(code(f.src)));
+  it("uses no decorative gradients", () => {
+    // Tailwind's gradient utilities are banned outright — a two-stop colour
+    // wash is the single loudest tell of a generated marketing page.
+    const bad = FILES.filter((f) => /gradient-to-|bg-gradient|\bvia-\[/.test(code(f.src)));
     expect(bad.map((f) => f.path)).toEqual([]);
   });
 
-  it("uses no glassmorphism or heavy blur", () => {
-    // A light backdrop-blur on a sticky header is fine; blur panels are not.
-    const bad = FILES.filter((f) => /backdrop-blur-(md|lg|xl|2xl|3xl)|bg-white\/\d0\s+backdrop/.test(code(f.src)));
+  it("uses raw CSS gradients only as light, in the auth scene", () => {
+    // linear-/radial-gradient survive as lighting and masking primitives, not
+    // as decoration, so they are allowed exactly where the room is built.
+    const bad = FILES.filter(
+      (f) => !SCENE.test(f.path) && /(linear|radial|conic)-gradient/.test(code(f.src))
+    );
+    expect(bad.map((f) => f.path)).toEqual([]);
+  });
+
+  it("routes translucency through the glass material, not ad-hoc blur", () => {
+    // Panels use the `.glass` / `.glass-quiet` classes, which carry the tint,
+    // edge and sheen together. A bare backdrop-blur produces the milky
+    // rectangle that gives glassmorphism its bad name.
+    const bad = FILES.filter((f) =>
+      /backdrop-blur-(md|lg|xl|2xl|3xl)|bg-white\/\d0\s+backdrop/.test(code(f.src))
+    );
     expect(bad.map((f) => f.path)).toEqual([]);
   });
 
@@ -55,9 +78,13 @@ describe("no AI-SaaS visual tropes", () => {
   });
 
   it("uses no oversized border radii", () => {
-    // The ladder tops out at 16px (rounded-xl). rounded-2xl/3xl are the
-    // giveaway of generated SaaS cards.
-    const bad = FILES.filter((f) => /rounded-(2xl|3xl)/.test(code(f.src)));
+    // The product ladder tops out at 16px (rounded-xl); 26px is never right.
+    // rounded-2xl (20px) is allowed only on the auth scene's glass panels,
+    // which are large enough for the corner to read as intended rather than
+    // as the puffy card of a generated SaaS page.
+    const bad = FILES.filter(
+      (f) => /rounded-3xl/.test(code(f.src)) || (!SCENE.test(f.path) && /rounded-2xl/.test(code(f.src)))
+    );
     expect(bad.map((f) => f.path)).toEqual([]);
   });
 

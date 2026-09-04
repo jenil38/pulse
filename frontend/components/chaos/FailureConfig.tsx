@@ -76,7 +76,7 @@ export function FailureConfig({
   return (
     <aside
       data-surface
-      className="flex h-full w-[288px] shrink-0 flex-col border-r border-border bg-canvas"
+      className="flex h-full w-[288px] shrink-0 flex-col border-r border-border bg-subtle"
     >
       <PanelHeader>Configure failure</PanelHeader>
 

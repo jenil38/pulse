@@ -83,7 +83,7 @@ export function MockWindow({
 }) {
   return (
     <>
-      <div className="flex h-9 items-center gap-2 border-b border-border bg-canvas px-3">
+      <div className="flex h-9 items-center gap-2 border-b border-border bg-subtle px-3">
         <span className="text-caption text-tertiary">{title}</span>
         <span className="ml-auto flex gap-1" aria-hidden>
           <span className="h-[6px] w-[6px] rounded-full bg-border-strong" />
@@ -280,12 +280,12 @@ export function Engineering() {
     },
     { label: "Backend", items: ["FastAPI", "Pydantic v2", "SQLAlchemy models", "HMAC session tokens"] },
     { label: "Frontend", items: ["Next.js (App Router)", "TypeScript", "Tailwind CSS", "React Three Fiber"] },
-    { label: "Quality", items: ["48 backend tests", "36 frontend tests", "Typed API client", "GitHub Actions CI"] },
+    { label: "Quality", items: ["91 backend tests", "52 frontend tests", "Typed API client", "GitHub Actions CI"] },
   ];
 
   return (
-    <section className="border-y border-border bg-subtle">
-      <div className="mx-auto max-w-[1120px] px-6 py-20">
+    <section className="px-4 py-10">
+      <div className="glass mx-auto max-w-[1120px] rounded-xl px-6 py-16 md:px-12">
         <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:gap-16">
           <div>
             <p className="text-caption text-tertiary">Engineering</p>
@@ -366,13 +366,14 @@ export function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="mx-auto max-w-[820px] px-6 py-20">
-      <p className="text-caption text-tertiary">Questions</p>
-      <h2 className="pt-3 text-[2rem] font-medium leading-tight tracking-[-0.025em] text-primary">
-        What this is, precisely.
-      </h2>
+    <section className="px-4 py-10">
+      <div className="glass mx-auto max-w-[820px] rounded-xl px-6 py-14 md:px-10">
+        <p className="text-caption text-tertiary">Questions</p>
+        <h2 className="pt-3 text-[2rem] font-medium leading-tight tracking-[-0.025em] text-primary">
+          What this is, precisely.
+        </h2>
 
-      <dl className="pt-10">
+        <dl className="pt-10">
         {qa.map((item, i) => {
           const isOpen = open === i;
           return (
@@ -399,7 +400,8 @@ export function FAQ() {
             </div>
           );
         })}
-      </dl>
+        </dl>
+      </div>
     </section>
   );
 }

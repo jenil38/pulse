@@ -40,7 +40,7 @@ export function MobileHeader({
   return (
     <header
       data-surface
-      className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-canvas px-3"
+      className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-subtle px-3"
     >
       <button
         onClick={onOpenNav}

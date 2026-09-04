@@ -8,8 +8,8 @@ verified server-side, and the session token is a real HMAC-signed, expiring
 token that the API validates on every protected request. What makes it a *demo*
 is deliberate and documented:
 
-  * the user set is a fixed, seeded list — there is no registration
-  * every demo account shares one published password
+  * the three seeded demo accounts share one published password
+  * registered accounts live in a JSON file, not a real user store
   * passwords are salted+hashed with PBKDF2, but the hashes are generated at
     import time from a constant, so nothing here is secret
   * SECRET_KEY defaults to a well-known development value
@@ -31,6 +31,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, EmailStr, Field
 
 from ..core.config import get_settings
+from . import workspace
 
 router = APIRouter()
 settings = get_settings()
@@ -76,6 +77,69 @@ DEMO_USERS: dict[str, DemoUser] = {
 #: Precomputed once — identical for every demo account by design.
 _PASSWORD_HASH = _hash_password(DEMO_PASSWORD)
 
+#: Accounts created through /auth/register.
+#:
+#: Each one gets its own random salt, unlike the seeded demo accounts, and is
+#: written to the workspace file alongside the systems it owns — otherwise a
+#: restart would strand a user's saved systems behind an account that no longer
+#: exists. The salt and hash are persisted; the password never is.
+REGISTERED_USERS: dict[str, DemoUser] = {}
+_REGISTERED_SECRETS: dict[str, tuple[bytes, str]] = {}
+
+#: A cap, so an open registration endpoint cannot be used to exhaust memory.
+MAX_REGISTRATIONS = 200
+
+
+def _hash_with_salt(password: str, salt: bytes) -> str:
+    return hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), salt, _PBKDF2_ROUNDS
+    ).hex()
+
+
+def _initials(name: str) -> str:
+    parts = [p for p in name.split() if p]
+    if not parts:
+        return "?"
+    if len(parts) == 1:
+        return parts[0][:2].upper()
+    return (parts[0][0] + parts[-1][0]).upper()
+
+
+def lookup_user(email: str) -> DemoUser | None:
+    """Resolve an account from either the seeded set or the registered set."""
+    key = email.lower()
+    return DEMO_USERS.get(key) or REGISTERED_USERS.get(key)
+
+
+def _dump_accounts() -> list[dict]:
+    return [
+        {
+            "email": u.email, "name": u.name, "role": u.role,
+            "initials": u.initials, "description": u.description,
+            "salt": base64.b64encode(_REGISTERED_SECRETS[u.email][0]).decode(),
+            "hash": _REGISTERED_SECRETS[u.email][1],
+        }
+        for u in REGISTERED_USERS.values()
+        if u.email in _REGISTERED_SECRETS
+    ]
+
+
+def _load_accounts(rows: list[dict]) -> None:
+    for row in rows:
+        try:
+            email = row["email"].lower()
+            REGISTERED_USERS[email] = DemoUser(
+                email=email, name=row["name"], role=row.get("role", "Operator"),
+                initials=row.get("initials") or _initials(row["name"]),
+                description=row.get("description", ""),
+            )
+            _REGISTERED_SECRETS[email] = (base64.b64decode(row["salt"]), row["hash"])
+        except (KeyError, ValueError, TypeError):
+            continue
+
+
+workspace.register_account_persistence(_dump_accounts, _load_accounts)
+
 
 # --------------------------------------------------------------------------- #
 #  Token handling — HMAC-signed, expiring, verified on every request
@@ -117,7 +181,7 @@ def verify_token(token: str) -> DemoUser | None:
 
     if data.get("exp", 0) < time.time():
         return None
-    return DEMO_USERS.get(data.get("sub", ""))
+    return lookup_user(data.get("sub", ""))
 
 
 # --------------------------------------------------------------------------- #
@@ -126,6 +190,12 @@ def verify_token(token: str) -> DemoUser | None:
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=1)
+
+
+class RegisterRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=60)
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=128)
 
 
 class UserOut(BaseModel):
@@ -153,6 +223,18 @@ class DemoAccountOut(BaseModel):
 # --------------------------------------------------------------------------- #
 #  Dependency
 # --------------------------------------------------------------------------- #
+def optional_user(authorization: str | None = Header(default=None)) -> DemoUser | None:
+    """Resolve the bearer token if one was sent, without demanding it.
+
+    Routes that serve the demo to anonymous visitors *and* a private system to
+    its owner depend on this: the identity decides which systems are reachable,
+    but its absence is not itself an error.
+    """
+    if not authorization or not authorization.lower().startswith("bearer "):
+        return None
+    return verify_token(authorization.split(" ", 1)[1].strip())
+
+
 def current_user(authorization: str | None = Header(default=None)) -> DemoUser:
     """Resolve the bearer token, or 401."""
     if not authorization or not authorization.lower().startswith("bearer "):
@@ -175,14 +257,54 @@ def demo_accounts():
     ]
 
 
+@router.post("/auth/register", response_model=LoginResponse, status_code=201, tags=["auth"])
+def register(req: RegisterRequest):
+    """
+    Create a workspace account and sign straight in.
+
+    The chosen password is salted with fresh random bytes, hashed, and checked
+    on every later sign-in. The account and its hash are written to the
+    workspace file so the systems it owns survive a restart.
+    """
+    email = req.email.lower()
+    if lookup_user(email) is not None:
+        raise HTTPException(409, "An account with that email already exists")
+    if len(REGISTERED_USERS) >= MAX_REGISTRATIONS:
+        raise HTTPException(429, "The demo has reached its account limit")
+
+    name = " ".join(req.name.split())
+    salt = os.urandom(16)
+    _REGISTERED_SECRETS[email] = (salt, _hash_with_salt(req.password, salt))
+    user = DemoUser(
+        email=email,
+        name=name,
+        role="Operator",
+        initials=_initials(name),
+        description="Workspace account.",
+    )
+    REGISTERED_USERS[email] = user
+    workspace.save()
+
+    token, expires = issue_token(email)
+    return LoginResponse(token=token, expires_at=expires, user=UserOut(**user.__dict__))
+
+
 @router.post("/auth/login", response_model=LoginResponse, tags=["auth"])
 def login(req: LoginRequest):
-    user = DEMO_USERS.get(req.email.lower())
-    submitted = _hash_password(req.password)
+    email = req.email.lower()
 
-    # Compare regardless of whether the user exists, so timing doesn't leak
-    # which addresses are valid.
-    ok = hmac.compare_digest(submitted, _PASSWORD_HASH)
+    # Registered accounts carry their own salt; the seeded demo accounts all
+    # share one published password. Both paths do the full hash before
+    # deciding, so timing doesn't leak which addresses exist.
+    secret = _REGISTERED_SECRETS.get(email)
+    if secret is not None:
+        salt, expected = secret
+        ok = hmac.compare_digest(_hash_with_salt(req.password, salt), expected)
+        user = REGISTERED_USERS.get(email)
+    else:
+        ok = hmac.compare_digest(_hash_password(req.password), _PASSWORD_HASH)
+        user = DEMO_USERS.get(email)
+
     if user is None or not ok:
         raise HTTPException(401, "Incorrect email or password")
 

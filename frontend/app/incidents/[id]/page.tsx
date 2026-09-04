@@ -157,7 +157,7 @@ export default function IncidentReplayPage({
           {/* Detail + event feed */}
           <aside
             data-surface
-            className="flex max-h-[45vh] w-full shrink-0 flex-col border-t border-border bg-canvas xl:h-full xl:max-h-none xl:w-[320px] xl:border-l xl:border-t-0"
+            className="flex max-h-[45vh] w-full shrink-0 flex-col border-t border-border bg-subtle xl:h-full xl:max-h-none xl:w-[320px] xl:border-l xl:border-t-0"
           >
             <PanelHeader
               actions={

@@ -97,8 +97,15 @@ def _dependency_depth(graph: DependencyGraph, target: str) -> int:
 
 
 def compute_resilience(graph: DependencyGraph,
-                       recent_incidents: int = 2,
-                       stale_pipelines: int = 1) -> ResilienceScore:
+                       recent_incidents: int = 0,
+                       stale_pipelines: int = 0) -> ResilienceScore:
+    """Score a graph 0-100.
+
+    `recent_incidents` and `stale_pipelines` are the caller's observed history.
+    They default to zero — a graph nobody has broken yet carries no history
+    penalty, and the engine never invents one. `workspace.system_resilience`
+    supplies the real figures for a stored system.
+    """
     crit = _critical_consumers(graph)
     spof_map = find_spofs(graph)
     spof_count = len(spof_map)
@@ -152,7 +159,7 @@ def compute_resilience(graph: DependencyGraph,
         ResilienceComponent("dependency_depth", depth_penalty,
                             f"avg critical dependency depth {avg_depth:.1f}"),
         ResilienceComponent("incident_history", history_penalty,
-                            f"{recent_incidents} recent incidents, {stale_pipelines} stale pipelines (demo)"),
+                            f"{recent_incidents} recent incidents, {stale_pipelines} unresolved"),
         ResilienceComponent("recovery_complexity", recovery_penalty,
                             f"avg {avg_steps:.1f} recovery steps for a critical consumer"),
     ]
