@@ -93,7 +93,7 @@ export function StoryScroll({
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         <div className="mx-auto w-full max-w-[1120px] px-6 pt-16">
           <div className="overflow-hidden rounded-xl border border-border bg-stage">
-            <div className="flex h-9 items-center gap-2 border-b border-border bg-canvas px-3">
+            <div className="flex h-9 items-center gap-2 border-b border-border bg-subtle px-3">
               <span className="text-caption text-tertiary">Nova Commerce</span>
               <span className="text-caption text-quaternary">/ system topology</span>
               <span className="ml-auto flex items-center gap-3">

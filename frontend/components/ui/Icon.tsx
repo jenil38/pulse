@@ -29,7 +29,15 @@ export type IconName =
   | "check"
   | "warning"
   | "filter"
-  | "external";
+  | "external"
+  | "mail"
+  | "lock"
+  | "user"
+  | "sparkle"
+  | "plus"
+  | "trash"
+  | "layers"
+  | "upload";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   // Layered plates — the system map
@@ -139,6 +147,59 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M9 3h4v4" />
       <path d="m13 3-6 6" />
       <path d="M12 9.5V13H3V4h3.5" />
+    </>
+  ),
+  // Envelope — the email field
+  mail: (
+    <>
+      <path d="M1.75 4.25h12.5v7.5H1.75z" />
+      <path d="m1.75 4.75 6.25 4 6.25-4" />
+    </>
+  ),
+  // Shackle and body — the password field
+  lock: (
+    <>
+      <path d="M3.25 7.25h9.5v6.5h-9.5z" />
+      <path d="M5.5 7.25V5a2.5 2.5 0 0 1 5 0v2.25" />
+    </>
+  ),
+  // Head and shoulders — the name field
+  user: (
+    <>
+      <path d="M8 8a2.75 2.75 0 1 0 0-5.5A2.75 2.75 0 0 0 8 8Z" />
+      <path d="M2.75 13.75a5.25 5.25 0 0 1 10.5 0" />
+    </>
+  ),
+  // Four-point star — reserved for the welcome sequence
+  sparkle: <path d="M8 1.5c.6 3.4 2.6 5.4 6 6-3.4.6-5.4 2.6-6 6-.6-3.4-2.6-5.4-6-6 3.4-.6 5.4-2.6 6-6Z" />,
+  // Add a component / dependency in the builder
+  plus: (
+    <>
+      <path d="M8 3.25v9.5" />
+      <path d="M3.25 8h9.5" />
+    </>
+  ),
+  // Remove a row. Never used for anything a person cannot undo by re-adding.
+  trash: (
+    <>
+      <path d="M2.75 4.25h10.5" />
+      <path d="M6 4.25V2.75h4v1.5" />
+      <path d="M4.25 4.25 5 13.25h6l.75-9" />
+    </>
+  ),
+  // The workspace / saved-systems surface
+  layers: (
+    <>
+      <path d="m8 2 5.75 3.25L8 8.5 2.25 5.25 8 2Z" />
+      <path d="m2.25 8.75 5.75 3.25 5.75-3.25" />
+    </>
+  ),
+  // Bring a definition in from a file or the clipboard
+  upload: (
+    <>
+      <path d="M8 10.75V2.5" />
+      <path d="m4.75 5.75 3.25-3.25 3.25 3.25" />
+      <path d="M2.75 10.5v2.75h10.5V10.5" />
     </>
   ),
 };

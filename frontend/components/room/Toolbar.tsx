@@ -5,6 +5,7 @@ import { usePulse } from "@/lib/store";
 import { STATE, scoreBand } from "@/lib/visual";
 import type { HealthState } from "@/lib/types";
 import { SimulatedTag } from "@/components/ui/primitives";
+import { useWorkspace } from "@/lib/workspace";
 
 /**
  * Toolbar — breadcrumb, live health rollup, resilience.
@@ -30,6 +31,7 @@ export function Toolbar({
   const clearSimulation = usePulse((s) => s.clearSimulation);
   const healthCounts = usePulse((s) => s.healthCounts);
   const impactedCount = usePulse((s) => s.impactedCount);
+  const active = useWorkspace((s) => s.active);
 
   // `propagationHops` is subscribed to deliberately: it is what re-runs these
   // selectors as the wave advances, keeping the rollup in step with the map.
@@ -47,7 +49,7 @@ export function Toolbar({
   return (
     <header
       data-surface
-      className="flex h-11 shrink-0 items-center gap-3 border-b border-border bg-canvas px-4"
+      className="flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle px-4"
     >
       <div className="flex min-w-0 items-baseline gap-1.5">
         <h1 className="truncate text-body font-medium text-primary">{title}</h1>
@@ -108,8 +110,13 @@ export function Toolbar({
           </div>
         )}
 
+        {/* "Demo data" is a claim about whose estate this is, so it may only be
+            said of the sample system. A user's own system still shows
+            simulated telemetry, and says exactly that instead. */}
         <div className="hidden xl:block">
-          <SimulatedTag text="Demo data" />
+          <SimulatedTag
+            text={active?.kind === "demo" ? "Demo data" : "Simulated telemetry"}
+          />
         </div>
 
         {children}

@@ -8,6 +8,8 @@ import { STATE, scoreBand } from "@/lib/visual";
 import type { HealthState } from "@/lib/types";
 import { Kbd } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { SystemSwitcher } from "@/components/workspace/SystemSwitcher";
+import { useWorkspace } from "@/lib/workspace";
 import { UserMenu } from "./UserMenu";
 
 /**
@@ -18,6 +20,7 @@ import { UserMenu } from "./UserMenu";
  * the column scans, and each system rolls up its worst health as a single dot.
  */
 const NAV: { href: string; label: string; icon: IconName }[] = [
+  { href: "/systems", label: "Systems", icon: "layers" },
   { href: "/control-room", label: "Control Room", icon: "room" },
   { href: "/scenarios", label: "Scenarios", icon: "filter" },
   { href: "/chaos-lab", label: "Chaos Lab", icon: "chaos" },
@@ -49,6 +52,7 @@ export function Sidebar({
   const stateOf = usePulse((s) => s.stateOf);
   const systemFilter = usePulse((s) => s.systemFilter);
   const setSystemFilter = usePulse((s) => s.setSystemFilter);
+  const active = useWorkspace((s) => s.active);
 
   const systems = useMemo(() => {
     const m = new Map<string, { count: number; worst: HealthState }>();
@@ -69,16 +73,11 @@ export function Sidebar({
     <nav
       aria-label="Primary"
       data-surface
-      className="flex h-full w-[232px] shrink-0 flex-col border-r border-border bg-canvas"
+      className="glass-quiet flex h-full w-[236px] shrink-0 flex-col overflow-hidden rounded-xl shadow-card"
     >
-      {/* Workspace */}
-      <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
-        <span className="grid h-[22px] w-[22px] place-items-center rounded-sm bg-primary text-[11px] font-semibold text-canvas">
-          P
-        </span>
-        <span className="min-w-0 flex-1 truncate text-body font-medium text-primary">
-          {topology?.organization ?? "PULSE"}
-        </span>
+      {/* Which system everything below is about */}
+      <div className="shrink-0">
+        <SystemSwitcher onNavigate={onNavigate} />
       </div>
 
       {/* Command affordance */}
@@ -138,10 +137,10 @@ export function Sidebar({
           })}
         </ul>
 
-        {/* Systems */}
+        {/* Groups within the active system — a filter, not a navigation level */}
         <div className="px-2 pt-5">
           <div className="flex h-6 items-center justify-between px-2.5">
-            <span className="text-micro uppercase text-quaternary">Systems</span>
+            <span className="text-micro uppercase text-quaternary">Groups</span>
             {systemFilter && (
               <button
                 onClick={() => setSystemFilter(null)}
@@ -185,7 +184,7 @@ export function Sidebar({
 
       {/* Resilience — the one number that summarises the workspace */}
       {overview && band && (
-        <div className="shrink-0 border-t border-border px-3 py-3">
+        <div className="shrink-0 border-t border-border-subtle px-3 py-3">
           <div className="flex items-baseline justify-between">
             <span className="text-caption text-tertiary">Resilience</span>
             <span className="text-caption text-quaternary">{band.label}</span>
@@ -212,10 +211,12 @@ export function Sidebar({
         </div>
       )}
 
-      <div className="shrink-0 border-t border-border p-2">
+      <div className="shrink-0 border-t border-border-subtle p-2">
         <UserMenu />
         <p className="px-2 pb-1 pt-1.5 text-caption text-quaternary">
-          Demo workspace · simulated telemetry
+          {active?.kind === "demo"
+            ? "Sample system · simulated telemetry"
+            : "Your workspace · simulated telemetry"}
         </p>
       </div>
     </nav>

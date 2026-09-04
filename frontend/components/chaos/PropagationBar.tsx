@@ -34,7 +34,7 @@ export function PropagationBar({
   return (
     <div
       data-surface
-      className="shrink-0 border-t border-border bg-canvas px-4 py-2.5"
+      className="shrink-0 border-t border-border bg-subtle px-4 py-2.5"
     >
       <div className="flex items-baseline justify-between gap-4">
         <span className="flex items-baseline gap-2">

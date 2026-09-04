@@ -63,20 +63,70 @@ class Position:
     z: float
 
 
+def _lanes(names: list[str]) -> dict[str, tuple[float, float]]:
+    """Depth/height for every lane, including ones this module has never seen.
+
+    The demo's lanes are hand-placed above. A system somebody built themselves
+    names its own, so those are spread evenly around the origin in sorted order
+    — deterministic, and never all stacked on z=0 where parallel pipelines
+    would overlap into one ribbon.
+    """
+    placed = {n: (_SYSTEM_Z[n], _SYSTEM_Y[n]) for n in names if n in _SYSTEM_Z}
+    unknown = [n for n in names if n not in _SYSTEM_Z]
+    if unknown:
+        span = 42.0
+        n = len(unknown)
+        for i, name in enumerate(unknown):
+            t = 0.0 if n == 1 else (i / (n - 1)) * 2.0 - 1.0
+            placed[name] = (round(t * span, 2), round(t * span * 0.48, 2))
+    return placed
+
+
+def _depth_x(graph: DependencyGraph) -> dict[str, float]:
+    """Stage every node by its longest path from a root, on the _STAGE_X grid."""
+    depth: dict[str, int] = {}
+    for nid in graph.topological_order():
+        preds = graph.predecessors(nid)
+        depth[nid] = 0 if not preds else max(depth[p] for p in preds) + 1
+    step = 12.5
+    return {nid: -44.0 + d * step for nid, d in depth.items()}
+
+
+def _stage_x(graph: DependencyGraph) -> dict[str, float]:
+    """Where each component sits along the direction data flows.
+
+    Normally the node's own type says which pipeline stage it is, and that is
+    the more meaningful answer. But a system somebody described themselves may
+    call almost everything a service, and typing every node the same would
+    stack the whole graph into one column.
+
+    So both readings are computed and the one that actually separates the graph
+    wins, with ties going to the declared types. Dependency depth is not a
+    different fact from the stage — it is the same fact, recovered from the
+    edges when the types were not specific enough to carry it.
+    """
+    by_type = {nid: _STAGE_X[graph.node(nid).type] for nid in graph.ids()}
+    try:
+        by_depth = _depth_x(graph)
+    except ValueError:  # a cycle: no depth exists, so the types are all we have
+        return by_type
+    return by_depth if len(set(by_depth.values())) > len(set(by_type.values())) else by_type
+
+
 def compute_layout(graph: DependencyGraph) -> dict[str, Position]:
     """Stable 3D position for every asset."""
     positions: dict[str, Position] = {}
+    stage_x = _stage_x(graph)
 
     # Group by (stage, system) so members of a lane fan out predictably in Y.
-    groups: dict[tuple[NodeType, str], list[str]] = {}
+    groups: dict[tuple[float, str], list[str]] = {}
     for aid in graph.ids():  # sorted -> deterministic
-        a = graph.node(aid)
-        groups.setdefault((a.type, a.system), []).append(aid)
+        groups.setdefault((stage_x[aid], graph.node(aid).system), []).append(aid)
 
-    for (ntype, system), members in groups.items():
-        x = _STAGE_X[ntype]
-        z_base = _SYSTEM_Z.get(system, 0.0)
-        y_base = _SYSTEM_Y.get(system, 0.0)
+    lanes = _lanes(sorted({a.system for a in graph.assets.values()}))
+
+    for (x, system), members in groups.items():
+        z_base, y_base = lanes.get(system, (0.0, 0.0))
         n = len(members)
         for i, aid in enumerate(members):
             # Centre the group: t runs -1..1 across the members of the lane.

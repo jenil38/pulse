@@ -75,7 +75,7 @@ export function OverviewPanel() {
   return (
     <aside
       data-surface
-      className="flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-canvas"
+      className="flex h-full w-[320px] shrink-0 flex-col bg-surface"
     >
       <PanelHeader>Overview</PanelHeader>
 

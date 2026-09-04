@@ -73,7 +73,7 @@ export function Inspector() {
     return (
       <aside
         data-surface
-        className="hidden h-full w-[304px] shrink-0 flex-col border-l border-border bg-canvas xl:flex"
+        className="hidden h-full w-[304px] shrink-0 flex-col bg-surface xl:flex"
       >
         <PanelHeader>Inspector</PanelHeader>
         <EmptyState
@@ -93,7 +93,7 @@ export function Inspector() {
     <aside
       data-surface
       className={[
-        "flex h-full flex-col border-l border-border bg-canvas",
+        "flex h-full flex-col bg-surface",
         // Below xl the inspector would squeeze the main column, so it becomes
         // an overlay drawer instead of a permanent third pane.
         "absolute right-0 top-0 z-30 w-[304px] shadow-overlay",

@@ -52,7 +52,7 @@ export function TopologyStage() {
       {/* Pipeline caption */}
       <div
         data-surface
-        className="flex h-8 shrink-0 items-center gap-2 border-b border-border bg-canvas px-4"
+        className="flex h-8 shrink-0 items-center gap-2 border-b border-border bg-subtle px-4"
       >
         <span className="hidden text-micro uppercase text-quaternary sm:inline">Flow</span>
         <ol className="flex min-w-0 items-center gap-1.5 overflow-hidden">

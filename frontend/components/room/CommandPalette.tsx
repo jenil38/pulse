@@ -241,9 +241,9 @@ export function CommandPalette({
         aria-label="Command palette"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKeyDown}
-        className="w-full max-w-[560px] overflow-hidden rounded-lg border border-border bg-surface shadow-overlay animate-scale-in"
+        className="w-full max-w-[560px] overflow-hidden rounded-xl border border-border bg-surface shadow-overlay animate-scale-in"
       >
-        <div className="flex h-12 items-center gap-2.5 border-b border-border px-4">
+        <div className="flex h-12 items-center gap-2.5 border-b border-border-subtle px-4">
           <Icon name="search" size={16} className="text-quaternary" />
           <input
             ref={inputRef}
@@ -332,7 +332,7 @@ export function CommandPalette({
           })}
         </div>
 
-        <div className="flex h-9 items-center gap-3 border-t border-border px-4">
+        <div className="flex h-9 items-center gap-3 border-t border-border-subtle px-4">
           <span className="flex items-center gap-1 text-caption text-quaternary">
             <Kbd>↑</Kbd>
             <Kbd>↓</Kbd> navigate

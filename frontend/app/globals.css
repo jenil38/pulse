@@ -6,19 +6,25 @@
  * PULSE design tokens.
  *
  * Colours are raw RGB triplets so Tailwind can apply opacity modifiers
- * (`bg-surface/60`). The entire environment switches by setting
- * `data-mode="chaos"` on <html> — one attribute, no re-render, and the
- * transition animates because every surface transitions background-color.
+ * (bg-surface/60). The environment switches by setting data-mode="chaos"
+ * on <html> — one attribute, no re-render.
  *
- * Deliberately absent: grain, haze, glow, glass, gradient borders.
+ * Three scopes exist:
+ *   :root                 the product, light
+ *   [data-mode="chaos"]   the product, simulation environment
+ *   [data-scene="auth"]   the sign-in room — deliberately unlit, mode-agnostic
  */
 
 :root {
-  /* --- surfaces (4 steps) ------------------------------------------- */
-  --canvas: 251 251 252;
+  /* --- surfaces (4 steps) -------------------------------------------
+   * canvas is the ground the panels float on, so it sits a clear step below
+   * surface rather than a hair below it — without that gap the panels read as
+   * hairline boxes rather than as objects with air under them.
+   */
+  --canvas: 236 238 244;
   --surface: 255 255 255;
-  --subtle: 245 246 249;
-  --muted: 234 237 242;
+  --subtle: 244 245 248;
+  --muted: 233 236 241;
 
   /* --- borders ------------------------------------------------------- */
   --border-subtle: 234 236 240;
@@ -61,19 +67,43 @@
   --stale-border: 225 228 233;
   --stale-bg: 246 247 249;
 
-  /* --- elevation: nearly invisible ----------------------------------- */
+  /*
+   * --- glass ---------------------------------------------------------
+   * Translucency is a *material*, defined once here, never improvised at
+   * the call site. The .glass class below is the only way to spend it.
+   */
+  --glass: 255 255 255;
+  --glass-alpha: 0.72;
+  --glass-edge: 16 24 40;
+  --glass-edge-alpha: 0.09;
+  --glass-sheen: 255 255 255;
+  --glass-sheen-alpha: 0.7;
+  --glass-blur: 20px;
+
+  /* --- elevation ------------------------------------------------------
+   * raised and card stay nearly invisible; float is the one that lifts a
+   * panel off the page, and is reserved for floating chrome.
+   */
   --shadow-raised:
     0 1px 2px rgb(16 24 40 / 0.06),
     0 1px 1px rgb(16 24 40 / 0.04);
   --shadow-card:
     0 1px 3px rgb(16 24 40 / 0.07),
     0 4px 12px -2px rgb(16 24 40 / 0.06);
+  --shadow-float:
+    0 1px 2px rgb(16 24 40 / 0.05),
+    0 8px 20px -6px rgb(16 24 40 / 0.12),
+    0 24px 48px -16px rgb(16 24 40 / 0.14);
+  --shadow-lift:
+    0 2px 4px rgb(16 24 40 / 0.06),
+    0 12px 28px -8px rgb(16 24 40 / 0.16),
+    0 32px 64px -20px rgb(16 24 40 / 0.18);
   --shadow-overlay:
     0 16px 40px -8px rgb(16 24 40 / 0.16),
     0 4px 12px -2px rgb(16 24 40 / 0.08);
 
   /* --- topology (consumed by WebGL) ---------------------------------- */
-  --stage: 247 248 251;
+  --stage: 246 247 250;
   --edge: 189 196 208;
   --node: 51 59 72;
 }
@@ -126,13 +156,94 @@
   --stale-border: 45 52 60;
   --stale-bg: 26 30 35;
 
+  --glass: 24 27 32;
+  --glass-alpha: 0.68;
+  --glass-edge: 255 255 255;
+  --glass-edge-alpha: 0.1;
+  --glass-sheen: 255 255 255;
+  --glass-sheen-alpha: 0.08;
+
   --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.45);
   --shadow-card: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px -4px rgb(0 0 0 / 0.35);
+  --shadow-float: 0 2px 6px rgb(0 0 0 / 0.5), 0 12px 32px -8px rgb(0 0 0 / 0.55);
+  --shadow-lift: 0 4px 10px rgb(0 0 0 / 0.5), 0 20px 48px -12px rgb(0 0 0 / 0.6);
   --shadow-overlay: 0 20px 48px -8px rgb(0 0 0 / 0.6), 0 4px 12px rgb(0 0 0 / 0.4);
 
   --stage: 8 10 13;
   --edge: 58 67 79;
   --node: 186 196 209;
+}
+
+/*
+ * THE AUTH ROOM.
+ *
+ * Sign-in and sign-up happen with the house lights down: the room is near
+ * black and the only light in it comes from the form itself. This scope wins
+ * over both modes on purpose — the room's lighting is the point, and it must
+ * not depend on which environment the visitor last left the product in.
+ *
+ * data-lights="up" raises the room after a successful sign-in, which is what
+ * the cinematic welcome rides on.
+ */
+:root[data-scene="auth"] {
+  /* Lights fully out: the ground is black, not "very dark blue". Anything with
+   * a hue in it reads as ambient light, which is exactly what this room must
+   * not have — the fields are the only light source. */
+  --canvas: 0 0 0;
+  --surface: 10 10 11;
+  --subtle: 16 16 18;
+  --muted: 26 26 29;
+
+  --border-subtle: 22 22 24;
+  --border: 34 34 38;
+  --border-strong: 56 56 62;
+
+  --text-primary: 245 246 249;
+  --text-secondary: 176 183 194;
+  --text-tertiary: 124 132 144;
+  --text-quaternary: 92 99 111;
+
+  --accent: 108 152 255;
+  --accent-hover: 137 175 255;
+  --accent-active: 86 130 236;
+  --accent-subtle: 20 29 50;
+  --accent-border: 45 65 110;
+  --accent-text: 150 184 255;
+  --on-accent: 6 10 18;
+
+  --healthy: 63 209 160;
+  --healthy-border: 27 74 60;
+  --healthy-bg: 14 34 28;
+
+  --failed: 255 107 91;
+  --failed-border: 92 42 36;
+  --failed-bg: 42 20 17;
+
+  /* The form's own panel is barely a panel — just enough edge to hold the
+   * fields together. It must not glow; the fields do that. */
+  --glass: 12 12 14;
+  --glass-alpha: 0.5;
+  --glass-edge: 255 255 255;
+  --glass-edge-alpha: 0.05;
+  --glass-sheen: 255 255 255;
+  --glass-sheen-alpha: 0.05;
+  --glass-blur: 24px;
+
+  --shadow-float: 0 2px 8px rgb(0 0 0 / 0.6), 0 24px 60px -12px rgb(0 0 0 / 0.7);
+  --shadow-overlay: 0 32px 80px -16px rgb(0 0 0 / 0.8);
+
+  /* Room brightness — 0 while the lights are down, 1 once they come up. */
+  --room: 0;
+}
+
+:root[data-scene="auth"][data-lights="up"] {
+  --room: 1;
+  --canvas: 9 11 14;
+  --surface: 15 17 21;
+  --glass: 22 25 31;
+  --glass-alpha: 0.55;
+  --glass-edge-alpha: 0.09;
+  --text-secondary: 196 203 213;
 }
 
 @layer base {
@@ -156,6 +267,11 @@
       background-color 600ms cubic-bezier(0.2, 0, 0, 1),
       border-color 600ms cubic-bezier(0.2, 0, 0, 1),
       color 600ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* Raising the house lights is slower than a mode flip, and should feel it. */
+  :root[data-scene="auth"] body {
+    transition: background-color 1600ms cubic-bezier(0.2, 0, 0, 1);
   }
 
   ::selection {
@@ -197,10 +313,266 @@
   }
 }
 
+@layer components {
+  /*
+   * GLASS — the floating-chrome material.
+   *
+   * One definition, two weights. Panels that float above content use it;
+   * panels that are part of the page structure do not. The ::before is a
+   * top-edge sheen: real glass catches light on its upper lip, and without it
+   * a translucent panel reads as a flat opacity mistake rather than a material.
+   */
+  .glass {
+    position: relative;
+    background-color: rgb(var(--glass) / var(--glass-alpha));
+    /* Standard property only: writing the -webkit- alias by hand made the
+      * minifier collapse the pair down to the prefixed one, which Chrome does
+      * not support — so the glass lost its blur everywhere. */
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
+    box-shadow: var(--shadow-float);
+  }
+
+  .glass-quiet {
+    position: relative;
+    background-color: rgb(var(--glass) / calc(var(--glass-alpha) * 0.9));
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.6)) saturate(150%);
+    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
+  }
+
+  .glass::before,
+  .glass-quiet::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    border-radius: inherit;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--glass-sheen) / var(--glass-sheen-alpha)),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  /*
+   * LIGHT FIELD — an input that is its own light source.
+   *
+   * Used only in the auth room, where a field must read as the one lit object
+   * in a dark space. Focus does three things at once: tightens the rim, throws
+   * a halo onto the surrounding darkness, and lifts the inner surface — the way
+   * a real object behaves when a light is aimed at it.
+   */
+  /*
+   * LIGHT FIELD — in a black room these are the only light source, so they
+   * carry a resting glow rather than earning one on focus. Focus deepens it;
+   * it never starts from nothing.
+   */
+  .light-field {
+    position: relative;
+    background-color: rgb(var(--surface) / 0.9);
+    border: 1px solid rgb(var(--border-strong));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.06),
+      0 0 0 1px rgb(var(--accent) / 0.1),
+      0 0 22px -8px rgb(var(--accent) / 0.3),
+      0 0 48px -14px rgb(var(--accent) / 0.18);
+    transition:
+      border-color 240ms cubic-bezier(0.2, 0, 0, 1),
+      box-shadow 320ms cubic-bezier(0.2, 0, 0, 1),
+      background-color 240ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .light-field:hover {
+    border-color: rgb(var(--accent) / 0.4);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.07),
+      0 0 0 1px rgb(var(--accent) / 0.18),
+      0 0 26px -7px rgb(var(--accent) / 0.4),
+      0 0 60px -14px rgb(var(--accent) / 0.24);
+  }
+
+  .light-field:focus-within {
+    background-color: rgb(var(--surface) / 0.95);
+    border-color: rgb(var(--accent) / 0.65);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 0 0 1px rgb(var(--accent) / 0.35),
+      0 0 28px -6px rgb(var(--accent) / 0.5),
+      0 0 72px -12px rgb(var(--accent) / 0.35);
+  }
+
+  .light-field:focus-within .field-glyph {
+    color: rgb(var(--accent-text));
+  }
+
+  .light-field[data-invalid="true"] {
+    border-color: rgb(var(--failed) / 0.7);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.04),
+      0 0 24px -8px rgb(var(--failed) / 0.55);
+  }
+
+  /* An input inside a light field owns no chrome of its own. */
+  .light-field input {
+    background-color: transparent;
+    border: 0;
+    outline: 0;
+    width: 100%;
+    color: inherit;
+  }
+  .light-field input:focus-visible {
+    outline: 0;
+  }
+  .light-field input:-webkit-autofill {
+    -webkit-text-fill-color: rgb(var(--text-primary));
+    -webkit-box-shadow: 0 0 0 1000px rgb(var(--surface)) inset;
+    caret-color: rgb(var(--text-primary));
+  }
+
+  /*
+   * ROOM LIGHT — the soft pools of light in the auth scene.
+   * Their opacity is driven by --room, so raising the house lights is one
+   * attribute change on <html> and every light in the room responds together.
+   */
+  .room-light {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(72px);
+    pointer-events: none;
+    transition: opacity 1600ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /*
+   * APP GROUND — the surface the product's panels sit on.
+   *
+   * The chrome used to be edge-to-edge regions separated by hairlines. Floating
+   * the panels instead gives the app a depth order that reads at a glance: the
+   * ground is context, the panels are where the work happens.
+   *
+   * The wash is what makes translucency worth spending — glass over a flat fill
+   * is indistinguishable from paint. It is deliberately near the threshold of
+   * visibility: enough to give the panel edges something to sit against, not
+   * enough to become a background people notice.
+   */
+  .app-ground {
+    position: relative;
+    /* Isolating lets the wash sit at z-index -1: above the ground colour, below
+     * every child, without each page having to lift its content out of the way. */
+    isolation: isolate;
+    background-color: rgb(var(--canvas));
+  }
+  .app-ground::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(64% 52% at 10% -4%, rgb(var(--accent) / 0.07), transparent 72%),
+      radial-gradient(58% 48% at 104% 104%, rgb(var(--recovering) / 0.06), transparent 74%);
+  }
+
+  /*
+   * PANEL — a region lifted off the ground.
+   *
+   * Applied to whatever a route renders directly inside <main>, so every
+   * surface in the product is framed the same way without each page having to
+   * restate it. Below the breakpoint the panels flatten back into full-bleed
+   * regions: floating chrome costs margin, and small screens cannot spare it.
+   */
+  .app-ground main > * {
+    background-color: rgb(var(--surface));
+  }
+
+  @media (min-width: 768px) {
+    .app-ground main {
+      padding: 8px;
+      gap: 8px;
+    }
+    .app-ground main > * {
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgb(var(--border-subtle));
+      box-shadow: var(--shadow-card);
+    }
+  }
+}
+
 @layer utilities {
   /* Numbers that get compared must not jitter. */
   .tnum {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Content that rises into place as the lights come up. */
+  .rise {
+    animation: rise 700ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .lift-in {
+    animation: liftIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* A light passing across a headline — used once, on the welcome name. */
+  .sweep {
+    background-image: linear-gradient(
+      100deg,
+      rgb(var(--text-primary)) 32%,
+      rgb(var(--accent-text)) 48%,
+      rgb(var(--text-primary)) 64%
+    );
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sweep 2400ms cubic-bezier(0.4, 0, 0.2, 1) 360ms both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes liftIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes sweep {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+
+/* The room dissolving into the product at the end of the welcome. */
+@keyframes curtain {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.06);
   }
 }
 

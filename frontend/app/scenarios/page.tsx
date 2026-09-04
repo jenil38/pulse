@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { usePulse } from "@/lib/store";
+import { useWorkspace } from "@/lib/workspace";
 import { useAsync } from "@/hooks/useAsync";
 import type { Scenario, Simulation } from "@/lib/types";
 import { AppShell } from "@/components/room/AppShell";
@@ -16,10 +17,10 @@ import { Badge, EmptyState } from "@/components/ui/primitives";
 /**
  * Scenario library.
  *
- * IMPORTANT / honesty: the backend exposes GET /api/scenarios and
- * POST /api/scenarios/{id}/run. There is no create or save endpoint, so this
- * surface offers read and run ONLY, and says so. It does not pretend users can
- * author scenarios — the Chaos Lab is where arbitrary failures are configured.
+ * Two different things answer here, and the page says which it is showing. The
+ * demo ships a curated, read-only catalogue. A system the user built lists the
+ * scenarios they saved from the Chaos Lab, and those they can delete — the
+ * library is theirs, so it starts empty rather than pretending otherwise.
  */
 const MODE_NOTE: Record<string, string> = {
   SOURCE_OUTAGE: "Starves everything downstream of fresh data.",
@@ -40,6 +41,10 @@ export default function ScenariosPage() {
   const setSimulation = usePulse((s) => s.setSimulation);
   const select = usePulse((s) => s.select);
 
+  const active = useWorkspace((s) => s.active);
+  const loadWorkspace = useWorkspace((s) => s.load);
+  const isDemo = active?.kind !== "user";
+
   const scenarios = useAsync<Scenario[]>(() => api.scenarios(), []);
   const [runningId, setRunningId] = useState<string | null>(null);
   const [runError, setRunError] = useState<unknown>(null);
@@ -47,7 +52,14 @@ export default function ScenariosPage() {
 
   useEffect(() => {
     loadTopology();
-  }, [loadTopology]);
+    loadWorkspace();
+  }, [loadTopology, loadWorkspace]);
+
+  const remove = async (s: Scenario) => {
+    if (!active || active.kind === "demo") return;
+    await api.deleteScenario(active.id, s.id);
+    scenarios.reload();
+  };
 
   const run = async (s: Scenario) => {
     setRunningId(s.id);
@@ -83,15 +95,18 @@ export default function ScenariosPage() {
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[920px] px-4 py-6 md:px-8 md:py-8">
             <header>
-              <h1 className="text-title-lg text-primary">Scenario library</h1>
+              <h1 className="text-title-lg text-primary">
+                {isDemo ? "Scenario library" : "Saved scenarios"}
+              </h1>
               <p className="max-w-prose pt-1.5 text-small leading-relaxed text-secondary">
-                Predefined failure scenarios with deterministic, reproducible impact.
-                Running one computes its blast radius and loads it into the topology.
+                {isDemo
+                  ? "Failure scenarios that ship with the sample system, each with a deterministic, reproducible impact. Running one computes its blast radius and loads it into the topology."
+                  : `Failure configurations you kept against ${active?.name ?? "this system"}. Running one recomputes its blast radius from the current dependency graph.`}
               </p>
               <p className="max-w-prose pt-2 text-caption leading-relaxed text-quaternary">
-                These scenarios ship with PULSE and are read-only — the API exposes
-                list and run, not create. To configure an arbitrary failure against
-                any asset, use the{" "}
+                {isDemo
+                  ? "The sample library is read-only. To configure an arbitrary failure, or to save one against a system of your own, use the "
+                  : "Configure a failure and keep it from the "}
                 <button
                   onClick={() => router.push("/chaos-lab")}
                   className="text-accent underline-offset-2 hover:underline"
@@ -169,8 +184,12 @@ export default function ScenariosPage() {
                 isEmpty={(d) => d.length === 0}
                 empty={
                   <EmptyState
-                    title="No scenarios available"
-                    hint="The API returned an empty scenario library."
+                    title={isDemo ? "No scenarios available" : "No saved scenarios yet"}
+                    hint={
+                      isDemo
+                        ? "The API returned an empty scenario library."
+                        : "Run a failure in the Chaos Lab and save it here to compare how this system behaves under stress."
+                    }
                   />
                 }
               >
@@ -199,22 +218,33 @@ export default function ScenariosPage() {
                           </dl>
                         </div>
 
-                        <Button
-                          size="sm"
-                          onClick={() => run(s)}
-                          disabled={runningId !== null}
-                          className="shrink-0"
-                        >
-                          {runningId === s.id ? (
-                            <>
-                              <Spinner size={13} /> Running…
-                            </>
-                          ) : (
-                            <>
-                              <Icon name="play" size={12} /> Run
-                            </>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => run(s)}
+                            disabled={runningId !== null}
+                          >
+                            {runningId === s.id ? (
+                              <>
+                                <Spinner size={13} /> Running…
+                              </>
+                            ) : (
+                              <>
+                                <Icon name="play" size={12} /> Run
+                              </>
+                            )}
+                          </Button>
+                          {!isDemo && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => remove(s)}
+                              aria-label={`Delete ${s.name}`}
+                            >
+                              <Icon name="trash" size={13} />
+                            </Button>
                           )}
-                        </Button>
+                        </div>
                       </li>
                     ))}
                   </ul>

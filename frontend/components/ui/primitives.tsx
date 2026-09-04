@@ -302,7 +302,7 @@ export function Th({
     <th
       scope="col"
       style={width ? { width } : undefined}
-      className={`sticky top-0 z-10 border-b border-border bg-canvas/95 px-3.5 py-2.5 text-micro font-medium uppercase text-quaternary backdrop-blur-sm ${
+      className={`sticky top-0 z-10 border-b border-border bg-subtle/95 px-3.5 py-2.5 text-micro font-medium uppercase text-quaternary backdrop-blur-sm ${
         align === "right" ? "text-right" : "text-left"
       } ${className}`}
     >

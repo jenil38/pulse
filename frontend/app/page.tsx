@@ -40,18 +40,21 @@ export default function Landing() {
   const [sim, setSim] = useState<Simulation | null>(null);
 
   useEffect(() => {
-    api.topology().then(setTopology).catch(() => setTopology(null));
+    // Always the demo: the story below is written about Nova Commerce's own
+    // assets, so a signed-in visitor's system must not be substituted into it.
+    api.demoTopology().then(setTopology).catch(() => setTopology(null));
     api
-      .simulate({ origin: STORY_ORIGIN, failure_type: "SOURCE_OUTAGE", duration_minutes: 30 })
+      .demoSimulate({ origin: STORY_ORIGIN, failure_type: "SOURCE_OUTAGE", duration_minutes: 30 })
       .then(setSim)
       .catch(() => setSim(null));
   }, []);
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="app-ground min-h-screen">
       {/* Nav */}
-      <header className="sticky top-0 z-20 border-b border-border bg-canvas/90 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-[1120px] items-center gap-3 px-6">
+      {/* Nav floats clear of the top edge rather than ruling a line across it */}
+      <header className="sticky top-0 z-20 px-4 pt-4">
+        <div className="glass mx-auto flex h-14 max-w-[1120px] items-center gap-3 rounded-pill px-5">
           <span className="grid h-5 w-5 place-items-center rounded-xs bg-primary text-[10px] font-semibold text-canvas">
             P
           </span>
@@ -60,9 +63,14 @@ export default function Landing() {
             Data Resilience Digital Twin
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <Link href="/control-room">
+            <Link href="/login?demo=1">
+              <Button size="sm" variant="ghost">
+                Explore demo
+              </Button>
+            </Link>
+            <Link href="/signup">
               <Button size="sm" variant="primary">
-                Open Control Room
+                Build your system
               </Button>
             </Link>
           </div>
@@ -79,25 +87,29 @@ export default function Landing() {
           See failure before it spreads.
         </h1>
         <p className="max-w-[54ch] pt-5 text-body leading-relaxed text-secondary md:text-base">
-          PULSE models your data platform as a dependency graph, then lets you
-          break it on purpose — computing exactly which tables go stale, which
-          dashboards become untrustworthy, and which teams find out the hard way.
+          Model your architecture as a dependency graph, then break it on
+          purpose — PULSE computes exactly what degrades next, in what order it
+          comes back, and who is working from numbers they should not trust.
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-7">
-          <Link href="/control-room">
+          <Link href="/signup">
             <Button size="lg" variant="primary" trailing={<Icon name="arrowRight" size={14} />}>
-              Open Control Room
+              Build your system
             </Button>
           </Link>
-          <Link href="/chaos-lab">
+          <Link href="/login?demo=1">
             <Button size="lg" icon={<Icon name="chaos" size={14} />}>
-              Run a simulation
+              Explore the demo
             </Button>
           </Link>
           <span className="hidden items-center gap-1.5 pl-2 text-caption text-quaternary sm:flex">
             <Kbd>⌘K</Kbd> for commands
           </span>
         </div>
+        <p className="max-w-[54ch] pt-4 text-caption text-quaternary">
+          You describe the system — by hand or as JSON. PULSE does not connect
+          to your cloud account and discovers nothing on its own.
+        </p>
       </section>
 
       {/* Scale of the modelled system — real numbers, quietly presented */}
@@ -254,22 +266,22 @@ export default function Landing() {
       <FAQ />
 
       {/* Close */}
-      <section className="mx-auto max-w-[1120px] px-6 py-24">
-        <div className="border-t border-border pt-10">
+      <section className="px-4 py-20">
+        <div className="glass mx-auto max-w-[1120px] rounded-xl px-6 py-14 md:px-12">
           <h2 className="max-w-[16ch] text-[2rem] font-medium leading-tight tracking-[-0.025em] text-primary">
             Map. Break. Understand. Recover.
           </h2>
           <p className="max-w-[52ch] pt-3 text-body text-secondary">
-            Break your data system before reality does.
+            Break your system before reality does.
           </p>
           <div className="flex flex-wrap gap-3 pt-6">
-            <Link href="/control-room">
+            <Link href="/signup">
               <Button size="lg" variant="primary">
-                Open Control Room
+                Build your system
               </Button>
             </Link>
-            <Link href="/compare">
-              <Button size="lg">Compare scenarios</Button>
+            <Link href="/login?demo=1">
+              <Button size="lg">Explore the demo</Button>
             </Link>
           </div>
         </div>

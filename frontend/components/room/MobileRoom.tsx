@@ -83,9 +83,9 @@ export function MobileRoom() {
   const band = overview ? scoreBand(overview.resilience_score) : null;
 
   return (
-    <div className="min-h-screen bg-canvas pb-10">
+    <div className="min-h-screen bg-surface pb-10">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-canvas/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur-sm">
         <div className="flex h-12 items-center gap-2 px-4">
           <span className="grid h-5 w-5 place-items-center rounded-xs bg-primary text-[10px] font-semibold text-canvas">
             P

@@ -10,6 +10,8 @@ import os
 import sys
 import time
 
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from fastapi.testclient import TestClient  # noqa: E402
@@ -17,6 +19,9 @@ from fastapi.testclient import TestClient  # noqa: E402
 from backend.app.api.auth import (  # noqa: E402
     DEMO_PASSWORD,
     DEMO_USERS,
+    MAX_REGISTRATIONS,
+    REGISTERED_USERS,
+    _REGISTERED_SECRETS,
     issue_token,
     verify_token,
 )
@@ -111,3 +116,79 @@ def test_logout_is_honest_about_being_stateless():
     r = client.post("/api/auth/logout")
     assert r.status_code == 200
     assert "client-side" in r.json()["detail"]
+
+
+# --- Registration -----------------------------------------------------------
+#
+# Accounts created at runtime are not durable, but they are not fake either:
+# each gets its own random salt, and the shared demo password must not open one.
+
+
+@pytest.fixture(autouse=True)
+def _clean_registry():
+    """Registrations live in module state, so each test starts from empty."""
+    REGISTERED_USERS.clear()
+    _REGISTERED_SECRETS.clear()
+    yield
+    REGISTERED_USERS.clear()
+    _REGISTERED_SECRETS.clear()
+
+
+def _register(name="Ada Lovelace", email="ada@example.com", password="a-strong-passphrase"):
+    return client.post(
+        "/api/auth/register", json={"name": name, "email": email, "password": password}
+    )
+
+
+def test_registration_returns_a_usable_session():
+    r = _register()
+    assert r.status_code == 201
+    body = r.json()
+    assert body["user"]["name"] == "Ada Lovelace"
+    assert body["user"]["initials"] == "AL"
+    assert body["expires_at"] > time.time()
+
+    me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {body['token']}"})
+    assert me.status_code == 200
+    assert me.json()["email"] == "ada@example.com"
+
+
+def test_registered_account_can_sign_in_again():
+    _register()
+    assert _login("ada@example.com", "a-strong-passphrase").status_code == 200
+
+
+def test_registered_account_keeps_its_own_password():
+    # The seeded accounts share a printed password; a created one must not.
+    _register()
+    assert _login("ada@example.com", DEMO_PASSWORD).status_code == 401
+
+
+def test_email_is_matched_case_insensitively():
+    _register(email="Ada@Example.com")
+    assert _login("ada@example.com", "a-strong-passphrase").status_code == 200
+
+
+def test_duplicate_registration_is_rejected():
+    _register()
+    assert _register().status_code == 409
+    # Including against the seeded accounts, which must not be shadowed.
+    assert _register(email="analyst@pulse.demo").status_code == 409
+
+
+def test_weak_or_missing_details_are_validation_errors():
+    assert _register(password="short").status_code == 422
+    assert _register(name="A").status_code == 422
+    assert _register(email="not-an-email").status_code == 422
+
+
+def test_registration_is_capped():
+    for i in range(MAX_REGISTRATIONS):
+        REGISTERED_USERS[f"filler{i}@example.com"] = DEMO_USERS["analyst@pulse.demo"]
+    assert _register().status_code == 429
+
+
+def test_registered_accounts_are_not_published_as_demo_accounts():
+    _register()
+    emails = {a["email"] for a in client.get("/api/auth/demo-accounts").json()}
+    assert "ada@example.com" not in emails

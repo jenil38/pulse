@@ -97,7 +97,7 @@ export default function IncidentsPage() {
             empty={
               <EmptyState
                 title={filter === "all" ? "No incidents" : `No ${filter} incidents`}
-                hint="Run a simulation in the Chaos Lab to see how a failure would propagate."
+                hint="Run a failure in the Chaos Lab and record it here to keep its replay and recovery plan."
               />
             }
           >

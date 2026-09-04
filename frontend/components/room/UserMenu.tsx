@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useWorkspace } from "@/lib/workspace";
 
 /**
  * Signed-in identity and the sign-out action.
@@ -14,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 export function UserMenu({ compact }: { compact?: boolean }) {
   const user = useAuth((s) => s.user);
   const signOut = useAuth((s) => s.signOut);
+  const resetWorkspace = useWorkspace((s) => s.reset);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -48,6 +50,9 @@ export function UserMenu({ compact }: { compact?: boolean }) {
       /* the local session is cleared regardless */
     }
     signOut();
+    // The remembered system belongs to the account that just left; the next
+    // person to sign in on this browser must not inherit it.
+    resetWorkspace();
     router.replace("/login");
   };
 

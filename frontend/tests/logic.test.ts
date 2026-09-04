@@ -9,6 +9,12 @@
 import { describe, expect, it } from "vitest";
 
 import { resolveAsyncState } from "../components/ui/AsyncState";
+import {
+  MAX_LABELS,
+  labelSize,
+  placeWithoutOverlap,
+  type ScreenLabel,
+} from "../lib/labels";
 
 import {
   CRITICALITY_RANK,
@@ -179,5 +185,72 @@ describe("async state precedence", () => {
     expect(
       resolveAsyncState({ loading: false, hasError: true, hasData: true, isEmpty: false })
     ).toBe("content");
+  });
+});
+
+/**
+ * Topology label placement.
+ *
+ * Two nodes far apart in the graph can land on top of each other on screen.
+ * Overlapping labels are worse than a missing one: the text sits between two
+ * nodes and reads as belonging to whichever the eye picks. So the placement
+ * pass drops the less important label rather than drawing both.
+ */
+describe("topology label placement", () => {
+  const box = (id: string, x: number, y: number, hw = 30, hh = 10): ScreenLabel => ({
+    id,
+    x,
+    y,
+    hw,
+    hh,
+  });
+
+  it("keeps labels that do not touch", () => {
+    const kept = placeWithoutOverlap([box("a", 0, 0), box("b", 200, 0), box("c", 0, 200)]);
+    expect([...kept].sort()).toEqual(["a", "b", "c"]);
+  });
+
+  it("drops the later label when two would overlap", () => {
+    // 10px apart horizontally with 30px half-widths — they collide.
+    const kept = placeWithoutOverlap([box("first", 0, 0), box("second", 10, 0)]);
+    expect(kept.has("first")).toBe(true);
+    expect(kept.has("second")).toBe(false);
+  });
+
+  it("resolves a collision in favour of the more important label", () => {
+    // The caller sorts by importance, so order IS priority. The same pair in
+    // the opposite order must keep the other one — nothing else decides it.
+    expect(placeWithoutOverlap([box("selected", 0, 0), box("healthy", 8, 0)])).toEqual(
+      new Set(["selected"])
+    );
+    expect(placeWithoutOverlap([box("healthy", 8, 0), box("selected", 0, 0)])).toEqual(
+      new Set(["healthy"])
+    );
+  });
+
+  it("separates labels that clash on one axis but clear on the other", () => {
+    // Same x, far apart in y: no collision, because the boxes are rectangles
+    // and not radii.
+    const kept = placeWithoutOverlap([box("top", 0, 0), box("bottom", 0, 100)]);
+    expect(kept.size).toBe(2);
+  });
+
+  it("never draws more than the cap, however sparse the graph", () => {
+    // 60 labels spread far enough apart that none of them collide.
+    const many = Array.from({ length: 60 }, (_, i) => box(`n${i}`, i * 500, 0));
+    expect(placeWithoutOverlap(many).size).toBe(MAX_LABELS);
+  });
+
+  it("asks for more room for a longer name", () => {
+    const [short] = labelSize("DB");
+    const [long] = labelSize("Marketing Attribution Model");
+    expect(long).toBeGreaterThan(short);
+  });
+
+  it("clamps the width a very long name can claim", () => {
+    // Otherwise one pathological name would suppress every label near it.
+    const [capped] = labelSize("x".repeat(200));
+    const [atLimit] = labelSize("x".repeat(28));
+    expect(capped).toBe(atLimit);
   });
 });

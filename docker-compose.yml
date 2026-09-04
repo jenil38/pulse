@@ -5,6 +5,9 @@
 # not been executed end-to-end. The app runs without Docker (see README).
 
 services:
+  # Provisioned for the SQLAlchemy path described in backend/app/db/models.py.
+  # The API does NOT connect to it today — persistence is the JSON store below.
+  # It is kept so the migration has somewhere to land, not because it is used.
   db:
     image: postgres:16-alpine
     environment:
@@ -28,6 +31,14 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://pulse:pulse@db:5432/pulse
       CORS_ORIGINS: http://localhost:3000
+      # Where user systems and accounts are written. On a named volume, so
+      # rebuilding the image does not wipe what people created.
+      PULSE_DATA_DIR: /data
+      # Override this. The default is a published development value, and any
+      # session token signed with it can be forged by anyone reading the source.
+      SECRET_KEY: ${SECRET_KEY:-pulse-dev-secret-not-for-production}
+    volumes:
+      - pulse_workspace:/data
     ports:
       - "8000:8000"
     depends_on:
@@ -47,3 +58,4 @@ services:
 
 volumes:
   pulse_pgdata:
+  pulse_workspace:
