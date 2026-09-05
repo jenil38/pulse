@@ -468,6 +468,8 @@ def get_incident(incident_id: str, sys: StoredSystem = Depends(resolve_system)):
 
 @router.post("/incidents/{incident_id}/acknowledge", response_model=IncidentOut, tags=["incidents"])
 def acknowledge_incident(incident_id: str, sys: StoredSystem = Depends(resolve_system)):
+    if sys.read_only:
+        raise HTTPException(403, "The demo system is read-only.")
     inc = _require_incident(sys, incident_id)
     if inc.status == "resolved":
         raise HTTPException(409, "incident already resolved")
@@ -480,6 +482,8 @@ def acknowledge_incident(incident_id: str, sys: StoredSystem = Depends(resolve_s
 
 @router.post("/incidents/{incident_id}/resolve", response_model=IncidentOut, tags=["incidents"])
 def resolve_incident(incident_id: str, sys: StoredSystem = Depends(resolve_system)):
+    if sys.read_only:
+        raise HTTPException(403, "The demo system is read-only.")
     inc = _require_incident(sys, incident_id)
     inc.status = "resolved"
     inc.acknowledged_at = inc.acknowledged_at or datetime.now(timezone.utc)

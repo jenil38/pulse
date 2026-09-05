@@ -187,22 +187,31 @@ def test_incident_list_and_detail():
 
 
 def test_incident_acknowledge_then_resolve():
-    open_incs = [i for i in client.get("/api/incidents").json() if i["status"] == "open"]
-    assert open_incs, "expected a seeded open incident"
-    iid = open_incs[0]["id"]
+    # Demo incidents are read-only; run the lifecycle on a user system.
+    from backend.tests.test_workspace import new_account, create_acme
 
-    ack = client.post(f"/api/incidents/{iid}/acknowledge")
+    headers = new_account()
+    sid = create_acme(headers)["id"]
+    keys = {c["name"]: c["key"] for c in
+            client.get(f"/api/workspace/systems/{sid}", headers=headers).json()["components"]}
+    iid = client.post(f"/api/incidents?system={sid}", headers=headers, json={
+        "origin": keys["Payment DB"], "failure_type": "SOURCE_OUTAGE",
+    }).json()["id"]
+
+    ack = client.post(f"/api/incidents/{iid}/acknowledge?system={sid}", headers=headers)
     assert ack.status_code == 200
     assert ack.json()["status"] == "acknowledged"
     assert ack.json()["acknowledged_at"]
 
-    res = client.post(f"/api/incidents/{iid}/resolve")
+    res = client.post(f"/api/incidents/{iid}/resolve?system={sid}", headers=headers)
     assert res.status_code == 200
     assert res.json()["status"] == "resolved"
     assert res.json()["resolved_at"]
 
     # acknowledging a resolved incident is a conflict
-    assert client.post(f"/api/incidents/{iid}/acknowledge").status_code == 409
+    assert client.post(
+        f"/api/incidents/{iid}/acknowledge?system={sid}", headers=headers
+    ).status_code == 409
 
 
 def test_incident_recovery_plan_from_topology():
@@ -215,8 +224,14 @@ def test_incident_recovery_plan_from_topology():
 
 
 def test_unknown_incident_404():
+    from backend.tests.test_workspace import new_account, create_acme
+
     assert client.get("/api/incidents/inc_nope").status_code == 404
-    assert client.post("/api/incidents/inc_nope/resolve").status_code == 404
+    headers = new_account()
+    sid = create_acme(headers)["id"]
+    assert client.post(
+        f"/api/incidents/inc_nope/resolve?system={sid}", headers=headers
+    ).status_code == 404
 
 
 def test_failure_types_catalogue():
