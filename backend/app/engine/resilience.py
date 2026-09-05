@@ -9,9 +9,9 @@ Penalty components (max deduction):
   spof            (30)  single points of failure feeding critical consumers
   concentration   (20)  how much of the critical surface depends on one source
   redundancy      (10)  critical consumers that have no alternate source path
-  depth           (15)  long dependency chains to critical consumers are fragile
+  depth           (10)  long dependency chains to critical consumers are fragile
   history         (15)  recent incidents (demo/simulated history)
-  recovery        (10)  average recovery complexity for critical consumers
+  recovery        (8)   average recovery complexity for critical consumers
 
 A single point of failure (SPOF) is defined precisely: a node N is a SPOF if
 there is a CRITICAL/HIGH consumer C such that every path from any source to C

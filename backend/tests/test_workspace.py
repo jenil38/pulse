@@ -605,3 +605,47 @@ def test_an_account_survives_a_reload_and_still_owns_its_systems():
     assert client.get("/api/auth/me", headers=headers).status_code == 200
     listed = client.get("/api/workspace/systems", headers=headers).json()
     assert [s["id"] for s in listed] == [sid]
+
+
+# --------------------------------------------------------------------------- #
+#  Demo incidents are read-only
+# --------------------------------------------------------------------------- #
+def test_demo_incidents_cannot_be_acknowledged():
+    """A visitor must not be able to mutate the shared demo's incident state."""
+    r = client.post("/api/incidents/inc_2043/acknowledge")
+    assert r.status_code == 403
+    assert "read-only" in r.json()["detail"].lower()
+
+
+def test_demo_incidents_cannot_be_resolved():
+    r = client.post("/api/incidents/inc_2043/resolve")
+    assert r.status_code == 403
+    assert "read-only" in r.json()["detail"].lower()
+
+
+def test_demo_incidents_are_read_only_even_when_authenticated():
+    """Signing in does not grant write access to the demo."""
+    headers = new_account()
+    ack = client.post("/api/incidents/inc_2043/acknowledge", headers=headers)
+    res = client.post("/api/incidents/inc_2043/resolve", headers=headers)
+    assert ack.status_code == 403
+    assert res.status_code == 403
+
+
+def test_user_incidents_can_still_be_acknowledged_and_resolved():
+    """The read-only guard must not affect a user's own system."""
+    headers = new_account()
+    sid = create_acme(headers)["id"]
+    keys = {c["name"]: c["key"] for c in
+            client.get(f"/api/workspace/systems/{sid}", headers=headers).json()["components"]}
+    iid = client.post(f"/api/incidents?system={sid}", headers=headers, json={
+        "origin": keys["Payment DB"], "failure_type": "SOURCE_OUTAGE",
+    }).json()["id"]
+
+    ack = client.post(f"/api/incidents/{iid}/acknowledge?system={sid}", headers=headers)
+    assert ack.status_code == 200
+    assert ack.json()["status"] == "acknowledged"
+
+    res = client.post(f"/api/incidents/{iid}/resolve?system={sid}", headers=headers)
+    assert res.status_code == 200
+    assert res.json()["status"] == "resolved"

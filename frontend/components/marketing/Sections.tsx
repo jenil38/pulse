@@ -280,7 +280,7 @@ export function Engineering() {
     },
     { label: "Backend", items: ["FastAPI", "Pydantic v2", "SQLAlchemy models", "HMAC session tokens"] },
     { label: "Frontend", items: ["Next.js (App Router)", "TypeScript", "Tailwind CSS", "React Three Fiber"] },
-    { label: "Quality", items: ["91 backend tests", "52 frontend tests", "Typed API client", "GitHub Actions CI"] },
+    { label: "Quality", items: ["95 backend tests", "52 frontend tests", "Typed API client", "GitHub Actions CI"] },
   ];
 
   return (
