@@ -5,6 +5,11 @@
 > **See failure before it spreads.**
 > Break your data system before reality does.
 
+**▶ [Live demo](https://pulse-jenilparmar18-8300s-projects.vercel.app/systems)** — sign in with the
+seeded demo account `analyst@pulse.demo` / `pulse-demo` (no sign-up needed), then open the bundled
+**NOVA COMMERCE** system and break something. Everything you see is a deterministic simulation over
+a topology you describe; PULSE connects to no real infrastructure.
+
 PULSE is an **interactive infrastructure resilience and failure-propagation
 simulation prototype**. It models a data platform as a dependency graph, then
 lets you break it on purpose and computes — deterministically — exactly what

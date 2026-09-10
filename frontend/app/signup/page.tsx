@@ -7,6 +7,7 @@ import { api, ApiError, type LoginResponse } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { clearActiveSystem } from "@/lib/workspace";
 import { AuthRoom } from "@/components/auth/AuthRoom";
+import { FieldOrbit, type OrbitStatus } from "@/components/auth/FieldOrbit";
 import {
   LightField,
   RevealToggle,
@@ -40,8 +41,11 @@ function SignupInner() {
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState({ name: false, email: false, password: false });
   const [session, setSession] = useState<LoginResponse | null>(null);
+  const [orbit, setOrbit] = useState<OrbitStatus | null>(null);
 
   const emailRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const granted = useRef<LoginResponse | null>(null);
   // A new account owns nothing yet, so it lands in the workspace rather than in
   // a Control Room that would have to show somebody else's estate.
   const next = params.get("next") || "/systems";
@@ -49,8 +53,8 @@ function SignupInner() {
   useEffect(() => hydrate(), [hydrate]);
   useEffect(() => clearActiveSystem(), []);
   useEffect(() => {
-    if (user && !session) router.replace(next);
-  }, [user, session, router, next]);
+    if (user && !session && !orbit) router.replace(next);
+  }, [user, session, orbit, router, next]);
 
   const nameValid = name.trim().length >= 2;
   const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
@@ -64,12 +68,15 @@ function SignupInner() {
 
     setSubmitting(true);
     setError(null);
+    setOrbit("working");
     try {
       const res = await api.register(name.trim(), email.trim(), password);
       signIn(res, true);
       router.prefetch(next);
-      setSession(res);
+      granted.current = res;
+      setOrbit("success");
     } catch (err) {
+      setOrbit("failed");
       setError(
         err instanceof ApiError && err.kind === "validation"
           ? err.message || "That email is already registered."
@@ -84,12 +91,13 @@ function SignupInner() {
   };
 
   const welcoming = !!session;
+  const away = welcoming || orbit === "working" || orbit === "success";
 
   return (
     <AuthRoom
       lights={welcoming ? "up" : "down"}
       footer={
-        !welcoming && (
+        !away && (
           <p className="text-caption text-quaternary">
             Nova Commerce is a fictional company · all telemetry is simulated
           </p>
@@ -99,11 +107,11 @@ function SignupInner() {
       <div
         className="w-full max-w-[420px] transition-all duration-700 ease-standard"
         style={
-          welcoming
+          away
             ? { opacity: 0, transform: "scale(0.97)", filter: "blur(8px)" }
             : undefined
         }
-        aria-hidden={welcoming}
+        aria-hidden={away}
       >
         <div className="lift-in">
           <h1 className="text-title-lg text-primary">Create your workspace</h1>
@@ -112,6 +120,7 @@ function SignupInner() {
           </p>
 
           <form
+            ref={formRef}
             onSubmit={submit}
             noValidate
             className="glass mt-7 space-y-5 rounded-2xl p-6 sm:p-7"
@@ -182,6 +191,8 @@ function SignupInner() {
             <button
               type="submit"
               disabled={!canSubmit}
+              data-orb=""
+              data-orb-icon="arrowRight"
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-accent text-body font-medium text-accent-fg transition-all duration-base ease-standard hover:bg-accent-hover disabled:pointer-events-none disabled:opacity-40"
             >
               {submitting ? (
@@ -214,6 +225,16 @@ function SignupInner() {
           </p>
         </div>
       </div>
+
+      {orbit && !session && (
+        <FieldOrbit
+          formRef={formRef}
+          status={orbit}
+          caption="Creating your workspace"
+          onDone={() => setSession(granted.current)}
+          onDismissed={() => setOrbit(null)}
+        />
+      )}
 
       {session && (
         <WelcomeCurtain

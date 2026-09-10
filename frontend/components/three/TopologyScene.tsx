@@ -62,6 +62,11 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
   const target = useRef(GRAPH_CENTER.clone());
   const controls = useRef<any>(null);
   const userMoved = useRef(false);
+  // Whether the establishing shot has been composed at least once. A view
+  // that arrives already focused — a deep link into the Chaos Lab, or an
+  // asset opened straight from the palette — would otherwise never be framed
+  // at all, because focusing freezes the camera position by design.
+  const framed = useRef(false);
 
   // Bounds of the whole graph, from the server-supplied positions.
   const bounds = useMemo(() => {
@@ -84,10 +89,16 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
     userMoved.current = false;
   }, [mode]);
 
+  // A different graph is a different shot.
+  useEffect(() => {
+    framed.current = false;
+  }, [bounds]);
+
   // "Reset view" from the stage chrome hands framing back to the rig.
   useEffect(() => {
     const onReset = () => {
       userMoved.current = false;
+      framed.current = false;
     };
     window.addEventListener("pulse:reset-view", onReset);
     return () => window.removeEventListener("pulse:reset-view", onReset);
@@ -109,11 +120,14 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
       : center;
     target.current.lerp(want, reduced ? 1 : 0.05);
 
-    if (!userMoved.current && !focusId) {
+    if (!userMoved.current && (!focusId || !framed.current)) {
       const aspect = Math.max(size.width / Math.max(size.height, 1), 0.5);
       const dist = fitDistance(bounds, view.fov, aspect, view.margin);
       const desired = center.clone().add(view.dir.clone().multiplyScalar(dist));
       cam.position.lerp(desired, reduced ? 1 : 0.07);
+      // Close enough counts as composed, so a focused view stops being
+      // re-framed the moment the establishing shot has actually happened.
+      if (cam.position.distanceTo(desired) < dist * 0.03) framed.current = true;
     }
 
     if (controls.current) {
@@ -153,14 +167,22 @@ function SceneContents({ mode }: { mode: string }) {
   const topology = usePulse((s) => s.topology);
   const selectedId = usePulse((s) => s.selectedId);
   const hoveredId = usePulse((s) => s.hoveredId);
+  const aimedId = usePulse((s) => s.aimedId);
   const tracedIds = usePulse((s) => s.tracedIds);
   const systemFilter = usePulse((s) => s.systemFilter);
   const select = usePulse((s) => s.select);
   const hover = usePulse((s) => s.hover);
   const stateOf = usePulse((s) => s.stateOf);
+  const isRevealed = usePulse((s) => s.isRevealed);
   const simulation = usePulse((s) => s.simulation);
   const propagationHops = usePulse((s) => s.propagationHops);
+  const recoveryStep = usePulse((s) => s.recoveryStep);
   const reduced = useReducedMotion();
+
+  // Subscribed deliberately — the clock fields are what re-render the map as
+  // the failure travels and the recovery plan walks back through it.
+  void propagationHops;
+  void recoveryStep;
 
   const assets = topology?.assets ?? [];
   const dependencies = topology?.dependencies ?? [];
@@ -187,16 +209,16 @@ function SceneContents({ mode }: { mode: string }) {
         tracedIds={tracedIds}
         reducedMotion={reduced}
         modeKey={mode}
+        subdued={!!simulation}
       />
 
       {assets.map((a) => {
         const st = stateOf(a.id);
         const inTrace = tracedIds.has(a.id);
-        const inSim =
-          !simulation ||
-          simulation.blast_radius.nodes.some(
-            (n) => n.id === a.id && n.hops <= propagationHops
-          );
+        // The store owns this: it is the same answer the impact ledger and the
+        // consequence feed read, and during recovery it opens back up so a
+        // healing node is not left dimmed out of the picture.
+        const inSim = isRevealed(a.id);
         const filtered = !!systemFilter && a.system !== systemFilter;
         const dimmed = (hasTrace && !inTrace) || (!!simulation && !inSim) || filtered;
         return (
@@ -208,6 +230,9 @@ function SceneContents({ mode }: { mode: string }) {
             hovered={hoveredId === a.id}
             dimmed={dimmed}
             traced={inTrace}
+            // Before a run this is the component being aimed at; during one it
+            // is where the failure was injected. Same mark, same meaning.
+            origin={(simulation ? simulation.origin : aimedId) === a.id}
             onSelect={select}
             onHover={hover}
             reducedMotion={reduced}
@@ -257,6 +282,7 @@ function GroundPlane({ mode }: { mode: string }) {
 /** Hover label — a real UI tooltip in the design system, drawn in 3D space. */
 function HoverLabel() {
   const hoveredId = usePulse((s) => s.hoveredId);
+  const aimedId = usePulse((s) => s.aimedId);
   const assetById = usePulse((s) => s.assetById);
   const stateOf = usePulse((s) => s.stateOf);
   const asset = hoveredId ? assetById(hoveredId) : undefined;

@@ -27,21 +27,24 @@ export function Toolbar({
   const overview = usePulse((s) => s.overview);
   const systemFilter = usePulse((s) => s.systemFilter);
   const simulation = usePulse((s) => s.simulation);
+  const simPhase = usePulse((s) => s.simPhase);
   const propagationHops = usePulse((s) => s.propagationHops);
+  const recoveryStep = usePulse((s) => s.recoveryStep);
   const clearSimulation = usePulse((s) => s.clearSimulation);
   const healthCounts = usePulse((s) => s.healthCounts);
   const impactedCount = usePulse((s) => s.impactedCount);
   const active = useWorkspace((s) => s.active);
 
-  // `propagationHops` is subscribed to deliberately: it is what re-runs these
-  // selectors as the wave advances, keeping the rollup in step with the map.
+  // The clock fields are subscribed to deliberately: they are what re-run
+  // these selectors as the run advances, keeping the rollup in step with the
+  // map — while the failure spreads, and again while it is being repaired.
   const counts = useMemo(
     () => healthCounts(),
-    [healthCounts, simulation, propagationHops]
+    [healthCounts, simulation, propagationHops, recoveryStep]
   );
   const impacted = useMemo(
     () => impactedCount(),
-    [impactedCount, simulation, propagationHops]
+    [impactedCount, simulation, propagationHops, recoveryStep]
   );
   const band = overview ? scoreBand(overview.resilience_score) : null;
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
@@ -61,12 +64,19 @@ export function Toolbar({
         )}
       </div>
 
-      {/* Active-simulation indicator: states plainly that counts are simulated */}
+      {/* Active-simulation indicator: label follows the SimPhase so it never
+          says "Simulating" while recovery is running or the incident is closed. */}
       {simulation && (
         <span className="flex shrink-0 items-center gap-1.5 rounded border border-failed-border bg-failed-bg px-2 py-[3px]">
           <span className="h-[6px] w-[6px] rounded-full bg-failed" aria-hidden />
           <span className="hidden text-caption text-failed sm:inline">
-            Simulating · {impacted} impacted
+            {simPhase === "restored"
+              ? "Restored"
+              : simPhase === "recovering"
+                ? `Recovering · ${impacted} remaining`
+                : simPhase === "settled"
+                  ? `Blast radius · ${impacted} affected`
+                  : `Simulating · ${impacted} impacted`}
           </span>
           <button
             onClick={clearSimulation}

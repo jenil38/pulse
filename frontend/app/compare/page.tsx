@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { usePulse } from "@/lib/store";
 import type { Asset, Comparison, FailureType, FailureTypeInfo } from "@/lib/types";
@@ -18,14 +19,22 @@ import { ErrorState, Spinner } from "@/components/ui/AsyncState";
  * quantitative question and the answer is a table plus one clear verdict. Bars
  * are proportional rules, not charts — they exist only to make the ratio
  * legible at a glance.
+ *
+ * Side A can be named in the URL, which is how a finished Chaos Lab run hands
+ * its failure straight over to be weighed against another one.
  */
-export default function ComparePage() {
+function CompareInner() {
   const loadTopology = usePulse((s) => s.loadTopology);
   const topology = usePulse((s) => s.topology);
+  const params = useSearchParams();
 
   const [types, setTypes] = useState<FailureTypeInfo[]>([]);
-  const [aOrigin, setAOrigin] = useState("src_payments");
-  const [aFail, setAFail] = useState<FailureType>("SOURCE_OUTAGE");
+  const [aOrigin, setAOrigin] = useState(
+    () => params.get("a_origin") || "src_payments"
+  );
+  const [aFail, setAFail] = useState<FailureType>(
+    () => (params.get("a_failure") as FailureType) || "SOURCE_OUTAGE"
+  );
   const [bOrigin, setBOrigin] = useState("src_orders");
   const [bFail, setBFail] = useState<FailureType>("SOURCE_OUTAGE");
   const [result, setResult] = useState<Comparison | null>(null);
@@ -275,5 +284,19 @@ function Legend({ className, label }: { className: string; label: string }) {
       <span className={`h-1.5 w-4 rounded-full ${className}`} aria-hidden />
       <span className="text-caption text-tertiary">{label}</span>
     </span>
+  );
+}
+
+export default function ComparePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-canvas">
+          <span className="text-small text-quaternary">Loading comparison…</span>
+        </div>
+      }
+    >
+      <CompareInner />
+    </Suspense>
   );
 }

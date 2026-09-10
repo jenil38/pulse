@@ -29,3 +29,12 @@ frontend/CLAUDE.md
 
 # Workspace store (user-created systems and accounts)
 backend/data/
+
+# Local AI-assistant / editor config (never publish)
+.claude/
+**/.claude/
+AGENTS.md
+CLAUDE.md
+
+# Internal build + handoff notes (kept locally, not published)
+RESUME.md

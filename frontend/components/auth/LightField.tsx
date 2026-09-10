@@ -61,6 +61,8 @@ export function LightField({
 
       <div
         data-invalid={error ? "true" : undefined}
+        data-orb=""
+        data-orb-icon={icon}
         className="light-field flex h-12 items-center gap-3 rounded-xl px-4"
       >
         <Icon

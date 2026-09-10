@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { DEMO_SYSTEM_ID, setActiveSystem } from "@/lib/workspace";
 import { useAsync } from "@/hooks/useAsync";
 import { AuthRoom } from "@/components/auth/AuthRoom";
+import { FieldOrbit, type OrbitStatus } from "@/components/auth/FieldOrbit";
 import { LightField, RevealToggle } from "@/components/auth/LightField";
 import { WelcomeCurtain } from "@/components/auth/WelcomeCurtain";
 import { Icon } from "@/components/ui/Icon";
@@ -21,9 +22,9 @@ import { Spinner } from "@/components/ui/AsyncState";
  * are still verified server-side against a signed, expiring token, so the flow
  * is real even though the seeded user store is fixed.
  *
- * The session is stored the moment the API answers — the welcome that plays
- * afterwards is presentation, never a gate, so the destination is already warm
- * behind it.
+ * The session is stored the moment the API answers — the ring and the welcome
+ * that play afterwards are presentation, never a gate, so the destination is
+ * already warm behind them.
  */
 function LoginInner() {
   const router = useRouter();
@@ -40,8 +41,11 @@ function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const [session, setSession] = useState<LoginResponse | null>(null);
+  const [orbit, setOrbit] = useState<OrbitStatus | null>(null);
 
   const passwordRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const granted = useRef<LoginResponse | null>(null);
   const accounts = useAsync<DemoAccount[]>(() => api.demoAccounts(), []);
 
   // "Explore the demo" from the landing page arrives as ?demo=1. It pins the
@@ -56,10 +60,11 @@ function LoginInner() {
   }, [exploringDemo]);
 
   // An already-signed-in visitor is sent straight through; only a sign-in that
-  // happens *here* earns the welcome.
+  // happens *here* earns the ring and the welcome. `orbit` holds the redirect
+  // off for the seconds between the API answering and the welcome mounting.
   useEffect(() => {
-    if (user && !session) router.replace(next);
-  }, [user, session, router, next]);
+    if (user && !session && !orbit) router.replace(next);
+  }, [user, session, orbit, router, next]);
 
   const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
   const showEmailError = touched && !emailValid;
@@ -71,12 +76,15 @@ function LoginInner() {
 
     setSubmitting(true);
     setError(null);
+    setOrbit("working");
     try {
       const res = await api.login(email, password);
       signIn(res, remember);
       router.prefetch(next);
-      setSession(res);
+      granted.current = res;
+      setOrbit("success");
     } catch (err) {
+      setOrbit("failed");
       setError(
         err instanceof ApiError && err.kind === "auth"
           ? "Incorrect email or password."
@@ -100,12 +108,15 @@ function LoginInner() {
   };
 
   const welcoming = !!session;
+  // The form stands down while the ring holds the screen, and comes back if
+  // the sign-in failed — the discs fly home over the same beat.
+  const away = welcoming || orbit === "working" || orbit === "success";
 
   return (
     <AuthRoom
       lights={welcoming ? "up" : "down"}
       footer={
-        !welcoming && (
+        !away && (
           <p className="text-caption text-quaternary">
             Nova Commerce is a fictional company · all telemetry is simulated
           </p>
@@ -115,11 +126,11 @@ function LoginInner() {
       <div
         className="w-full max-w-[420px] transition-all duration-700 ease-standard"
         style={
-          welcoming
+          away
             ? { opacity: 0, transform: "scale(0.97)", filter: "blur(8px)" }
             : undefined
         }
-        aria-hidden={welcoming}
+        aria-hidden={away}
       >
         <div className="lift-in">
           <h1 className="text-title-lg text-primary">Sign in</h1>
@@ -130,6 +141,7 @@ function LoginInner() {
           </p>
 
           <form
+            ref={formRef}
             onSubmit={submit}
             noValidate
             className="glass mt-7 space-y-5 rounded-2xl p-6 sm:p-7"
@@ -191,6 +203,8 @@ function LoginInner() {
             <button
               type="submit"
               disabled={submitting || !password}
+              data-orb=""
+              data-orb-icon="arrowRight"
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-accent text-body font-medium text-accent-fg transition-all duration-base ease-standard hover:bg-accent-hover disabled:pointer-events-none disabled:opacity-40"
             >
               {submitting ? (
@@ -254,6 +268,16 @@ function LoginInner() {
           </p>
         </div>
       </div>
+
+      {orbit && !session && (
+        <FieldOrbit
+          formRef={formRef}
+          status={orbit}
+          caption="Signing you in"
+          onDone={() => setSession(granted.current)}
+          onDismissed={() => setOrbit(null)}
+        />
+      )}
 
       {session && (
         <WelcomeCurtain

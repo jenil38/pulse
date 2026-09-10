@@ -29,6 +29,7 @@ export function FlowEdges({
   tracedIds,
   reducedMotion,
   modeKey,
+  subdued = false,
   maxParticles = 900,
 }: {
   assets: Asset[];
@@ -37,6 +38,8 @@ export function FlowEdges({
   tracedIds: Set<string>;
   reducedMotion: boolean;
   modeKey: string;
+  /** True while a failure is being played, which the wiring must not outshout. */
+  subdued?: boolean;
   maxParticles?: number;
 }) {
   const posById = useMemo(() => {
@@ -176,10 +179,18 @@ export function FlowEdges({
   return (
     <group>
       <lineSegments ref={lineRef} geometry={lineGeom}>
+        {/*
+          * While a run is playing the wiring steps back.
+          *
+          * At full strength the edges are the brightest thing on a dark stage
+          * and they compete with the states travelling along them. Held at
+          * roughly half, the dependency structure stays legible — you can
+          * still trace what feeds what — without arguing with the story.
+          */}
         <lineBasicMaterial
           color={palette.edge}
           transparent
-          opacity={1}
+          opacity={subdued ? 0.55 : 1}
           depthWrite={false}
         />
       </lineSegments>

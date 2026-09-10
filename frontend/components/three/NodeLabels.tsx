@@ -51,6 +51,8 @@ interface Candidate {
   asset: Asset;
   state: HealthState;
   priority: number;
+  /** False for a node the running simulation has not touched. */
+  inRun: boolean;
   anchor: THREE.Vector3;
 }
 
@@ -119,12 +121,23 @@ export function NodeLabels() {
   const topology = usePulse((s) => s.topology);
   const selectedId = usePulse((s) => s.selectedId);
   const hoveredId = usePulse((s) => s.hoveredId);
+  const aimedId = usePulse((s) => s.aimedId);
   const stateOf = usePulse((s) => s.stateOf);
+  const isRevealed = usePulse((s) => s.isRevealed);
   const simulation = usePulse((s) => s.simulation);
   const systemFilter = usePulse((s) => s.systemFilter);
+  // Subscribed so the labels re-resolve as the run moves. Without these the
+  // candidate list is computed once and then frozen, and a node that has been
+  // repaired keeps wearing the chip of the state it used to be in.
+  const propagationHops = usePulse((s) => s.propagationHops);
+  const recoveryStep = usePulse((s) => s.recoveryStep);
+
+  // The component a failure is aimed at, or the one it was injected into.
+  // It is the subject of the whole screen and always carries its name.
+  const markedId = simulation ? simulation.origin : aimedId;
 
   const shouldLabel = (a: Asset, state: HealthState): boolean => {
-    if (a.id === selectedId) return true;
+    if (a.id === selectedId || a.id === markedId) return true;
     // Hover already gets its own richer tooltip.
     if (a.id === hoveredId) return false;
     if (systemFilter && a.system !== systemFilter) return false;
@@ -142,29 +155,55 @@ export function NodeLabels() {
       if (!a.position) continue;
       const state = stateOf(a.id);
       if (!shouldLabel(a, state)) continue;
+      // A demo system carries a few assets that were already unhealthy before
+      // anyone injected anything. They are real and stay labelled, but while a
+      // failure is travelling they are not the story, so they lose every
+      // collision to a node the run has actually reached.
+      const inRun = !simulation || isRevealed(a.id);
       out.push({
         asset: a,
         state,
-        priority: a.id === selectedId ? 0 : STATE_PRIORITY[state],
+        inRun,
+        priority:
+          a.id === selectedId || a.id === markedId
+            ? 0
+            : inRun
+              ? STATE_PRIORITY[state]
+              : 9,
         anchor: new THREE.Vector3(a.position.x, a.position.y + 4.2, a.position.z),
       });
     }
     return out.sort((p, q) => p.priority - q.priority || p.asset.id.localeCompare(q.asset.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topology, selectedId, hoveredId, systemFilter, simulation, stateOf]);
+  }, [
+    topology,
+    selectedId,
+    hoveredId,
+    markedId,
+    systemFilter,
+    simulation,
+    stateOf,
+    isRevealed,
+    propagationHops,
+    recoveryStep,
+  ]);
 
   const visible = useVisibleLabels(candidates);
 
   return (
     <>
-      {candidates.map(({ asset: a, state }) => {
-        const selected = a.id === selectedId;
+      {candidates.map(({ asset: a, state, inRun }) => {
+        // A marked node is drawn like a selected one while it is still
+        // healthy — that is the "you are about to break this" reading. Once
+        // it is failing, its state chip says more, so the state wins.
+        const selected = a.id === selectedId || a.id === markedId;
         // The selection is drawn immediately rather than waiting for the next
         // culling pass, so clicking a node never has a frame of latency before
         // its name appears. It sorts first, so a pass would keep it anyway.
         if (visible && !visible.has(a.id) && !selected) return null;
 
         const notable = state !== "HEALTHY";
+        const asSelected = selected && !notable;
 
         return (
           <Html
@@ -173,14 +212,20 @@ export function NodeLabels() {
             center
             distanceFactor={DISTANCE_FACTOR}
             zIndexRange={[5, 0]}
-            style={{ pointerEvents: "none" }}
+            style={{ pointerEvents: "none", opacity: inRun ? 1 : 0.45 }}
           >
             <span
               className={[
                 "whitespace-nowrap rounded-xs px-1.5 py-[2px] text-[11px] leading-none",
-                selected
+                asSelected
                   ? "bg-primary font-medium text-canvas"
-                  : notable
+                  : // A state chip is a claim that this node is part of what
+                    // you are watching. An asset that was already degraded
+                    // before the run began is real, and keeps its label, but
+                    // it takes the neutral treatment so it cannot be mistaken
+                    // for the failure travelling. Its own colour on the map
+                    // still says what state it is in.
+                    notable && inRun
                     ? `${STATE[state].chip} border`
                     : "bg-canvas/85 text-tertiary",
               ].join(" ")}

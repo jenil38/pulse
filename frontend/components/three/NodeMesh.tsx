@@ -22,6 +22,7 @@ export function NodeMesh({
   hovered,
   dimmed,
   traced,
+  origin,
   onSelect,
   onHover,
   reducedMotion,
@@ -33,6 +34,8 @@ export function NodeMesh({
   hovered: boolean;
   dimmed: boolean;
   traced: boolean;
+  /** The component the running failure was injected into. */
+  origin: boolean;
   onSelect: (id: string) => void;
   onHover: (id: string | null) => void;
   reducedMotion: boolean;
@@ -72,7 +75,11 @@ export function NodeMesh({
 
     target.set(stateHex);
     mat.current.color.lerp(target, reducedMotion ? 1 : 0.12);
-    mat.current.opacity += ((dimmed ? 0.2 : 1) - mat.current.opacity) * 0.12;
+    // A dimmed node still has to be READABLE. At a fifth of its value the
+    // untouched half of the graph disappeared into the dark ground and the
+    // dependency structure went with it, which defeats the point of dimming:
+    // recede, not vanish.
+    mat.current.opacity += ((dimmed ? 0.34 : 1) - mat.current.opacity) * 0.12;
 
     // A failed node settles very slightly in SCALE — physical, not an alarm.
     let scale = baseScale;
@@ -158,6 +165,27 @@ export function NodeMesh({
             color={colors.ring}
             transparent
             opacity={0.35}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
+
+      {/*
+       * The origin keeps a mark for the whole run.
+       *
+       * Without it the injected component becomes one red node among a dozen
+       * as the wave spreads, and the question "where did this start?" stops
+       * having an answer on the map. A thin drawn ring in the node's own state
+       * colour is enough — it reads as a selected object in a technical
+       * drawing, not as a target reticle.
+       */}
+      {origin && !selected && state !== "HEALTHY" && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3.0, 0]}>
+          <ringGeometry args={[3.5, 3.68, 64]} />
+          <meshBasicMaterial
+            color={stateHex}
+            transparent
+            opacity={0.85}
             side={THREE.DoubleSide}
           />
         </mesh>
