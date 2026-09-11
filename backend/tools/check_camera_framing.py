@@ -39,7 +39,7 @@ CAMERA_KEYS = [
     (1.00, (-6, 66, 210), (10, 0, 0), "9 settle wide"),
 ]
 
-# What each scene is *about* — the nodes that must be visible.
+# What each scene is *about*: the nodes that must be visible.
 SUBJECTS = {
     "2 sources appear": lambda g, i: g.node(i).type is NodeType.SOURCE,
     "5 failure at the source": lambda g, i: i == "src_payments",
@@ -123,7 +123,7 @@ def main() -> int:
     x_min, x_span = min(xs), (max(xs) - min(xs)) or 1.0
     reveal_at = {i: (p[0] - x_min) / x_span for i, p in points.items()}
 
-    print(f"Camera framing check — {total} nodes, fov {FOV_DEG}deg, aspect {ASPECT:.2f}")
+    print(f"Camera framing check: {total} nodes, fov {FOV_DEG}deg, aspect {ASPECT:.2f}")
     print("(counts only nodes that have actually materialised at that scroll point)\n")
     print(f"{'scene':<28}{'on screen':>11}{'subject':>22}  verdict")
     print("-" * 79)
@@ -159,7 +159,7 @@ def main() -> int:
                 failures.append(f"{label}: only {pct:.0f}% of the system in frame")
 
         if label == "1 pinhole":
-            # The opening is deliberately intimate — it must NOT show everything.
+            # The opening is deliberately intimate: it must NOT show everything.
             subject_txt = f"{len(visible)}/{total}"
             if pct > 25:
                 verdict = "OPENING TOO WIDE"

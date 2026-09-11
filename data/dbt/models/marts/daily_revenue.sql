@@ -1,4 +1,4 @@
--- PULSE demo warehouse — marts layer
+-- PULSE demo warehouse: marts layer
 -- daily_revenue: the metric the Executive Revenue Dashboard is built on.
 --
 -- Depends on BOTH fact_payments and fact_orders, which is why a failure in

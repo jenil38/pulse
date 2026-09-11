@@ -1,5 +1,5 @@
 """
-PULSE — REST API routes.
+PULSE: REST API routes.
 
 Resource groups: systems/topology, assets/lineage, health, simulations,
 scenarios, comparison, resilience, incidents, recovery.
@@ -7,7 +7,7 @@ scenarios, comparison, resilience, incidents, recovery.
 Every route here reads or analyses ONE system, chosen by the `system` query
 parameter and resolved by `resolve_system`. Omitting it means the demo, which
 is what keeps the landing page and an anonymous visitor working. A system that
-belongs to another account answers 404, the same as an id that never existed —
+belongs to another account answers 404, the same as an id that never existed;
 see `workspace.resolve`, the single place that decision is made.
 
 Every telemetry payload is labelled SIMULATED. No route mutates real data;
@@ -109,7 +109,7 @@ def failure_types():
 #  Systems / topology
 # --------------------------------------------------------------------------- #
 def _lanes(sys: StoredSystem) -> list[SystemOut]:
-    """The groups *within* a system — its pipeline lanes, not workspace systems."""
+    """The groups *within* a system: its pipeline lanes, not workspace systems."""
     g = sys.graph
     metrics = snapshot(g)
     by_group: dict[str, list[str]] = {}
@@ -371,8 +371,8 @@ def compare_scenarios(
     for oid in (req.a_origin, req.b_origin):
         if oid not in g:
             raise HTTPException(404, f"unknown asset: {oid}")
-    a_label = req.a_label or f"{FAILURE_LABEL[req.a_failure_type]} — {g.node(req.a_origin).name}"
-    b_label = req.b_label or f"{FAILURE_LABEL[req.b_failure_type]} — {g.node(req.b_origin).name}"
+    a_label = req.a_label or f"{FAILURE_LABEL[req.a_failure_type]}: {g.node(req.a_origin).name}"
+    b_label = req.b_label or f"{FAILURE_LABEL[req.b_failure_type]}: {g.node(req.b_origin).name}"
     c = compare(g, req.a_origin, req.a_failure_type, a_label,
                 req.b_origin, req.b_failure_type, b_label)
     return ComparisonOut(
@@ -502,7 +502,7 @@ def get_incident_recovery(incident_id: str, sys: StoredSystem = Depends(resolve_
 
 
 # --------------------------------------------------------------------------- #
-#  History / trends  (SIMULATED, deterministic — see engine/history.py)
+#  History / trends  (SIMULATED, deterministic, see engine/history.py)
 # --------------------------------------------------------------------------- #
 @router.get("/health/history", tags=["health"])
 def get_health_history(

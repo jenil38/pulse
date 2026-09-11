@@ -1,5 +1,5 @@
 """
-PULSE — health telemetry simulator.
+PULSE: health telemetry simulator.
 
   >>> SIMULATION / DEMO DATA <<<
 

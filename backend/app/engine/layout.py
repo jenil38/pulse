@@ -1,5 +1,5 @@
 """
-PULSE — deterministic topology layout.
+PULSE: deterministic topology layout.
 
 Positions are computed once, server-side, so the 3D graph is identical on every
 reload and across clients (no jitter, no random seeds, no client-side physics).
@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from .graph import DependencyGraph
 from .states import NodeType
 
-# X position per pipeline stage — data flows left -> right.
+# X position per pipeline stage: data flows left -> right.
 # Kept tighter than the Z/Y spread so the graph reads as a VOLUME rather than a
 # flat horizontal ribbon when viewed from the establishing camera.
 _STAGE_X = {
@@ -32,7 +32,7 @@ _STAGE_X = {
     NodeType.TEAM: 60.0,
 }
 
-# Z lane per system — separate pipelines occupy distinct planes in depth.
+# Z lane per system: separate pipelines occupy distinct planes in depth.
 _SYSTEM_Z = {
     "Payments": -42.0,
     "Commerce": -14.0,
@@ -67,8 +67,8 @@ def _lanes(names: list[str]) -> dict[str, tuple[float, float]]:
     """Depth/height for every lane, including ones this module has never seen.
 
     The demo's lanes are hand-placed above. A system somebody built themselves
-    names its own, so those are spread evenly around the origin in sorted order
-    — deterministic, and never all stacked on z=0 where parallel pipelines
+    names its own, so those are spread evenly around the origin in sorted order:
+    deterministic, and never all stacked on z=0 where parallel pipelines
     would overlap into one ribbon.
     """
     placed = {n: (_SYSTEM_Z[n], _SYSTEM_Y[n]) for n in names if n in _SYSTEM_Z}
@@ -102,7 +102,7 @@ def _stage_x(graph: DependencyGraph) -> dict[str, float]:
 
     So both readings are computed and the one that actually separates the graph
     wins, with ties going to the declared types. Dependency depth is not a
-    different fact from the stage — it is the same fact, recovered from the
+    different fact from the stage, it is the same fact, recovered from the
     edges when the types were not specific enough to carry it.
     """
     by_type = {nid: _STAGE_X[graph.node(nid).type] for nid in graph.ids()}

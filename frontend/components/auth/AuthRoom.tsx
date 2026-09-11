@@ -7,12 +7,12 @@ import Link from "next/link";
  * The auth room.
  *
  * Signing in happens with the house lights down. The room is near black, and
- * while `lights` is "down" the only bright thing in it is the form itself —
+ * while `lights` is "down" the only bright thing in it is the form itself,
  * every field is its own light source (see `.light-field` in globals.css) and
  * the room's own lamps sit at a fraction of their brightness.
  *
  * Raising the lights is a single prop. It sets `data-lights="up"` on <html>,
- * which lifts the room's background, and blooms the lamps below — the physical
+ * which lifts the room's background, and blooms the lamps below, the physical
  * change the cinematic welcome rides on.
  *
  * The scope is set on <html> rather than on a wrapper because the body's own
@@ -82,7 +82,7 @@ export function AuthRoom({
 /**
  * The lamps.
  *
- * While the lights are down every lamp is off — not dimmed. A dimmed accent
+ * While the lights are down every lamp is off, not dimmed. A dimmed accent
  * lamp still tints the whole frame blue, and the room is supposed to read as
  * an unlit room, with the form's own fields as the only light in it.
  *
@@ -95,7 +95,7 @@ export function AuthRoom({
 function RoomLights({ lit }: { lit: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      {/* Key light — directly behind the form */}
+      {/* Key light: directly behind the form */}
       <div
         className="room-light left-1/2 top-[-10%] h-[520px] w-[820px] -translate-x-1/2"
         style={{
@@ -103,7 +103,7 @@ function RoomLights({ lit }: { lit: boolean }) {
           opacity: lit ? 0.5 : 0,
         }}
       />
-      {/* Rim light — lower left, cooler and tighter */}
+      {/* Rim light: lower left, cooler and tighter */}
       <div
         className="room-light bottom-[-14%] left-[-8%] h-[440px] w-[560px]"
         style={{
@@ -111,7 +111,7 @@ function RoomLights({ lit }: { lit: boolean }) {
           opacity: lit ? 0.42 : 0,
         }}
       />
-      {/* Fill — wide and neutral */}
+      {/* Fill: wide and neutral */}
       <div
         className="room-light right-[-12%] top-[24%] h-[520px] w-[620px]"
         style={{
@@ -120,7 +120,7 @@ function RoomLights({ lit }: { lit: boolean }) {
         }}
       />
 
-      {/* Vignette — holds the corners down so the frame reads as a dark room */}
+      {/* Vignette: holds the corners down so the frame reads as a dark room */}
       <div
         className="absolute inset-0 transition-opacity duration-room ease-standard"
         style={{
@@ -130,7 +130,7 @@ function RoomLights({ lit }: { lit: boolean }) {
         }}
       />
 
-      {/* A faint floor grid — only once there is light to see it by */}
+      {/* A faint floor grid: only once there is light to see it by */}
       <div
         className="absolute inset-x-0 bottom-0 h-[46%] transition-opacity duration-room ease-standard"
         style={{

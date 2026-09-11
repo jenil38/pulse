@@ -1,5 +1,5 @@
 """
-PULSE — workspace routes: the systems a user builds, imports and keeps.
+PULSE workspace routes: the systems a user builds, imports and keeps.
 
 Everything here is scoped to the authenticated account. `require_system`
 resolves an id through `workspace.resolve`, which is the single place ownership
@@ -7,7 +7,7 @@ is decided; a system belonging to someone else answers 404 exactly as an
 unknown id does, so the API never confirms it exists.
 
 The analysis routes (topology, health, simulation, incidents…) live in
-routes.py and take the system as a query parameter — see `resolve_system`
+routes.py and take the system as a query parameter, see `resolve_system`
 there. This module is only about the systems themselves.
 """
 from __future__ import annotations
@@ -201,7 +201,7 @@ def require_system(
 
 
 def require_own_system(sys: StoredSystem = Depends(require_system)) -> StoredSystem:
-    """A system the caller may modify — never the demo."""
+    """A system the caller may modify, never the demo."""
     if sys.read_only:
         raise HTTPException(403, "The demo system is read-only. Build your own to edit it.")
     return sys

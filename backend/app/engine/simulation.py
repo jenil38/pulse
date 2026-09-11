@@ -1,5 +1,5 @@
 """
-PULSE — simulation orchestrator.
+PULSE: simulation orchestrator.
 
 Ties the pieces together into one deterministic result the API/UI can render:
 blast radius + a propagation timeline + business impact + a recovery plan.
@@ -64,7 +64,7 @@ def _build_timeline(graph: DependencyGraph, br: BlastRadius,
                     recovery: list[RecoveryStep], duration_minutes: int) -> list[TimelineEvent]:
     events: list[TimelineEvent] = [
         TimelineEvent(0, br.origin,
-                      f"{graph.node(br.origin).name} — {FAILURE_LABEL[br.failure_type]} injected",
+                      f"{graph.node(br.origin).name}: {FAILURE_LABEL[br.failure_type]} injected",
                       "inject"),
     ]
     # Propagation: nodes light up in hop order.

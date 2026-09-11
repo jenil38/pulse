@@ -1,5 +1,5 @@
 """
-PULSE — internal directed-graph layer.
+PULSE: internal directed-graph layer.
 
 A small, dependency-free directed graph purpose-built for lineage reasoning.
 Everything is deterministic: adjacency lists are sorted, traversals are

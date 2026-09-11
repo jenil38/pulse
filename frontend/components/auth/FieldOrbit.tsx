@@ -15,7 +15,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
  *
  * Two rules make it safe to put in front of a sign-in:
  *   - it is never a gate. The request is already in flight when it starts, and
- *     the only thing it can add is `MIN_RING_MS` of ring — enough that a local
+ *     the only thing it can add is `MIN_RING_MS` of ring, enough that a local
  *     API answering in 20ms does not produce a flicker.
  *   - a failed sign-in must return the form. The `failed` status reverses the
  *     whole thing, so a mistyped password costs a beat, not a dead end.
@@ -58,9 +58,9 @@ export function FieldOrbit({
   formRef: React.RefObject<HTMLElement | null>;
   status: OrbitStatus;
   caption: string;
-  /** The request succeeded and the ring has closed — play the welcome. */
+  /** The request succeeded and the ring has closed, play the welcome. */
   onDone: () => void;
-  /** The request failed and the form is back — restore it. */
+  /** The request failed and the form is back, restore it. */
   onDismissed: () => void;
 }) {
   const reduced = useReducedMotion();
@@ -122,7 +122,7 @@ export function FieldOrbit({
       if (launchedAt.current) return;
       launchedAt.current = Date.now();
       setLaunched(true);
-      // Reduced motion still goes to the ring — it just arrives there without
+      // Reduced motion still goes to the ring, it just arrives there without
       // travelling, and never turns. A held frame, not a removed one.
       setStage("ring");
     };
@@ -175,7 +175,7 @@ export function FieldOrbit({
 
   return (
     <div className="fixed inset-0 z-[90] pointer-events-none" data-field-orbit={stage}>
-      {/* The track the discs settle onto — the loading read */}
+      {/* The track the discs settle onto, the loading read */}
       <div
         aria-hidden
         className="absolute left-1/2 top-1/2 rounded-full border border-border-strong transition-opacity duration-slow ease-standard"

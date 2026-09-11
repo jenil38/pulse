@@ -7,18 +7,18 @@
  *
  * Colours are raw RGB triplets so Tailwind can apply opacity modifiers
  * (bg-surface/60). The environment switches by setting data-mode="chaos"
- * on <html> — one attribute, no re-render.
+ * on <html>, one attribute, no re-render.
  *
  * Three scopes exist:
  *   :root                 the product, light
  *   [data-mode="chaos"]   the product, simulation environment
- *   [data-scene="auth"]   the sign-in room — deliberately unlit, mode-agnostic
+ *   [data-scene="auth"]   the sign-in room: deliberately unlit, mode-agnostic
  */
 
 :root {
   /* --- surfaces (4 steps) -------------------------------------------
    * canvas is the ground the panels float on, so it sits a clear step below
-   * surface rather than a hair below it — without that gap the panels read as
+   * surface rather than a hair below it, without that gap the panels read as
    * hairline boxes rather than as objects with air under them.
    */
   --canvas: 236 238 244;
@@ -31,7 +31,7 @@
   --border: 221 225 232;
   --border-strong: 193 199 209;
 
-  /* --- text (4 steps — hierarchy by value) ---------------------------- */
+  /* --- text (4 steps, hierarchy by value) ---------------------------- */
   --text-primary: 17 19 24;
   --text-secondary: 61 67 77;
   --text-tertiary: 98 105 118;
@@ -109,7 +109,7 @@
 }
 
 /*
- * CHAOS MODE — the simulation environment.
+ * CHAOS MODE: the simulation environment.
  * Same hues, re-tuned for dark ground, so the state language never changes
  * meaning across the transition.
  */
@@ -179,7 +179,7 @@
  *
  * Sign-in and sign-up happen with the house lights down: the room is near
  * black and the only light in it comes from the form itself. This scope wins
- * over both modes on purpose — the room's lighting is the point, and it must
+ * over both modes on purpose, the room's lighting is the point, and it must
  * not depend on which environment the visitor last left the product in.
  *
  * data-lights="up" raises the room after a successful sign-in, which is what
@@ -188,7 +188,7 @@
 :root[data-scene="auth"] {
   /* Lights fully out: the ground is black, not "very dark blue". Anything with
    * a hue in it reads as ambient light, which is exactly what this room must
-   * not have — the fields are the only light source. */
+   * not have, the fields are the only light source. */
   --canvas: 0 0 0;
   --surface: 10 10 11;
   --subtle: 16 16 18;
@@ -219,7 +219,7 @@
   --failed-border: 92 42 36;
   --failed-bg: 42 20 17;
 
-  /* The form's own panel is barely a panel — just enough edge to hold the
+  /* The form's own panel is barely a panel, just enough edge to hold the
    * fields together. It must not glow; the fields do that. */
   --glass: 12 12 14;
   --glass-alpha: 0.5;
@@ -232,7 +232,7 @@
   --shadow-float: 0 2px 8px rgb(0 0 0 / 0.6), 0 24px 60px -12px rgb(0 0 0 / 0.7);
   --shadow-overlay: 0 32px 80px -16px rgb(0 0 0 / 0.8);
 
-  /* Room brightness — 0 while the lights are down, 1 once they come up. */
+  /* Room brightness: 0 while the lights are down, 1 once they come up. */
   --room: 0;
 }
 
@@ -315,7 +315,7 @@
 
 @layer components {
   /*
-   * GLASS — the floating-chrome material.
+   * GLASS: the floating-chrome material.
    *
    * One definition, two weights. Panels that float above content use it;
    * panels that are part of the page structure do not. The ::before is a
@@ -327,7 +327,7 @@
     background-color: rgb(var(--glass) / var(--glass-alpha));
     /* Standard property only: writing the -webkit- alias by hand made the
       * minifier collapse the pair down to the prefixed one, which Chrome does
-      * not support — so the glass lost its blur everywhere. */
+      * not support, so the glass lost its blur everywhere. */
     backdrop-filter: blur(var(--glass-blur)) saturate(180%);
     border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
     box-shadow: var(--shadow-float);
@@ -340,8 +340,67 @@
     border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
   }
 
+  /*
+   * TINTED GLASS: the same material carrying one colour, set through --tint
+   * (an "r g b" triplet). The tint is layered over the glass rather than
+   * replacing it, so the blur, edge and sheen stay identical to .glass.
+   */
+  .glass-tint {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(rgb(var(--tint) / 0.1), rgb(var(--tint) / 0.1)),
+      rgb(var(--glass) / var(--glass-alpha));
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border: 1px solid rgb(var(--tint) / 0.28);
+    box-shadow: var(--shadow-float);
+  }
+
+  /* A pool of the tint in one corner, so the colour reads as light in the glass */
+  .glass-tint::after {
+    content: "";
+    position: absolute;
+    top: -45%;
+    right: -15%;
+    width: 70%;
+    height: 130%;
+    background-image: radial-gradient(closest-side, rgb(var(--tint) / 0.22), transparent);
+    pointer-events: none;
+  }
+
+  .tint-violet { --tint: 124 92 230; }
+  .tint-healthy { --tint: var(--healthy); }
+  .tint-failed { --tint: var(--failed); }
+  .tint-degraded { --tint: var(--degraded); }
+  .tint-recovering { --tint: var(--recovering); }
+
+  /*
+   * MARQUEE: a row that travels right to left without stopping. The track
+   * holds the row twice, so sliding it by half lands exactly on the start.
+   * The mask fades the row out at both edges instead of cutting it off.
+   */
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--marquee-duration, 42s) linear infinite;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+
   .glass::before,
-  .glass-quiet::before {
+  .glass-quiet::before,
+  .glass-tint::before {
     content: "";
     position: absolute;
     inset: 0 0 auto 0;
@@ -357,15 +416,15 @@
   }
 
   /*
-   * LIGHT FIELD — an input that is its own light source.
+   * LIGHT FIELD: an input that is its own light source.
    *
    * Used only in the auth room, where a field must read as the one lit object
    * in a dark space. Focus does three things at once: tightens the rim, throws
-   * a halo onto the surrounding darkness, and lifts the inner surface — the way
+   * a halo onto the surrounding darkness, and lifts the inner surface, the way
    * a real object behaves when a light is aimed at it.
    */
   /*
-   * LIGHT FIELD — in a black room these are the only light source, so they
+   * LIGHT FIELD: in a black room these are the only light source, so they
    * carry a resting glow rather than earning one on focus. Focus deepens it;
    * it never starts from nothing.
    */
@@ -432,7 +491,7 @@
   }
 
   /*
-   * ROOM LIGHT — the soft pools of light in the auth scene.
+   * ROOM LIGHT: the soft pools of light in the auth scene.
    * Their opacity is driven by --room, so raising the house lights is one
    * attribute change on <html> and every light in the room responds together.
    */
@@ -445,14 +504,14 @@
   }
 
   /*
-   * STAGE DEPTH — the Chaos Lab's lighting, not its decoration.
+   * STAGE DEPTH: the Chaos Lab's lighting, not its decoration.
    *
    * The topology is the hero, so the chrome around it has to recede without
    * fencing it in. A vignette does that the way a room does: the centre of the
    * stage is where the light is, and the edges fall away, so panels floating
    * over the corners sit against darkness rather than against the graph. It is
    * lighting for a subject, which is the only justification a gradient gets in
-   * this product — the same licence the auth room has.
+   * this product, the same licence the auth room has.
    *
    * Strength is driven by --depth so the normal workspace gets a hint of it
    * and the chaos environment gets the full room.
@@ -482,7 +541,7 @@
   }
 
   /*
-   * ARM — the hold-to-inject control.
+   * ARM: the hold-to-inject control.
    *
    * Injecting a failure is the one destructive-feeling act in the product, and
    * a press that has to be held is the honest control for it: the fill IS the
@@ -505,13 +564,13 @@
   }
 
   /*
-   * APP GROUND — the surface the product's panels sit on.
+   * APP GROUND: the surface the product's panels sit on.
    *
    * The chrome used to be edge-to-edge regions separated by hairlines. Floating
    * the panels instead gives the app a depth order that reads at a glance: the
    * ground is context, the panels are where the work happens.
    *
-   * The wash is what makes translucency worth spending — glass over a flat fill
+   * The wash is what makes translucency worth spending, glass over a flat fill
    * is indistinguishable from paint. It is deliberately near the threshold of
    * visibility: enough to give the panel edges something to sit against, not
    * enough to become a background people notice.
@@ -535,7 +594,7 @@
   }
 
   /*
-   * PANEL — a region lifted off the ground.
+   * PANEL: a region lifted off the ground.
    *
    * Applied to whatever a route renders directly inside <main>, so every
    * surface in the product is framed the same way without each page having to
@@ -576,11 +635,11 @@
   }
 
   /*
-   * REVEAL — progressive information entry.
+   * REVEAL: progressive information entry.
    *
    * One row of consequence arriving. Slightly longer and softer than the
    * product's other entrances because it is read rather than glanced at, and
-   * because a list that lands all at once is a wall of text — the staggering
+   * because a list that lands all at once is a wall of text, the staggering
    * is what makes the causal order legible. --reveal-delay staggers a list
    * without a line of JavaScript.
    */
@@ -589,7 +648,7 @@
     animation-delay: var(--reveal-delay, 0ms);
   }
 
-  /* A light passing across a headline — used once, on the welcome name. */
+  /* A light passing across a headline, used once, on the welcome name. */
   .sweep {
     background-image: linear-gradient(
       100deg,

@@ -17,7 +17,7 @@ import { Tabs } from "@/components/ui/primitives";
 import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
 
 /**
- * Control Room — the primary product surface.
+ * Control Room: the primary product surface.
  *
  * Layout: sidebar / main / inspector. The main column splits vertically so the
  * topology (the visual signature) and the asset table (the dense, scannable

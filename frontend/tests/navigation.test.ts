@@ -97,7 +97,7 @@ describe("keyboard lineage traversal", () => {
 });
 
 describe("branch sibling cycling", () => {
-  // fact_orders fans out to four models — this is the real branch a user
+  // fact_orders fans out to four models, this is the real branch a user
   // navigates in the Control Room.
   const FANOUT: Dependency[] = [
     { upstream: "fact_orders", downstream: "daily_revenue", kind: "data" },

@@ -97,7 +97,7 @@ const config: Config = {
 
       fontWeight: {
         normal: "400",
-        // Emphasis without shouting — the Linear detail worth stealing.
+        // Emphasis without shouting: the Linear detail worth stealing.
         medium: "510",
         semibold: "600",
       },

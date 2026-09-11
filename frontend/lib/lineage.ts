@@ -1,9 +1,9 @@
 /**
- * PULSE — client-side lineage walks.
+ * PULSE: client-side lineage walks.
  *
  * The server is the authority on what a failure does; this is only about what
  * a user can be shown *before* they commit to running one. Asking the API for
- * a blast radius on every hover would be both slow and misleading — it would
+ * a blast radius on every hover would be both slow and misleading, it would
  * imply a simulation had been run. The dependency graph is already in the
  * browser, so the reachable set can be walked here, and the Chaos Lab can say
  * "18 assets sit downstream of this" without pretending to know what state
@@ -32,7 +32,7 @@ export function buildAdjacency(dependencies: Dependency[]): Adjacency {
   return { downstream, upstream };
 }
 
-/** Everything strictly downstream of `id` — the reach of a failure there. */
+/** Everything strictly downstream of `id`: the reach of a failure there. */
 export function descendants(adj: Adjacency, id: string): Set<string> {
   const seen = new Set<string>();
   const queue = [...(adj.downstream.get(id) ?? [])];

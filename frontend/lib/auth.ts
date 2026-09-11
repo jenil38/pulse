@@ -1,13 +1,13 @@
 /**
- * PULSE — demo session handling.
+ * PULSE: demo session handling.
  *
  * The token is issued and verified by the backend (see backend/app/api/auth.py).
  * This module only stores it and attaches it to requests.
  *
  * Storage choice: `localStorage` when "keep me signed in" is checked, otherwise
  * `sessionStorage` so the session ends with the tab. Neither is appropriate for
- * a production auth system handling real credentials — an httpOnly cookie would
- * be — and the project documentation says so plainly.
+ * a production auth system handling real credentials, an httpOnly cookie would
+ * be, and the project documentation says so plainly.
  */
 "use client";
 
@@ -43,7 +43,7 @@ function read(): StoredSession | null {
       }
       return parsed;
     } catch {
-      /* corrupt entry — treat as signed out */
+      /* corrupt entry, treat as signed out */
     }
   }
   return null;
@@ -57,7 +57,7 @@ function write(session: StoredSession, remember: boolean) {
     store.setItem(KEY, JSON.stringify(session));
     other.removeItem(KEY);
   } catch {
-    /* storage unavailable (private mode) — the session lasts this page only */
+    /* storage unavailable (private mode), the session lasts this page only */
   }
 }
 

@@ -108,7 +108,7 @@ export function UserMenu({ compact }: { compact?: boolean }) {
           </div>
           <div className="border-t border-border px-3 py-2">
             <p className="text-caption leading-relaxed text-quaternary">
-              Demo session — roles are labels only and do not restrict access.
+              Demo session. Roles are labels only and do not restrict access.
             </p>
           </div>
           <button

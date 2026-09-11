@@ -8,7 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 /**
  * The recovery plan, and then the recovery itself.
  *
- * Every line here is a step the engine generated from the topology — see
+ * Every line here is a step the engine generated from the topology, see
  * `backend/app/engine/recovery.py`. Nothing is scripted for the UI: the order
  * is the reverse of the order the failure travelled, because you cannot
  * rebuild a table before the thing that feeds it, and that constraint is the
@@ -16,7 +16,7 @@ import { Icon } from "@/components/ui/Icon";
  *
  * The plan's `kind` values group into the five phases an operator actually
  * thinks in. A run with no backfill (anything that is not a STARVE failure)
- * simply has no steps under that phase, and the phase is not drawn — the shape
+ * simply has no steps under that phase, and the phase is not drawn, the shape
  * of the plan is itself information about the kind of failure that happened.
  */
 const PHASES: { key: string; label: string; kinds: RecoveryStep["kind"][] }[] = [

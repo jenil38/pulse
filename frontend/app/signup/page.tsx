@@ -22,7 +22,7 @@ import { Spinner } from "@/components/ui/AsyncState";
  *
  * The registration is real to the extent it can honestly be: the password is
  * salted with fresh random bytes, hashed server-side, and checked on every
- * later sign-in. What it is not is durable — the account lives in the API
+ * later sign-in. What it is not is durable, the account lives in the API
  * process and is gone when it restarts. The page says so rather than implying
  * a user database that does not exist.
  */
@@ -210,7 +210,7 @@ function SignupInner() {
             <p className="text-caption leading-relaxed text-quaternary">
               Your password is salted and hashed before it is stored, and no
               email is ever sent. This is demo authentication over a file, not a
-              production user store — the project documentation says so plainly.
+              production user store. The project documentation says so plainly.
             </p>
           </form>
 

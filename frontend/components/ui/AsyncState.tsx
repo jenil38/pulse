@@ -6,7 +6,7 @@ import { Button } from "./Button";
 import { Icon } from "./Icon";
 
 /**
- * Loading / empty / error / retry — one consistent primitive.
+ * Loading / empty / error / retry, one consistent primitive.
  *
  * The rule this enforces: a failed request must NEVER render as an empty state.
  * "No incidents" and "we couldn't load incidents" mean completely different
@@ -128,7 +128,7 @@ export function ErrorState({
 /**
  * A non-blocking failure banner.
  *
- * Used when we already have content on screen and a refresh failed — replacing
+ * Used when we already have content on screen and a refresh failed, replacing
  * good data with a full-page error would destroy context the user is mid-way
  * through reading.
  */
@@ -150,7 +150,7 @@ export function ErrorBanner({
       <Icon name="warning" size={14} className="text-failed" />
       <p className="min-w-0 flex-1 truncate text-small text-primary">
         <span className="font-medium">{api?.title ?? "Something went wrong"}</span>
-        {api?.message && <span className="text-secondary"> — {api.message}</span>}
+        {api?.message && <span className="text-secondary">: {api.message}</span>}
       </p>
       {onRetry && (
         <Button size="xs" variant="ghost" onClick={onRetry}>
@@ -171,7 +171,7 @@ export function ErrorBanner({
  *
  * Extracted as a pure function so the precedence rule is unit-testable: an
  * error ALWAYS beats empty. A failed request that happens to return no rows
- * must never be presented as "there is nothing here" — that is how a
+ * must never be presented as "there is nothing here", that is how a
  * monitoring tool quietly tells someone their system is fine when it is not.
  */
 export type AsyncPhase = "error" | "loading" | "empty" | "content";

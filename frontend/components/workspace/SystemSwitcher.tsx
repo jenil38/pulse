@@ -8,8 +8,8 @@ import { Icon } from "@/components/ui/Icon";
 /**
  * Which system the product is looking at.
  *
- * It sits at the very top of the sidebar because every number below it — the
- * asset counts, the resilience score, the incident badge — is a fact about
+ * It sits at the very top of the sidebar because every number below it, the
+ * asset counts, the resilience score, the incident badge, is a fact about
  * this system and nothing else. The DEMO tag is not decoration: it is the one
  * thing that stops a sample estate being mistaken for the user's own.
  */
@@ -87,7 +87,7 @@ export function SystemSwitcher({ onNavigate }: { onNavigate?: () => void }) {
           </p>
           {systems.length === 0 ? (
             <p className="px-3 pb-2 text-caption text-tertiary">
-              None yet — create one below.
+              None yet. Create one below.
             </p>
           ) : (
             systems.map((s) => (

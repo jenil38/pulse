@@ -5,18 +5,18 @@
 > **See failure before it spreads.**
 > Break your data system before reality does.
 
-**▶ [Live demo](https://pulse-jenilparmar18-8300s-projects.vercel.app/systems)** — sign in with the
+**▶ [Live demo](https://pulse-jenilparmar18-8300s-projects.vercel.app/systems)**: sign in with the
 seeded demo account `analyst@pulse.demo` / `pulse-demo` (no sign-up needed), then open the bundled
 **NOVA COMMERCE** system and break something. Everything you see is a deterministic simulation over
 a topology you describe; PULSE connects to no real infrastructure.
 
 PULSE is an **interactive infrastructure resilience and failure-propagation
 simulation prototype**. It models a data platform as a dependency graph, then
-lets you break it on purpose and computes — deterministically — exactly what
+lets you break it on purpose and computes, deterministically, exactly what
 would go wrong downstream.
 
 > **What this is, precisely.** All telemetry is SIMULATION data. PULSE does not
-> monitor real systems and discovers nothing on its own — you describe your
+> monitor real systems and discovers nothing on its own: you describe your
 > architecture to it, by hand or as JSON. The simulation engine is rule-based
 > and deterministic (not machine learning or prediction), and authentication is
 > demo authentication (see below). Nothing here is production infrastructure
@@ -30,12 +30,12 @@ PULSE answers one question precisely:
 
 > **"What will break if this component fails?"**
 
-- **Map** a data system as a directed dependency graph — sources, ingestion, raw
+- **Map** a data system as a directed dependency graph: sources, ingestion, raw
   tables, transformations, warehouse tables, models, dashboards, ML systems,
   business processes and teams.
 - **Simulate** ten failure types against any node, before they happen.
 - **Compute** the blast radius: which assets degrade, which dashboards become
-  untrustworthy, which teams are affected — with an explainable severity per node.
+  untrustworthy, which teams are affected, with an explainable severity per node.
 - **Plan recovery** in dependency order, generated from the topology.
 - **Score resilience** 0–100 with a fully documented, ML-free formula.
 - **Compare** two failure scenarios to find the real single point of failure.
@@ -57,13 +57,13 @@ PULSE holds many systems, and keeps a hard line between two kinds:
 
 | | **Demo system** | **Your systems** |
 |---|---|---|
-| What it is | `NOVA COMMERCE` — a fictional e-commerce data platform, 43 assets | Whatever you build or import |
+| What it is | `NOVA COMMERCE`, a fictional e-commerce data platform, 43 assets | Whatever you build or import |
 | Who owns it | Nobody; shared by every visitor | Exactly one account |
-| Editable | No — read-only | Yes |
+| Editable | No, read-only | Yes |
 | Where it lives | Rebuilt from code on every boot, never persisted | `backend/data/workspace.json` |
 
 A new account starts with an **empty workspace**. Nothing is copied into it from
-the demo, and no placeholder systems or invented metrics are shown — the empty
+the demo, and no placeholder systems or invented metrics are shown; the empty
 state is the onboarding, offering *Create a system*, *Import JSON* and
 *Explore the demo*.
 
@@ -71,16 +71,16 @@ state is the onboarding, offering *Create a system*, *Import JSON* and
 system through `workspace.resolve(system_id, viewer)`
 (`backend/app/api/workspace.py`), which returns a system only if it is the demo
 or the viewer's own. Anything else raises, and the API answers **404 rather than
-403** — so it never confirms that another account's system id exists. Ids
+403**, so it never confirms that another account's system id exists. Ids
 supplied by the frontend are never trusted; see `test_workspace.py` for the
 cross-user tests.
 
 ### Getting a system in
 
-Three inputs, and only three — PULSE does not discover infrastructure:
+Three inputs, and only three. PULSE does not discover infrastructure:
 
-1. **The builder** — name components, choose types, declare dependencies.
-2. **JSON import** — paste or upload a definition. Each edge reads
+1. **The builder**: name components, choose types, declare dependencies.
+2. **JSON import**: paste or upload a definition. Each edge reads
    `source depends on target`, so failure propagates from the target outward:
 
    ```json
@@ -101,7 +101,7 @@ Three inputs, and only three — PULSE does not discover infrastructure:
    ```
 
    Failing `Payment DB` then reaches Payment Service, Order Service and the
-   Website — computed by the same engine the demo uses, from your own graph.
+   Website: computed by the same engine the demo uses, from your own graph.
    Types accept PULSE's own `NodeType` values or common words (`service`,
    `database`, `api`, `queue`, `storage`). Imports are validated for unknown
    references, duplicate names, self-edges, cycles and size before anything is
@@ -120,7 +120,7 @@ another.
 | Surface | What it proves |
 |---|---|
 | **Sign up / Sign in** | Register a real account (PBKDF2, per-user salt) or use a seeded demo login; both issue a signed, expiring token |
-| **Systems** | Your own workspace — create, import, open, delete; intentional empty state |
+| **Systems** | Your own workspace: create, import, open, delete; intentional empty state |
 | **Builder** | Components, types and dependencies, validated server-side |
 | **Control Room** | 2.5D topology, live health rollups, dense asset table, asset inspector |
 | **Scenarios** | The demo's curated library, or the ones you saved against your system |
@@ -170,7 +170,7 @@ Single points of failure     8
         └────────────────────────────────────┘
 ```
 
-The engine is framework-free and has **no runtime dependencies** — the API is a
+The engine is framework-free and has **no runtime dependencies**: the API is a
 thin transport layer over deterministic functions, which is what makes the whole
 system testable.
 
@@ -189,7 +189,7 @@ Orders API  → ingestion → raw_orders  → stg_orders  → fact_orders ──
 ```
 
 `daily_revenue` needs **both** payments and orders, so either failing makes the
-Executive Revenue Dashboard untrustworthy — which is why both register as SPOFs.
+Executive Revenue Dashboard untrustworthy, which is why both register as SPOFs.
 
 ## Failure Simulation
 
@@ -201,7 +201,7 @@ Ten failure types, each mapped to exactly one **propagation mode**:
 | **BREAK** | schema drift · transformation failure · datatype change | transformations → **FAILED**, tables → **DEGRADED** |
 | **CORRUPT** | null spike · duplicate spike · volume drop | data assets → **DEGRADED** |
 
-Dashboards and ML models never "fail" — they become **untrustworthy**. Teams and
+Dashboards and ML models never "fail"; they become **untrustworthy**. Teams and
 business processes become **impacted**.
 
 ```
@@ -224,7 +224,7 @@ Deterministic, and never faked:
 2. Descendants are walked in **topological order** (stable Kahn sort).
 3. Each node takes the **worst incoming state**, transformed by the failure's
    propagation mode and the node's type.
-4. A node is affected only if ≥1 upstream is affected — unrelated branches stay healthy.
+4. A node is affected only if ≥1 upstream is affected; unrelated branches stay healthy.
 5. Severity = f(criticality weight × state rank), with consumer escalation.
 6. **Blast score** = Σ(criticality × state severity) → one comparable number.
 
@@ -261,13 +261,13 @@ that it scores the 65 documented above; no system you build inherits it.
 
 ## Technology Stack
 
-**Backend** — Python 3.12 · FastAPI · Pydantic v2 · SQLAlchemy models (unused — see Limitations)
-**Engine** — pure Python directed graph (stable Kahn topological sort, BFS traversals)
-**Data** — dbt models + contracts · Airflow DAG mirroring the topology · SQL
-**Frontend** — Next.js 16 · React 19 · TypeScript · Tailwind · React Three Fiber · Framer Motion · Zustand
-**Persistence** — a JSON file (`backend/data/workspace.json`). Postgres is *not*
+**Backend**: Python 3.12 · FastAPI · Pydantic v2 · SQLAlchemy models (unused, see Limitations)
+**Engine**: pure Python directed graph (stable Kahn topological sort, BFS traversals)
+**Data**: dbt models + contracts · Airflow DAG mirroring the topology · SQL
+**Frontend**: Next.js 16 · React 19 · TypeScript · Tailwind · React Three Fiber · Framer Motion · Zustand
+**Persistence**: a JSON file (`backend/data/workspace.json`). Postgres is *not*
 used; the SQLAlchemy models describe that path but nothing imports them.
-**Infra** — Docker Compose (unverified — see below) · GitHub Actions running
+**Infra**: Docker Compose (unverified, see below) · GitHub Actions running
 pytest, `tsc --noEmit`, the frontend tests and a production build
 
 ## Authentication
@@ -275,13 +275,13 @@ pytest, `tsc --noEmit`, the frontend tests and a production build
 PULSE has **two ways in**, and both are verified server-side
 (`backend/app/api/auth.py`) rather than faked in the browser:
 
-**Register an account** — `POST /api/auth/register`. This is the normal path
+**Register an account**: `POST /api/auth/register`. This is the normal path
 and the one the product is built around. The password you choose is salted with
 16 fresh random bytes and hashed with PBKDF2-HMAC-SHA256 (120,000 rounds); the
 salt and hash are stored, the password never is. Registering signs you straight
 in and gives you an empty workspace that is yours.
 
-**Or use a seeded demo account** — three fixed accounts share one published
+**Or use a seeded demo account**: three fixed accounts share one published
 password so a reviewer never has to sign up to look around.
 
 | Account | Role | Password |
@@ -297,7 +297,7 @@ and expired tokens are rejected.
 What is deliberately **not** production-grade, and why it is fair to call this
 demo authentication:
 
-- `SECRET_KEY` defaults to a well-known development value — anyone who reads
+- `SECRET_KEY` defaults to a well-known development value: anyone who reads
   the source can forge a token unless it is set in the environment
 - the token is stored in `localStorage`/`sessionStorage`, not an httpOnly
   cookie, so it is reachable from JavaScript
@@ -344,7 +344,7 @@ and a hosted one:
 |---|---|---|
 | `SECRET_KEY` | `pulse-dev-secret-not-for-production` | **Always, off localhost.** Session tokens are signed with it; the default is published in this repository, so anyone could forge one. |
 | `CORS_ORIGINS` | `http://localhost:3000` | The frontend is served from anywhere else. Comma-separated. |
-| `PULSE_DATA_DIR` | `backend/data` | The working directory is not writable or not durable — a container, for instance. |
+| `PULSE_DATA_DIR` | `backend/data` | The working directory is not writable or not durable (a container, for instance). |
 
 `DATABASE_URL` is read into settings but **nothing connects to it**; it is there
 for the SQLAlchemy path that is not wired up.
@@ -368,7 +368,7 @@ survive a rebuild, and passes `SECRET_KEY` through from the environment.
 python -m pytest backend/tests -q
 ```
 
-**91 tests, all passing** — 15 engine, 20 API, 20 auth, 35 workspace,
+**91 tests, all passing**: 15 engine, 20 API, 20 auth, 35 workspace,
 1 camera-framing:
 
 - graph traversal, acyclicity, ancestors/descendants
@@ -380,7 +380,7 @@ python -m pytest backend/tests -q
 - API validation (404s, 422s, 409 on double-resolve) and the full incident lifecycle
 - registration, login, token signing/expiry/tampering, case-insensitive emails
 - **workspace isolation**: a new account is empty; another account's system
-  answers 404 from every route that touches it — read, rename, replace, delete,
+  answers 404 from every route that touches it: read, rename, replace, delete,
   topology, health, resilience, incidents, scenarios and simulations
 - **import validation**: unknown references, cycles, duplicate names, self-edges,
   unknown component types, empty systems, and the dry-run validate endpoint
@@ -418,7 +418,7 @@ would change what the product *communicates*:
 - keyboard lineage traversal: deterministic upstream/downstream walks that
   terminate at roots, and branch cycling that visits every alternative once
 - the workspace guardrails: the component-type vocabulary an import may use, and
-  the build-breaking check that **no component calls `fetch` directly** — going
+  the build-breaking check that **no component calls `fetch` directly**, going
   around `lib/api.ts` would skip the active-system stamp and silently render
   demo data inside somebody's own workspace
 
@@ -453,7 +453,7 @@ Stated plainly, because overclaiming would undermine the point of the project:
   not survive concurrent writes from multiple API processes.
 - **Ownership is enforced; roles are not.** A user can only reach their own
   systems, and that is tested. But the Analyst/Operator/Admin labels are
-  cosmetic — there is no RBAC behind them.
+  cosmetic; there is no RBAC behind them.
 - **Simulated telemetry is generated for every system**, including yours. It is
   deterministic from the component id and labelled SIMULATED throughout; it is
   not a measurement of anything you run.
@@ -462,7 +462,7 @@ Stated plainly, because overclaiming would undermine the point of the project:
 - **No rate limiting** on login or registration, and sessions live in
   `localStorage` rather than an httpOnly cookie. Both are listed under
   Authentication above; neither is production-appropriate.
-- **The demo's incident history is stated, not accumulated** — two recent, one
+- **The demo's incident history is stated, not accumulated**: two recent, one
   unresolved, which is what puts its score at 65. Your own systems are scored
   only on incidents you actually recorded, starting from none.
 - **Docker unverified** (see above).

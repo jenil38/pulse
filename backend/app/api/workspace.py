@@ -1,5 +1,5 @@
 """
-PULSE — workspaces: the demo system and the systems users build themselves.
+PULSE workspaces: the demo system and the systems users build themselves.
 
 The engine has always taken a `DependencyGraph` as an argument, so nothing about
 it needed to change to support many systems. What was missing was an owner: a
@@ -12,7 +12,7 @@ This module is that owner. It holds:
   * zero or more USER systems, each belonging to one account by email
 
 Access is decided here, in `resolve`, and nowhere else. A user system is
-invisible — 404, not 403 — to anyone who does not own it, so the API never
+invisible (404, not 403) to anyone who does not own it, so the API never
 confirms that someone else's system id exists.
 
 Durability is a JSON file rather than a database. The SQLAlchemy models in
@@ -121,7 +121,7 @@ class StoredSystem:
     updated_at: datetime
     incidents: dict[str, Incident] = field(default_factory=dict)
     scenarios: dict[str, SavedScenario] = field(default_factory=dict)
-    #: Simulation results live only for the life of the process — they are pure
+    #: Simulation results live only for the life of the process, they are pure
     #: functions of (graph, origin, failure), so nothing is lost by recomputing.
     simulations: dict[str, SimulationResult] = field(default_factory=dict)
     sim_meta: dict[str, dict] = field(default_factory=dict)
@@ -388,7 +388,7 @@ def _seed_demo_incidents(sys: StoredSystem) -> None:
         started = now - timedelta(hours=hours_ago)
         inc = Incident(
             id=iid,
-            title=f"{FAILURE_LABEL[ft]} — {sys.graph.node(origin).name}",
+            title=f"{FAILURE_LABEL[ft]}: {sys.graph.node(origin).name}",
             origin=origin, failure_type=ft, status=status,
             started_at=started, duration_minutes=dur,
         )
@@ -563,7 +563,7 @@ def resolve(system_id: str | None, viewer: str | None) -> StoredSystem:
 
     `viewer` is the authenticated account email, or None for an anonymous
     caller. A user system that is not the viewer's own raises `AccessDenied`,
-    which the API surfaces as 404 — the same answer an id that never existed
+    which the API surfaces as 404, the same answer an id that never existed
     gets, so nothing here reveals which other people's systems are real.
     """
     sid = (system_id or DEMO_SYSTEM_ID).strip() or DEMO_SYSTEM_ID
@@ -675,7 +675,7 @@ DEMO_INCIDENT_HISTORY = (2, 1)
 
 
 def incident_history(sys: StoredSystem) -> tuple[int, int]:
-    """(recent incidents, still unresolved) — the score's history inputs.
+    """(recent incidents, still unresolved), the score's history inputs.
 
     A user's system is scored on what actually happened inside it. A system
     nobody has broken yet reports (0, 0) and takes no history penalty, which is
@@ -713,7 +713,7 @@ def add_incident(
 ) -> Incident:
     inc = Incident(
         id=f"inc_{uuid.uuid4().hex[:6]}",
-        title=f"{FAILURE_LABEL[ft]} — {sys.graph.node(origin).name}",
+        title=f"{FAILURE_LABEL[ft]}: {sys.graph.node(origin).name}",
         origin=origin, failure_type=ft, status="open",
         started_at=_now(), duration_minutes=duration_minutes,
     )

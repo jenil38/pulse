@@ -18,13 +18,13 @@ import { Spinner } from "@/components/ui/AsyncState";
 import { PanelHeader, SeverityBadge, StatusDot } from "@/components/ui/primitives";
 
 /**
- * System overview — what the inspector shows when nothing is selected.
+ * System overview: what the inspector shows when nothing is selected.
  *
  * Previously that 304px column sat empty on almost every visit, which is a
  * large part of why the Control Room felt unfinished. An operator opening the
  * product should immediately see: how healthy the estate is, whether resilience
  * is trending the right way, how often this system breaks, what is currently
- * wrong, and what is most fragile — without clicking anything.
+ * wrong, and what is most fragile, without clicking anything.
  */
 export function OverviewPanel() {
   const topology = usePulse((s) => s.topology);
@@ -42,14 +42,14 @@ export function OverviewPanel() {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const band = resHistory.data ? scoreBand(resHistory.data.current) : null;
 
-  // Trend direction over the window — stated plainly, never as a prediction.
+  // Trend direction over the window: stated plainly, never as a prediction.
   const delta = useMemo(() => {
     const pts = resHistory.data?.points ?? [];
     if (pts.length < 2) return null;
     return Math.round(pts[pts.length - 1].value - pts[0].value);
   }, [resHistory.data]);
 
-  // Anything not healthy, worst first — the operator's actual worklist.
+  // Anything not healthy, worst first, the operator's actual worklist.
   const attention = useMemo(() => {
     const rank: Record<string, number> = {
       FAILED: 0,

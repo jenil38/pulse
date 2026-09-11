@@ -5,14 +5,14 @@ import type { Stake } from "@/lib/lineage";
 import { Icon } from "@/components/ui/Icon";
 
 /**
- * What is at stake — the beat before the button.
+ * What is at stake: the beat before the button.
  *
  * A chaos tool that goes straight from "pick a target" to "watch it burn"
  * skips the only question that makes the result mean anything: did you already
  * know this was load-bearing? So the moment a target is chosen, the panel
  * states what sits underneath it, and the map lights the same set.
  *
- * Everything here is STRUCTURAL — counts of what depends on the target, walked
+ * Everything here is STRUCTURAL: counts of what depends on the target, walked
  * from the dependency graph already in the browser. It deliberately never says
  * what *would break*, because that answer belongs to the engine and does not
  * exist until the failure is actually run. The wording is chosen to keep that
@@ -58,7 +58,7 @@ export function TargetBrief({
 
         {stake.reach === 0 ? (
           <p className="pt-1.5 text-caption leading-relaxed text-tertiary">
-            Nothing reads from {target.name}. Breaking it is contained — which is
+            Nothing reads from {target.name}. Breaking it is contained, which is
             a result worth having.
           </p>
         ) : (
@@ -114,7 +114,7 @@ function Line({ label, names }: { label: string; names: string[] }) {
   );
 }
 
-/** "a, b and 2 more" — never a bare truncation with an ellipsis. */
+/** "a, b and 2 more", never a bare truncation with an ellipsis. */
 function listed(names: string[], limit: number): string {
   if (names.length <= limit) {
     if (names.length <= 1) return names[0] ?? "";

@@ -1,4 +1,4 @@
-/** PULSE — client state (topology, selection, filters, active simulation). */
+/** PULSE: client state (topology, selection, filters, active simulation). */
 "use client";
 
 import { create } from "zustand";
@@ -42,7 +42,7 @@ interface PulseState {
    *
    * Distinct from `selectedId` on purpose. Selecting a node also tells the
    * camera to look at it, which is right when you click something on the map
-   * and wrong when you pick a target from a list — there the view should hold
+   * and wrong when you pick a target from a list, there the view should hold
    * still and the node should simply be marked. Once a run starts, the
    * simulation's own origin takes over this role.
    */
@@ -59,7 +59,7 @@ interface PulseState {
    *
    * Zero while the failure is spreading or settled. Walking it upward returns
    * assets to health in the plan's order, which is the reverse of the order
-   * they broke in — the point the recovery playback exists to make.
+   * they broke in, the point the recovery playback exists to make.
    */
   recoveryStep: number;
   /** Assets highlighted as a lineage trace (upstream+downstream of selection). */
@@ -84,7 +84,7 @@ interface PulseState {
    * Load a simulation into the shared state.
    *
    * `immediate` reveals the whole blast radius at once. The hop-by-hop reveal
-   * is a Chaos Lab affordance — it explains propagation while you watch it.
+   * is a Chaos Lab affordance, it explains propagation while you watch it.
    * Everywhere else (scenario runs, deep links) the result should already be
    * complete, otherwise the summary counts under-report the real impact.
    */
@@ -109,7 +109,7 @@ interface PulseState {
    * Has the run reached this node yet?
    *
    * True for anything the propagation wave has touched, and for everything
-   * once recovery has begun — the map dims what the story has not reached,
+   * once recovery has begun, the map dims what the story has not reached,
    * and by recovery time the story has reached all of it.
    */
   isRevealed: (id: string) => boolean;
@@ -157,7 +157,7 @@ function indexImpacts(sim: Simulation | null): Map<string, NodeImpact> {
  * Asset id -> the recovery step after which it is healthy again.
  *
  * The engine's plan names a target for every step that has one; teams and
- * business processes never do, because nothing is "rebuilt" about them — they
+ * business processes never do, because nothing is "rebuilt" about them, they
  * are whole again when the incident is resolved, which is the final step. So
  * anything absent from this map recovers last, and `recoveryOrderOf` says so
  * rather than leaving those nodes broken forever.
@@ -392,7 +392,7 @@ export function maxHops(sim: Simulation | null): number {
 
 /**
  * The engine's own cadence, mirrored so playback and the timeline agree.
- * See `backend/app/engine/simulation.py` — a hop of propagation is 180
+ * See `backend/app/engine/simulation.py`: a hop of propagation is 180
  * simulated seconds, and a recovery step is 300.
  */
 export const SECONDS_PER_HOP = 180;
@@ -407,7 +407,7 @@ export function propagationEnd(sim: Simulation | null): number {
  * The recovery half of the timeline, read from the events themselves.
  *
  * Recovery does not begin until the failure has run for its configured
- * duration, so this window starts far after propagation ends — the gap is real
+ * duration, so this window starts far after propagation ends, the gap is real
  * elapsed time, and the transport shows it as a gap rather than pretending the
  * two phases are adjacent.
  */

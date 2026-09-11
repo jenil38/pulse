@@ -22,7 +22,7 @@ import { TargetBrief } from "./TargetBrief";
  * old build ended up refusing to open at all below 768px.
  *
  * So the failure travels DOWN instead. Each hop is a rung on a single rail,
- * and the wave reveals one rung at a time — which is arguably a *clearer*
+ * and the wave reveals one rung at a time, which is arguably a *clearer*
  * reading of hop distance than the 3D map gives, because distance from the
  * origin is literally distance down the screen. The engine output, the clock,
  * the recovery plan and the transport are all the same ones the desktop uses.
@@ -247,7 +247,7 @@ function Cascade() {
         if (shown.length === 0) return null;
         return (
           <li key={hop} className="reveal relative pb-1 pl-5">
-            {/* The rail — the causal chain, drawn once per rung. */}
+            {/* The rail: the causal chain, drawn once per rung. */}
             <span
               className="absolute bottom-0 left-[3px] top-3 w-px bg-border"
               aria-hidden

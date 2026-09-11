@@ -1,7 +1,7 @@
-# PULSE — Design System v2
+# PULSE: Design System v2
 
 > Revision brief: move from "generic AI SaaS" to a **70% professional product /
-> 30% cinematic** system, informed by Linear and Raycast — principles extracted,
+> 30% cinematic** system, informed by Linear and Raycast, principles extracted,
 > nothing copied.
 
 ---
@@ -34,17 +34,17 @@ Measured from the live site, not recalled:
 
 | Token | Value | Principle |
 |---|---|---|
-| Background scale | `#08090a` → `#1c1c1f` → `#232326` → `#28282c` | **Exactly 4 surface steps.** Elevation is a small, finite ladder — not arbitrary. |
+| Background scale | `#08090a` → `#1c1c1f` → `#232326` → `#28282c` | **Exactly 4 surface steps.** Elevation is a small, finite ladder, not arbitrary. |
 | Text scale | `#f7f8f8` → `#d0d6e0` → `#8a8f98` → `#62666d` | **4 text weights of emphasis.** Hierarchy is carried by *value*, not size or caps. |
 | Borders | `#23252a`, `#34343a`, plus `#ffffff0d` / `#ffffff14` | Translucent hairlines that sit *on* the surface rather than fencing it. |
-| Weight | `--font-weight-medium: 510` | **510, not 600/700.** Emphasis without shouting — the most copyable detail here. |
+| Weight | `--font-weight-medium: 510` | **510, not 600/700.** Emphasis without shouting, the most copyable detail here. |
 | Display type | 64px / lh 1.0 / **-1.4px tracking** | Large type gets *negative* tracking and 1.0 line-height. |
 | Radius | `--border-radius: 8px` | One base radius. Pills reserved for chips. |
 | Controls | 28px and 32px heights, 13–14px text | Compact, consistent control sizing. |
 | Semantic colour | `bg` ~96% L, `border` ~87% L, `text` ~45% L | Status = **triad** (tint bg + border + saturated text), never a solid block. |
 | Layout | `--page-max-width: 1024px` | Marketing is narrow and readable, not full-bleed. |
 
-**The meta-lesson:** Linear's hero visual is *the actual product UI* — dense
+**The meta-lesson:** Linear's hero visual is *the actual product UI*, dense
 issue lists, real IDs (`ENG-2085`), status counts, a properties panel. It sells
 by showing the tool working, not by abstract 3D. Density plus hierarchy reads as
 premium; big glowing cards do not.
@@ -62,7 +62,7 @@ premium; big glowing cards do not.
 | Type usage | `14px/500` used **128×**, then `16px/400`, `14px/600`, `24px/500`, `11px/500` | One workhorse size (14px medium). Metadata at 11–12px. Very few sizes total. |
 | Containers | 746 / 1064 / 1204 / 1280 | Content width is chosen per section, not one global max. |
 
-**The meta-lesson:** Raycast's polish comes from *restraint plus consistency* —
+**The meta-lesson:** Raycast's polish comes from *restraint plus consistency*,
 a tiny type palette, one radius ladder, and gradients used only as accents on
 key art. Keyboard-first framing (shortcuts shown inline) makes it feel like a
 tool for professionals.
@@ -72,7 +72,7 @@ tool for professionals.
 ## 4. New PULSE design system
 
 **Positioning:** an engineering instrument. It should communicate **precision,
-control, reliability, clarity** — the aesthetic of an oscilloscope or a wind
+control, reliability, clarity**, the aesthetic of an oscilloscope or a wind
 tunnel, not a spaceship.
 
 Four rules that govern everything:
@@ -84,7 +84,7 @@ Four rules that govern everything:
 3. **Structure before surfaces.** Prefer sections, rules, lists and tables.
    A card must justify itself by grouping genuinely related things.
 4. **Motion must explain.** If an animation doesn't communicate flow,
-   dependency, selection, propagation, or navigation — it's cut.
+   dependency, selection, propagation, or navigation, it's cut.
 
 **Final quality test** (from the brief): strip gradients → still professional;
 strip 3D → still an excellent app; disable animation → hierarchy still clear.
@@ -93,7 +93,7 @@ strip 3D → still an excellent app; disable animation → hierarchy still clear
 
 ## 5. New colour system
 
-### 5.1 Product mode (default — light)
+### 5.1 Product mode (default: light)
 
 ```
 SURFACES  (4 steps)
@@ -107,13 +107,13 @@ border-subtle   #ECEEF1    internal dividers
 border          #E1E4E9    default hairline
 border-strong   #C8CDD5    inputs, emphasis
 
-TEXT  (4 steps — hierarchy by value)
+TEXT  (4 steps: hierarchy by value)
 text-primary     #16181D
 text-secondary   #4A5058
 text-tertiary    #737985    metadata
 text-quaternary  #9BA1AB    disabled / faint
 
-ACCENT — deep cobalt (single product accent)
+ACCENT: deep cobalt (single product accent)
 accent          #2B5CE0
 accent-hover    #2450C7
 accent-active   #1D44AE
@@ -122,7 +122,7 @@ accent-border   #C6D6FA
 accent-text     #1E4BC0    on tint
 ```
 
-### 5.2 Semantic states — the triad pattern
+### 5.2 Semantic states: the triad pattern
 
 Following Linear: each state is **tint bg + border + saturated text**, never a
 solid colour block. `dot` is the small status indicator.
@@ -135,10 +135,10 @@ solid colour block. `dot` is the small status indicator.
 | **Recovering** | `#2563C7` | `#BBD1F5` | `#F0F5FE` |
 | **Stale** | `#737985` | `#E1E4E9` | `#F6F7F9` |
 
-Healthy is a restrained green-teal — present but quiet, because a healthy system
+Healthy is a restrained green-teal: present but quiet, because a healthy system
 should not demand attention.
 
-### 5.3 Chaos mode (dark — simulation only)
+### 5.3 Chaos mode (dark: simulation only)
 
 Not a theme toggle. A **deliberate environment shift** when a simulation runs.
 
@@ -152,22 +152,22 @@ STATE (raised luminance so it carries on dark)
 healthy #3FD1A0   degraded #EBAE3C   failed #FF6B5B   recovering #5BA6FF
 ```
 
-Same hues, re-tuned for the ground they sit on — so the state language survives
+Same hues, re-tuned for the ground they sit on, so the state language survives
 the transition and the *meaning* never changes.
 
 ---
 
 ## 6. Typography system
 
-**Faces — two, with strict jobs:**
+**Faces: two, with strict jobs:**
 
-- **Inter** (variable) — all interface and marketing text.
-- **JetBrains Mono** — *only* asset IDs, metrics, timestamps, schema versions,
+- **Inter** (variable): all interface and marketing text.
+- **JetBrains Mono**: *only* asset IDs, metrics, timestamps, schema versions,
   and keyboard shortcuts. Everything else is Inter.
 
 This alone removes 158 mono usages down to roughly 30 legitimate ones.
 
-**Scale** (weights: 400 regular, 510 medium, 600 semibold — never 700):
+**Scale** (weights: 400 regular, 510 medium, 600 semibold, never 700):
 
 | Token | Size / line-height / tracking / weight | Use |
 |---|---|---|
@@ -183,7 +183,7 @@ This alone removes 158 mono usages down to roughly 30 legitimate ones.
 | `micro` | 11 / 1.3 / +0.02em / 510 | column labels, badges (**sentence case**) |
 | `mono` | 12 / 1.4 / 0 / 400 tabular | IDs, metrics, timestamps |
 
-**Rules:** uppercase is allowed only on `micro` badges and table column headers —
+**Rules:** uppercase is allowed only on `micro` badges and table column headers,
 nowhere else. Tracking is negative above 20px, zero in body, slightly positive
 only at 11px. All comparable numbers use `tabular-nums`.
 
@@ -191,20 +191,20 @@ only at 11px. All comparable numbers use `tabular-nums`.
 
 ## 7. Surface / border / radius system
 
-**Radius ladder** — one scale, default 8:
+**Radius ladder**: one scale, default 8:
 
 ```
 xs  4   badges, dots, tiny chips
 sm  6   inputs, small buttons
-md  8   DEFAULT — buttons, panels, dropdowns, menu items
+md  8   DEFAULT, buttons, panels, dropdowns, menu items
 lg  12  modals, command palette, drawers
-xl  16  large visual surfaces (topology stage) — only when justified
+xl  16  large visual surfaces (topology stage), only when justified
 full    status pills only
 ```
 
 Nothing above 16px. No 20–30px "AI SaaS" corners.
 
-**Elevation** — three levels, and shadows are nearly invisible:
+**Elevation**: three levels, and shadows are nearly invisible:
 
 ```
 flat      no shadow; separated by a hairline        ← default for panels
@@ -215,7 +215,7 @@ overlay   0 12px 32px rgba(16,24,40,.12)            ← command palette, modals
 No blur, no glass, no glow, no gradient borders.
 
 **Control heights:** 24 (xs) / 28 (sm) / 32 (md, default) / 36 (lg).
-**Spacing:** 4px base — 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96.
+**Spacing:** 4px base: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96.
 **Density target:** table rows 32–36px; list rows 28–32px.
 
 **Card policy:** a card exists only when it groups genuinely related content that
@@ -253,18 +253,18 @@ Everything respects `prefers-reduced-motion`.
 |---|---|---|---|
 | Landing | 55% | 45% | Expressive hero + scroll story; the rest is clean product storytelling |
 | Control Room (normal) | 90% | 10% | 2.5D topology with flow motion; everything else is precise product UI |
-| Control Room (chaos) | 40% | 60% | Dark environment, depth, propagation — earned drama |
+| Control Room (chaos) | 40% | 60% | Dark environment, depth, propagation, earned drama |
 | Chaos Lab | 60% | 40% | Config/impact panels professional; the stage is cinematic |
 | Incident Replay | 65% | 35% | Timeline + event log professional; topology replay cinematic |
-| Scenario Compare | 90% | 10% | Data comparison — essentially no cinematic content |
+| Scenario Compare | 90% | 10% | Data comparison, essentially no cinematic content |
 | Incidents list / settings | 100% | 0% | Pure product |
 | **App average** | **~80%** | **~20%** | |
 | **Overall** | **~70%** | **~30%** | |
 
-**Signature interaction — the mode shift.** In the Control Room the user hits
+**Signature interaction: the mode shift.** In the Control Room the user hits
 `Simulate failure`. Over 600ms the canvas darkens, surfaces recede, the topology
 gains depth and the flow becomes prominent. The failure propagates. On exit, the
-UI returns to the bright professional workspace. The *contrast* is the drama —
+UI returns to the bright professional workspace. The *contrast* is the drama,
 which is only possible because the default state is genuinely light and calm.
 
 ---
@@ -272,23 +272,23 @@ which is only possible because the default state is genuinely light and calm.
 ## 10. Exact components to redesign
 
 **Foundation (new)**
-- `tailwind.config.ts` — full token rebuild (colours, type scale, radius, shadow, motion)
-- `app/globals.css` — remove `grain` + `haze`; light base; type utilities
-- `app/layout.tsx` — Inter + JetBrains Mono; drop the serif
-- `lib/theme.ts` *(new)* — mode context (`normal` | `chaos`) + CSS-variable switching
-- `lib/visual.ts` — state triads for both modes
+- `tailwind.config.ts`: full token rebuild (colours, type scale, radius, shadow, motion)
+- `app/globals.css`: remove `grain` + `haze`; light base; type utilities
+- `app/layout.tsx`: Inter + JetBrains Mono; drop the serif
+- `lib/theme.ts` *(new)*: mode context (`normal` | `chaos`) + CSS-variable switching
+- `lib/visual.ts`: state triads for both modes
 
 **Primitives (rewrite `components/ui/`)**
 - `Button` (primary/secondary/ghost/danger; 4 sizes) · `StatusDot` · `Badge`
 - `Field` / `Input` / `Select` · `Tabs` · `Tooltip` · `Kbd` *(new)*
-- `Table` *(new — dense, sortable, selectable rows)* · `Section` *(new — replaces cards)*
+- `Table` *(new: dense, sortable, selectable rows)* · `Section` *(new: replaces cards)*
 - `Drawer` *(new)* · `EmptyState` *(new)*
 - **Delete:** `SimulatedTag` styling, `StateBar`, `PanelHeading` (replaced by `Section`)
 
 **New features**
-- `CommandPalette` — ⌘K: open system, search asset, simulate failure, view
+- `CommandPalette` (⌘K): open system, search asset, simulate failure, view
   lineage, open Chaos Lab, view incidents, compare scenarios, replay incident
-- `useHotkeys` — global keyboard registry with a discoverable shortcut sheet
+- `useHotkeys`: global keyboard registry with a discoverable shortcut sheet
 
 **Control Room**
 - `NavRail` → proper sidebar: workspace header, sections, counts, active states
@@ -305,15 +305,15 @@ which is only possible because the default state is genuinely light and calm.
 - `ChaosStage` *(new)* → the dark cinematic variant + mode transition
 
 **Other surfaces**
-- `chaos-lab` — config panel → proper form controls; impact → dense table
-- `incidents` — list → real table with status, severity, assignee, duration
-- `incidents/[id]` — replay timeline restyled; event log as a proper feed
-- `compare` — comparison table + restrained bars, no cinematic treatment
-- Landing — rebuilt: strong type, breathing room, product-truthful visuals
+- `chaos-lab`: config panel → proper form controls; impact → dense table
+- `incidents`: list → real table with status, severity, assignee, duration
+- `incidents/[id]`: replay timeline restyled; event log as a proper feed
+- `compare`: comparison table + restrained bars, no cinematic treatment
+- Landing: rebuilt with strong type, breathing room, product-truthful visuals
 
 **Tests to update**
-- `tests/logic.test.ts` — palette assertions now target the new tokens
-- Add `tests/theme.test.ts` — state triads exist and stay legible in both modes
+- `tests/logic.test.ts`: palette assertions now target the new tokens
+- Add `tests/theme.test.ts`: state triads exist and stay legible in both modes
 
 ---
 

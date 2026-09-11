@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/primitives";
 
 /**
- * Asset inspector — a properties panel, not a stack of cards.
+ * Asset inspector: a properties panel, not a stack of cards.
  *
  * Label/value rows align into one scannable column; tabs separate identity from
  * lineage and telemetry so the panel stays short. Actions live at the bottom,
@@ -188,7 +188,7 @@ export function Inspector() {
                   title="Direct upstream"
                   items={lineage.upstream}
                   onSelect={select}
-                  empty="This is a source — nothing feeds it."
+                  empty="This is a source. Nothing feeds it."
                 />
                 <LineageList
                   title="Direct downstream"
@@ -248,7 +248,7 @@ export function Inspector() {
                     {m.latency_ms}ms
                   </Property>
                   <Property label="Rows" mono>
-                    {m.row_volume > 0 ? formatCount(m.row_volume) : "—"}
+                    {m.row_volume > 0 ? formatCount(m.row_volume) : "-"}
                     {m.row_volume > 0 && (
                       <span className="pl-1.5 font-sans text-caption text-quaternary">
                         {m.volume_delta_pct > 0 ? "+" : ""}
@@ -278,7 +278,7 @@ export function Inspector() {
               ))}
           </div>
 
-          {/* Actions — always in the same place */}
+          {/* Actions: always in the same place */}
           <div className="shrink-0 space-y-1.5 border-t border-border p-3">
             <Button
               size="sm"

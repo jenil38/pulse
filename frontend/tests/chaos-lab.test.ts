@@ -4,7 +4,7 @@
  * The lab's whole claim is that what you watch is what the engine computed.
  * That claim only holds if the clock's derivation of "how far has this got"
  * matches the engine's own event cadence exactly, so these tests run against a
- * fixture captured from the real engine — `stg_payments` schema drift over the
+ * fixture captured from the real engine, `stg_payments` schema drift over the
  * NOVA COMMERCE topology, verbatim from `run_simulation`.
  *
  * The invariant worth protecting above all others is the recovery order: an
@@ -69,7 +69,7 @@ const TIMELINE: TimelineEvent[] = [
   {
     t: 0,
     node_id: "stg_payments",
-    label: "stg_payments — Schema drift injected",
+    label: "stg_payments: Schema drift injected",
     kind: "inject" as TimelineEvent["kind"],
   },
   ...NODES.filter((n) => n.hops > 0).map<TimelineEvent>((n) => ({
@@ -157,7 +157,7 @@ describe("engine cadence", () => {
   it("finds the recovery window in the engine's own events", () => {
     const w = recoveryWindow(SIM);
     // Recovery does not begin until the failure has run its configured
-    // duration — 30 minutes here — which is the gap the transport labels.
+    // duration, 30 minutes here, which is the gap the transport labels.
     expect(w).toEqual({ start: 1800, end: 1800 + 5 * SECONDS_PER_RECOVERY_STEP });
     expect(w!.start).toBe(DURATION_MINUTES * 60);
     expect(w!.start).toBeGreaterThan(propagationEnd(SIM));
@@ -176,7 +176,7 @@ describe("the playback axis", () => {
     // The last hop lands exactly at propagationEnd. If the segment stopped
     // there too, the finished blast radius would occupy a single instant that
     // a scrubber could only hit by luck, and the final hop would be all but
-    // unreachable. The segment therefore runs one hop past the last event —
+    // unreachable. The segment therefore runs one hop past the last event,
     // the same beat the closing recovery step gets.
     const settle = propagationEnd(SIM);
     store().seek(settle);
@@ -300,7 +300,7 @@ describe("what the map shows", () => {
 
   it("restores teams and processes only when the incident is resolved", () => {
     store().setSimPhase("recovering");
-    // The plan names no step for a team — nothing is "rebuilt" about people.
+    // The plan names no step for a team, nothing is "rebuilt" about people.
     // They are whole again when the incident closes, and not one step before.
     store().seek(3300);
     expect(store().stateOf("team_finance")).toBe("RECOVERING");

@@ -25,8 +25,8 @@ const TopologyScene = dynamic(
 /**
  * The Chaos Lab stage.
  *
- * The Control Room frames its map with chrome — a pipeline caption, a legend
- * rail, a selection card — because there the map is one panel among several.
+ * The Control Room frames its map with chrome, a pipeline caption, a legend
+ * rail, a selection card, because there the map is one panel among several.
  * Here the map is the subject, so the stage carries almost nothing: a vignette
  * that lights the centre, a legend that only names states actually on screen,
  * and a way back to the establishing shot. Everything else the lab needs is
@@ -66,7 +66,7 @@ export function ChaosStage({ children }: { children?: ReactNode }) {
     <div className="stage-depth relative min-h-0 flex-1 bg-stage transition-colors duration-mode ease-standard">
       <TopologyScene />
 
-      {/* Floating chrome the page supplies — composer, ledger, transport. */}
+      {/* Floating chrome the page supplies: composer, ledger, transport. */}
       {children}
 
       {/* Above the node labels the scene draws into the DOM (drei's <Html>

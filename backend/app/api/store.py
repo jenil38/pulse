@@ -1,5 +1,5 @@
 """
-PULSE — demo-system accessors.
+PULSE: demo-system accessors.
 
 PULSE used to keep exactly one topology in a module-level singleton here. It
 now keeps many, one per account, in `workspace`. This module survives as the
@@ -7,7 +7,7 @@ short way to reach the *demo* system, which is what the engine tests and the
 camera-framing tool want and what an anonymous visitor sees.
 
 Anything that needs to respect ownership must go through `workspace.resolve`
-instead — this module deliberately offers no way to reach a user's system.
+instead, this module deliberately offers no way to reach a user's system.
 """
 from __future__ import annotations
 

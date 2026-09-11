@@ -4,7 +4,7 @@ Workspace tests: a user's own systems, and the wall between them.
 The point of this layer is that PULSE stops being a pre-populated demo. Two
 things have to hold for that to be true, and both are tested here:
 
-  * a new account starts EMPTY — the demo is reachable, but it is not theirs
+  * a new account starts EMPTY, the demo is reachable, but it is not theirs
   * the whole analysis surface runs on the graph the user actually built,
     and refuses to run on anybody else's
 """

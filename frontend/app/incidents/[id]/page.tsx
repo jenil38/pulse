@@ -24,7 +24,7 @@ import type { IncidentDetail } from "@/lib/types";
  *
  * Scrubbing drives the shared topology store, so the map, the event feed and
  * the timeline all reflect the same instant. The environment sits in chaos mode
- * for the duration — this is a failure being examined, not routine admin.
+ * for the duration, this is a failure being examined, not routine admin.
  */
 export default function IncidentReplayPage({
   params,
@@ -89,7 +89,7 @@ export default function IncidentReplayPage({
     setPhase("settled");
   }, [incident, setSimulation, setPhase]);
 
-  // 180s per hop — matches the engine's timeline generation.
+  // 180s per hop: matches the engine's timeline generation.
   useEffect(() => {
     advance(Math.floor(t / 180));
   }, [t, advance]);
@@ -110,7 +110,7 @@ export default function IncidentReplayPage({
       setIncident({ ...incident, ...updated });
       setActionError(null);
     } catch (e) {
-      // Surface it — silently failing an acknowledge is worse than an error.
+      // Surface it: silently failing an acknowledge is worse than an error.
       setActionError(e);
     } finally {
       setBusy(false);

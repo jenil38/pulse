@@ -10,7 +10,7 @@ import { Icon, NodeGlyph } from "@/components/ui/Icon";
 /**
  * Command palette (⌘K).
  *
- * Every command here maps to a route or store action that already exists —
+ * Every command here maps to a route or store action that already exists,
  * nothing is stubbed. Two groups:
  *
  *   Commands  navigation and actions, filtered by fuzzy-ish substring match

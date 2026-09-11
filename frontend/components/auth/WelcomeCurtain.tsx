@@ -9,13 +9,13 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
  * Plays once, immediately after a successful sign-in, while the room's lights
  * come up behind it. It exists to mark a threshold: the visitor stops being
  * anonymous and the product opens. That is the one moment in a tool where a
- * few seconds of theatre is earned — so it is spent here and nowhere else.
+ * few seconds of theatre is earned, so it is spent here and nowhere else.
  *
  * Rules it keeps:
  *   - it is always skippable, by click or by any key, and says so
  *   - it never blocks work: the session is already stored and the destination
  *     already prefetched by the time it starts, so the app is warm behind it
- *   - reduced motion collapses it to a held frame, not a removed one — the
+ *   - reduced motion collapses it to a held frame, not a removed one, the
  *     threshold still reads, it just doesn't move
  *
  * The parent raises the house lights; this component only owns the words.
@@ -110,7 +110,7 @@ export function WelcomeCurtain({
           {returning ? "Welcome back" : "Your workspace is ready"}
         </p>
 
-        {/* The name — the whole reason this screen exists */}
+        {/* The name: the whole reason this screen exists */}
         <h1
           className="pt-5 font-medium leading-[0.95] tracking-[-0.04em] text-primary transition-all duration-[900ms] ease-standard"
           style={{
@@ -123,7 +123,7 @@ export function WelcomeCurtain({
           <span className={beat >= 2 && !reduced ? "sweep" : undefined}>{first}</span>
         </h1>
 
-        {/* Rule — draws out from the centre */}
+        {/* Rule: draws out from the centre */}
         <div
           className="mx-auto mt-8 h-px w-full max-w-[420px] origin-center bg-border-strong transition-transform duration-[900ms] ease-standard"
           style={{ transform: `scaleX(${beat >= 3 ? 1 : 0})` }}
@@ -146,7 +146,7 @@ export function WelcomeCurtain({
             {role ? ` as ${role}` : ""}.
           </p>
           <p className="pt-2 text-small text-quaternary">
-            Loading the Control Room — 43 assets, 47 dependencies, all simulated.
+            Loading the Control Room: 43 assets, 47 dependencies, all simulated.
           </p>
         </div>
       </div>

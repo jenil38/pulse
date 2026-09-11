@@ -1,13 +1,13 @@
 /**
  * PULSE environment mode.
  *
- * `normal` — the bright, precise professional workspace (the default).
- * `chaos`  — the darkened simulation environment.
+ * `normal`: the bright, precise professional workspace (the default).
+ * `chaos`:  the darkened simulation environment.
  *
  * This is NOT a user theme preference. It is a product state: the environment
  * shifts only while a failure simulation is being run or replayed, and the
  * contrast is what gives those moments their weight. Because every token is a
- * CSS variable, switching is one attribute write on <html> — no React re-render
+ * CSS variable, switching is one attribute write on <html>, no React re-render
  * of the tree, and the transition is handled entirely in CSS.
  */
 "use client";
@@ -58,7 +58,7 @@ export function useChaosMode(active: boolean) {
   }, [active]);
 }
 
-/** Reads a resolved design token — used by WebGL, which can't use classes. */
+/** Reads a resolved design token: used by WebGL, which can't use classes. */
 export function token(name: string): string {
   // Single documented fallback: only reachable during SSR, where no WebGL
   // scene is mounted anyway.

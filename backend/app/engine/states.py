@@ -1,5 +1,5 @@
 """
-PULSE — core state & failure taxonomy.
+PULSE: core state & failure taxonomy.
 
 Everything the failure-simulation engine reasons about is deterministic and
 declared here: node types, health states, criticality weights, the catalogue of
@@ -39,7 +39,7 @@ DATA_ASSET_TYPES = frozenset({
 # Nodes that *consume* data and become untrustworthy rather than "failed".
 CONSUMER_TYPES = frozenset({NodeType.DASHBOARD, NodeType.ML_MODEL})
 
-# Human / process anchors — impacted, not technically failed.
+# Human / process anchors: impacted, not technically failed.
 IMPACT_TYPES = frozenset({NodeType.BUSINESS_PROCESS, NodeType.TEAM})
 
 

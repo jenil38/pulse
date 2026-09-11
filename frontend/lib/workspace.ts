@@ -1,11 +1,11 @@
 /**
- * PULSE — the workspace: which system the product is currently looking at.
+ * PULSE workspace: which system the product is currently looking at.
  *
  * Every analysis screen reads one system. Rather than thread an id through
  * every component, the active id lives here and `lib/api` attaches it to each
  * request, so a screen written before workspaces existed keeps working.
  *
- * The id is remembered per browser, not per account, so signing out clears it —
+ * The id is remembered per browser, not per account, so signing out clears it,
  * otherwise the next person to sign in on this machine would land on a system
  * they cannot open.
  */
@@ -43,7 +43,7 @@ export interface SystemComponent {
   description: string;
 }
 
-/** `source` depends on `target` — failure travels from target out to source. */
+/** `source` depends on `target`: failure travels from target out to source. */
 export interface SystemDependency {
   source: string;
   target: string;
@@ -85,7 +85,7 @@ const COMPONENT_TYPES: ComponentType[] = [
 /**
  * The same generic words the importer accepts server-side.
  *
- * The server is still the authority — it re-resolves every type on save. This
+ * The server is still the authority, it re-resolves every type on save. This
  * copy exists so an imported "database" shows as a database in the builder's
  * dropdown instead of silently falling back to whatever option happens to be
  * first, which would misrepresent the file the user just handed us.
@@ -181,7 +181,7 @@ function persist(id: string) {
   try {
     window.localStorage.setItem(KEY, id);
   } catch {
-    /* storage unavailable — the choice lasts this page only */
+    /* storage unavailable, the choice lasts this page only */
   }
 }
 

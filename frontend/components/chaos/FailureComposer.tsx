@@ -15,7 +15,7 @@ import { Icon, NodeGlyph } from "@/components/ui/Icon";
 import { StatusDot } from "@/components/ui/primitives";
 
 /**
- * The composer — where a failure is described before it is run.
+ * The composer: where a failure is described before it is run.
  *
  * It reads top to bottom as one decision: what to break, how it breaks, with
  * what change, for how long. The drama belongs to the stage behind it, so
@@ -36,9 +36,9 @@ const PARAM_PRESETS: Record<FailureType, string> = {
 };
 
 const MODE_NOTE: Record<string, string> = {
-  STARVE: "No fresh data arrives — downstream goes stale.",
-  BREAK: "Structure fails — transformations break, tables degrade.",
-  CORRUPT: "Wrong values flow through — downstream degrades.",
+  STARVE: "No fresh data arrives, so downstream goes stale.",
+  BREAK: "Structure fails: transformations break, tables degrade.",
+  CORRUPT: "Wrong values flow through, and downstream degrades.",
 };
 
 /** Propagation modes in the order the engine reasons about them. */
@@ -303,7 +303,7 @@ function TargetPicker({
 
   useEffect(() => setActive(0), [query]);
 
-  // Keep the keyboard cursor in view — a list you can drive but not see is
+  // Keep the keyboard cursor in view, a list you can drive but not see is
   // worse than one you cannot drive.
   useEffect(() => {
     listRef.current

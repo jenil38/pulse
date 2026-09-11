@@ -24,7 +24,7 @@ import { Tabs } from "@/components/ui/primitives";
  * their motion by explaining something. Defining a component does not, and a
  * builder that performs would be slower to use every single time.
  *
- * Rows carry a client-side `uid` so React keys survive renaming — without it,
+ * Rows carry a client-side `uid` so React keys survive renaming, without it,
  * editing a component's name would remount the row and drop focus mid-word.
  */
 export interface Row extends ComponentDraft {

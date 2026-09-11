@@ -15,7 +15,7 @@ import { Icon, NodeGlyph } from "@/components/ui/Icon";
 import { Badge, StatusDot, Table, Td, Th } from "@/components/ui/primitives";
 
 /**
- * Resilience — the score, why it is what it is, and where the system is weakest.
+ * Resilience: the score, why it is what it is, and where the system is weakest.
  *
  * The backend already returns the full penalty breakdown and the SPOF map from
  * GET /api/resilience; previously the UI showed only the headline number. This

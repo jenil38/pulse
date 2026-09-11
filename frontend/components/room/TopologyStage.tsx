@@ -78,7 +78,7 @@ export function TopologyStage() {
       <div className="relative min-h-0 flex-1 bg-stage transition-colors duration-mode ease-standard">
         <TopologyScene />
 
-        {/* View controls — always available, top-right */}
+        {/* View controls: always available, top-right */}
         <div className="absolute right-3 top-3 flex items-center gap-1.5">
           {tracedIds.size > 0 && (
             <Button size="xs" onClick={clearTrace}>
@@ -141,7 +141,7 @@ export function TopologyStage() {
           </div>
         )}
 
-        {/* Interaction hint — only when nothing is selected */}
+        {/* Interaction hint: only when nothing is selected */}
         {!selected && (
           <p className="pointer-events-none absolute bottom-3 left-4 hidden text-caption text-quaternary lg:block">
             Drag to orbit · scroll to zoom · click a node to inspect

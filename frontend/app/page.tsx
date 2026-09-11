@@ -21,8 +21,8 @@ import {
 import { StatusDot } from "@/components/ui/primitives";
 import { STATE } from "@/lib/visual";
 
-const StoryScroll = dynamic(
-  () => import("@/components/marketing/StoryScroll").then((m) => m.StoryScroll),
+const StoryCarousel = dynamic(
+  () => import("@/components/marketing/StoryCarousel").then((m) => m.StoryCarousel),
   { ssr: false, loading: () => <div className="h-[60vh]" /> }
 );
 
@@ -30,7 +30,7 @@ const StoryScroll = dynamic(
  * Landing page.
  *
  * Breathing room, strong type, and a product-truthful hero: the visual is the
- * real topology running the real Payments outage from the engine — not an
+ * real topology running the real Payments outage from the engine, not an
  * abstract decoration. Everything below the hero is clean product storytelling.
  */
 const STORY_ORIGIN = "src_payments";
@@ -88,7 +88,7 @@ export default function Landing() {
         </h1>
         <p className="max-w-[54ch] pt-5 text-body leading-relaxed text-secondary md:text-base">
           Model your architecture as a dependency graph, then break it on
-          purpose — PULSE computes exactly what degrades next, in what order it
+          purpose. PULSE computes exactly what degrades next, in what order it
           comes back, and who is working from numbers they should not trust.
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-7">
@@ -107,12 +107,12 @@ export default function Landing() {
           </span>
         </div>
         <p className="max-w-[54ch] pt-4 text-caption text-quaternary">
-          You describe the system — by hand or as JSON. PULSE does not connect
+          You describe the system, by hand or as JSON. PULSE does not connect
           to your cloud account and discovers nothing on its own.
         </p>
       </section>
 
-      {/* Scale of the modelled system — real numbers, quietly presented */}
+      {/* Scale of the modelled system: real numbers, quietly presented */}
       {topology && (
         <section className="mx-auto max-w-[1120px] px-6 pb-10">
           <dl className="flex flex-wrap gap-x-12 gap-y-4 border-t border-border pt-6">
@@ -125,8 +125,8 @@ export default function Landing() {
         </section>
       )}
 
-      {/* Scroll-driven product story — the real engine, advanced by the reader */}
-      <StoryScroll topology={topology} simulation={sim} />
+      {/* Product story: the real engine, one glass card per scene */}
+      <StoryCarousel topology={topology} simulation={sim} />
 
       {/* The question */}
       <section className="mx-auto max-w-[1120px] px-6 pb-6 pt-24">
@@ -137,7 +137,7 @@ export default function Landing() {
           <Feature
             icon="room"
             title="Model the system"
-            body="Sources, ingestion, transformations, warehouse tables, models, dashboards, ML systems and the teams that depend on them — as one directed graph."
+            body="Sources, ingestion, transformations, warehouse tables, models, dashboards, ML systems and the teams that depend on them, as one directed graph."
           />
           <Feature
             icon="chaos"
@@ -152,11 +152,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Capabilities — real interface fragments, not illustrations */}
+      {/* Capabilities: real interface fragments, not illustrations */}
       <section className="mx-auto max-w-[1120px] px-6">
         <CapabilityRow
           eyebrow="Control Room"
-          title="Every asset, its health, and its trend — in one pass."
+          title="Every asset, its health and its trend, in one pass."
           body="A dense, sortable inventory of the whole estate: freshness against target, latency, row volume, ownership and downstream weight, with a sparkline on every row."
           bullets={[
             "Freshness measured against each asset's own target, not a global one",
@@ -176,7 +176,7 @@ export default function Landing() {
           reverse
           eyebrow="Blast radius"
           title="Failure does not stay where it starts."
-          body="Pick any node, pick a failure, and PULSE walks the dependency graph to compute exactly what degrades — technical assets first, then the dashboards and teams that depend on them."
+          body="Pick any node, pick a failure, and PULSE walks the dependency graph to compute exactly what degrades: technical assets first, then the dashboards and teams that depend on them."
           bullets={[
             "Ten failure types across three propagation modes",
             "Dashboards become untrustworthy rather than simply failing",
@@ -185,7 +185,7 @@ export default function Landing() {
           href="/chaos-lab"
           linkLabel="Open the Chaos Lab"
           visual={
-            <MockWindow title="Payments API — source outage">
+            <MockWindow title="Payments API · source outage">
               <MockBlastRadius />
             </MockWindow>
           }
@@ -203,7 +203,7 @@ export default function Landing() {
           href="/incidents"
           linkLabel="See an incident replay"
           visual={
-            <MockWindow title="Recovery plan — 7 steps">
+            <MockWindow title="Recovery plan · 7 steps">
               <MockRecovery />
             </MockWindow>
           }
@@ -212,7 +212,7 @@ export default function Landing() {
 
       <HowItWorks />
 
-      {/* Real propagation — the product's actual output */}
+      {/* Real propagation: the product's actual output */}
       {sim && (
         <section className="mx-auto max-w-[1120px] px-6 pb-6 pt-20">
           <p className="text-caption text-tertiary">A worked example</p>
@@ -220,7 +220,7 @@ export default function Landing() {
             One source stops answering. Here is what it costs.
           </h2>
           <p className="max-w-[56ch] pt-3 text-body text-secondary">
-            {sim.origin_name} — {sim.failure_label}. The engine walks the graph in
+            {sim.origin_name}: {sim.failure_label}. The engine walks the graph in
             dependency order and marks{" "}
             <strong className="font-medium text-primary">
               {sim.blast_radius.total_affected} downstream assets

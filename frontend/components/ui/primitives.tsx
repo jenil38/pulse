@@ -47,7 +47,7 @@ export function Status({
   );
 }
 
-/** Tint chip — restrained, never a solid colour block. */
+/** Tint chip: restrained, never a solid colour block. */
 export function Badge({
   children,
   tone = "neutral",
@@ -128,7 +128,7 @@ export function Section({
   );
 }
 
-/** Panel title row — used at the top of sidebars and inspectors. */
+/** Panel title row: used at the top of sidebars and inspectors. */
 export function PanelHeader({
   children,
   actions,
@@ -145,7 +145,7 @@ export function PanelHeader({
 }
 
 /**
- * A label/value row — the properties-panel pattern.
+ * A label/value row: the properties-panel pattern.
  * Labels are quiet and fixed-width so values align into a scannable column.
  */
 export function Property({
@@ -217,7 +217,7 @@ export function Divider({ className = "" }: { className?: string }) {
 
 /**
  * Tabs with proper keyboard semantics: roving tabindex, arrow-key navigation,
- * and Home/End — the pattern assistive tech expects from a tablist.
+ * and Home/End, the pattern assistive tech expects from a tablist.
  */
 export function Tabs<T extends string>({
   tabs,

@@ -1,12 +1,12 @@
-# PULSE — local stack.
+# PULSE: local stack.
 #
 # NOTE: Docker was not available on the machine this project was developed on,
-# so this compose file is provided for completeness and reviewed by eye — it has
+# so this compose file is provided for completeness and reviewed by eye, it has
 # not been executed end-to-end. The app runs without Docker (see README).
 
 services:
   # Provisioned for the SQLAlchemy path described in backend/app/db/models.py.
-  # The API does NOT connect to it today — persistence is the JSON store below.
+  # The API does NOT connect to it today, persistence is the JSON store below.
   # It is kept so the migration has somewhere to land, not because it is used.
   db:
     image: postgres:16-alpine

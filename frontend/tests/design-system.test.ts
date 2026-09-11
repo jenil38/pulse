@@ -2,7 +2,7 @@
  * Design-system guardrails.
  *
  * The redesign moved PULSE away from a generic dark-glow SaaS look. These tests
- * read the actual source and fail if the patterns we removed creep back in —
+ * read the actual source and fail if the patterns we removed creep back in,
  * the cheapest way to keep the direction from eroding over time.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -45,7 +45,7 @@ const SCENE = /^\/(components\/auth|app\/(login|signup))\//;
 
 describe("no AI-SaaS visual tropes", () => {
   it("uses no decorative gradients", () => {
-    // Tailwind's gradient utilities are banned outright — a two-stop colour
+    // Tailwind's gradient utilities are banned outright, a two-stop colour
     // wash is the single loudest tell of a generated marketing page.
     const bad = FILES.filter((f) => /gradient-to-|bg-gradient|\bvia-\[/.test(code(f.src)));
     expect(bad.map((f) => f.path)).toEqual([]);

@@ -22,7 +22,7 @@ import { useReducedMotion } from "./useReducedMotion";
  *
  * WHY TWO SEGMENTS. A run has two halves separated by dead time: propagation
  * finishes after `maxHops × 180s`, but the engine does not schedule the first
- * recovery step until the failure has run for its configured duration — up to
+ * recovery step until the failure has run for its configured duration, up to
  * 24 hours later. A single linear scrubber would therefore be mostly empty.
  * So the axis is compressed: the two halves sit side by side and the gap
  * between them is labelled with the real time it represents. Nothing is
@@ -55,7 +55,7 @@ export interface PropagationSpan extends Span {
    *
    * The span runs one hop PAST this so the settled blast radius occupies a
    * real stretch of the axis instead of a single instant that a scrubber can
-   * only hit by luck — the same beat the final recovery step gets.
+   * only hit by luck, the same beat the final recovery step gets.
    */
   settle: number;
 }
@@ -78,7 +78,7 @@ export interface SimulationClock {
   /**
    * True when the axis elides dead time between the halves. False for a short
    * failure whose recovery begins before the blast radius has even finished
-   * spreading — there the timeline really is continuous, and drawing it as two
+   * spreading, there the timeline really is continuous, and drawing it as two
    * segments would invent a seam that is not there.
    */
   compressed: boolean;
@@ -102,7 +102,7 @@ export interface SimulationClock {
   seekProgress: (p: number) => void;
   /** Where a simulated second sits on the compressed axis, 0..1. */
   positionOf: (t: number) => number;
-  /** Move one beat — a hop, or a recovery step. */
+  /** Move one beat: a hop, or a recovery step. */
   step: (direction: 1 | -1) => void;
   /** Replay the failure from the injection. */
   restart: () => void;
@@ -250,7 +250,7 @@ export function useSimulationClock(): SimulationClock {
     // applied retroactively to time already played.
   }, [playing, simulation, speed, stopAt]);
 
-  // Playback halts at the end of the segment it is in — which at the settle
+  // Playback halts at the end of the segment it is in, which at the settle
   // boundary is the story beat, not a technicality.
   useEffect(() => {
     if (playing && t >= stopAt(t)) setPlaying(false);
@@ -279,8 +279,8 @@ export function useSimulationClock(): SimulationClock {
 
   const restart = useCallback(() => {
     // Reduced motion keeps the whole story and drops only the travelling: the
-    // blast radius arrives complete instead of unfolding, and every control —
-    // scrubbing, stepping, the recovery walk — still works from there.
+    // blast radius arrives complete instead of unfolding, and every control,
+    // scrubbing, stepping, the recovery walk, still works from there.
     if (reduced) {
       setT(propagation.settle);
       return;

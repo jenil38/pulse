@@ -3,12 +3,12 @@
 import { useId, useMemo } from "react";
 
 /**
- * Chart primitives — inline SVG, no dependency, design-system colours only.
+ * Chart primitives: inline SVG, no dependency, design-system colours only.
  *
  * A data-reliability product without time-series reads as a diagram rather than
  * an operational tool. These are deliberately plain: thin strokes, one hue per
  * series, no gridlines unless they earn their place, no legend where a caption
- * will do. Same rule as everything else — colour carries state, not decoration.
+ * will do. Same rule as everything else, colour carries state, not decoration.
  */
 
 export interface Pt {
@@ -43,7 +43,7 @@ const STROKE_TONE = {
 } as const;
 
 /**
- * Sparkline — a trend at a glance, sized for a table cell.
+ * Sparkline: a trend at a glance, sized for a table cell.
  * `tone` maps to a semantic colour so a failing metric reads as failing.
  */
 export function Sparkline({
@@ -209,7 +209,7 @@ export function AreaChart({
 }
 
 /**
- * Discrete bar series — counts per bucket (incidents per day).
+ * Discrete bar series: counts per bucket (incidents per day).
  * Empty buckets still render a faint tick so gaps stay legible.
  */
 export function BarSeries({
@@ -254,7 +254,7 @@ export function BarSeries({
 }
 
 /**
- * Stacked proportion bar — the estate's health composition at a glance.
+ * Stacked proportion bar: the estate's health composition at a glance.
  * Not a chart: it answers "how much of the system is healthy right now".
  */
 export function StackedBar({

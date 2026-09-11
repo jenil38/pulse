@@ -17,7 +17,7 @@ import { ErrorState, Spinner } from "@/components/ui/AsyncState";
  *
  * The least cinematic surface in the product, deliberately: this is a
  * quantitative question and the answer is a table plus one clear verdict. Bars
- * are proportional rules, not charts — they exist only to make the ratio
+ * are proportional rules, not charts, they exist only to make the ratio
  * legible at a glance.
  *
  * Side A can be named in the URL, which is how a finished Chaos Lab run hands
@@ -257,7 +257,7 @@ function ScenarioPicker({
         >
           {assets.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.name} — {NODE_LABEL[a.type]}
+              {a.name} · {NODE_LABEL[a.type]}
             </option>
           ))}
         </select>

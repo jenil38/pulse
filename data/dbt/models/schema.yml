@@ -1,6 +1,6 @@
 version: 2
 
-# PULSE demo warehouse — data contracts.
+# PULSE demo warehouse: data contracts.
 #
 # These tests encode the SAME expectations the failure-simulation engine models.
 # A failing test here corresponds to a failure type in PULSE:
@@ -34,11 +34,11 @@ models:
     description: Cleaned, typed payment rows.
     columns:
       - name: payment_id
-        description: Primary key — one row per charge.
+        description: Primary key, one row per charge.
         tests: [unique, not_null]
       - name: amount
         description: >
-          Charge amount. MUST be numeric — this is the contract the
+          Charge amount. MUST be numeric, this is the contract the
           "Payments schema drift" demo scenario violates.
         tests: [not_null]
       - name: payment_status

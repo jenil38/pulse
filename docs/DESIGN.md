@@ -1,19 +1,19 @@
-# PULSE — Design & Architecture
+# PULSE: Design & Architecture
 
-> **Data Resilience Digital Twin** — *See failure before it spreads.*
+> **Data Resilience Digital Twin**: *See failure before it spreads.*
 > This document is the "First Output" (sections A–N). It is the contract the
 > implementation follows. Telemetry in PULSE is **SIMULATION / DEMO** data.
 
 ---
 
-## A. Reference Website Analysis — *seunghyuk.com ("well · dots · lines · planes")*
+## A. Reference Website Analysis: *seunghyuk.com ("well · dots · lines · planes")*
 
 Studied live. The reference is an Awwwards / FWA award winner. Its design system:
 
 | Dimension | What the reference does | What PULSE borrows (adapted, not copied) |
 |---|---|---|
 | **Palette** | Monochrome: ink-black ↔ paper-white, full-bleed inversions between scenes | A near-monochrome graphite/paper base + **restrained state accents** (teal/amber/red) that only appear where the product logic needs them |
-| **Hero object** | One tiny geometric primitive (dot → line → plane) centered, everything orbits it | The **data system itself** is the hero object — a 3D dependency graph |
+| **Hero object** | One tiny geometric primitive (dot → line → plane) centered, everything orbits it | The **data system itself** is the hero object, a 3D dependency graph |
 | **Atmosphere** | Film-grain/noise texture, soft vignette, deep negative space | Subtle grain + volumetric fog "server-room" depth; no stars, no neon grids |
 | **Motion** | Damped WebGL camera, long scroll distances between beats, weighted easing | Damped/spring camera, scroll-driven scene progression, no bounce/no idle float |
 | **Typography** | Hairline uppercase letter-spaced sans; editorial corner metadata | Editorial display type for marketing; compact mono/technical type in-product |
@@ -75,7 +75,7 @@ Core question at every step: **"What breaks if this fails?"**
 ## D. Backend Architecture
 
 - **FastAPI** app, routers per resource, **Pydantic v2** schemas, dependency-injected DB session.
-- **Engine** (`app/engine/`) is framework-free and imported by the API — the API is a thin transport layer over deterministic functions.
+- **Engine** (`app/engine/`) is framework-free and imported by the API, the API is a thin transport layer over deterministic functions.
 - **SQLAlchemy 2.0** models + **PostgreSQL** (SQLite fallback for local/dev/tests) persist organizations, systems, assets, dependencies, health metrics, simulations, incidents, recovery steps.
 - **Seed**: the Nova Commerce topology is loaded from the engine into the DB idempotently.
 - Blast radius / recovery / resilience are always computed **from the graph**, never stored as UI strings.
@@ -120,7 +120,7 @@ Ten failure types, each mapped to exactly one **propagation mode**:
 | **BREAK** | schema_drift, transformation_failure, datatype_change | transformations → **FAILED**, other tables → **DEGRADED** |
 | **CORRUPT** | null_spike, duplicate_spike, volume_drop | data assets → **DEGRADED** (wrong values) |
 
-- Dashboards / ML never "fail" — they become **untrustworthy** (DEGRADED + flag).
+- Dashboards / ML never "fail": they become **untrustworthy** (DEGRADED + flag).
 - Business processes / teams become **impacted**.
 - The origin takes a declared `ORIGIN_STATE`; a node is only affected if ≥1 upstream is affected → unrelated branches stay **HEALTHY**.
 
@@ -156,7 +156,7 @@ Verified on Nova Commerce: **Orders outage 19 affected / score 156 / 3 critical 
 | ML_MODEL | subdivided icosphere |
 | BUSINESS_PROCESS / TEAM | grounded marker |
 
-- **Edges**: directional shader lines carrying **flow particles** *along real dependency paths* — HEALTHY steady, DEGRADED slow/irregular amber, FAILED stopped, RECOVERING resuming.
+- **Edges**: directional shader lines carrying **flow particles** *along real dependency paths*, HEALTHY steady, DEGRADED slow/irregular amber, FAILED stopped, RECOVERING resuming.
 - **State language**: HEALTHY cool teal-neutral · DEGRADED muted amber · FAILED restrained red · RECOVERING animated return. No HUD, no glow spam.
 - Layout: layered by pipeline stage (sources → … → consumers) with a force-relaxed depth; damped `OrbitControls` clamp.
 - Performance: capped DPR, instancing, frustum-culled particles, pause when offscreen / `prefers-reduced-motion`.
@@ -169,22 +169,23 @@ Verified on Nova Commerce: **Orders outage 19 affected / score 156 / 3 critical 
 > scroll film. That design was replaced during the v2 redesign; what follows
 > describes the **actual implementation**.
 
-The landing is a professional marketing page with **one** scroll-driven
+The landing is a professional marketing page with **one** animated
 sequence, not a full-page film:
 
 | Element | Behaviour |
 |---|---|
 | Hero | Static. Status chip, headline, body, two CTAs, ⌘K hint |
 | Stats band | Real engine numbers (43 assets / 47 dependencies / 6 systems / 10 failure types / 3 modes) |
-| **Story scroll** | A pinned topology stage over ~460vh with **five** captioned scenes: the system → normal flow → the failure → blast radius → recovery |
+| **Story carousel** | A topology stage above **five** glass scene cards that slide right to left in one slot: the system → normal flow → the failure → blast radius → recovery |
 | Feature blocks | Static, three columns with glyphs |
 | Worked example | Static list of the real hop-by-hop propagation from the API |
 | Close | Static CTA + honest footer |
 
-The scroll drives the **real simulation state machine** — the same one the
-product uses — so the visitor advances actual engine output rather than a
-scripted animation. The camera makes exactly one move: a slow pull-back as the
-blast radius opens. Under `prefers-reduced-motion` the pinned canvas is dropped
+Each card drives the **real simulation state machine**, the same one the
+product uses, so the visitor sees actual engine output rather than a
+scripted animation. The cards advance on their own while on screen, hold
+while hovered or keyboard-focused, and never take over the page scroll. The camera makes exactly one move: a slow pull-back as the
+blast radius opens. Under `prefers-reduced-motion` the carousel is dropped
 entirely and the five scenes render as a plain list.
 
 See `docs/DESIGN-SYSTEM.md` for the current visual system.
@@ -219,7 +220,7 @@ Cinematic intensity reduced; grain/fog subtle; interactions crisp and practical.
 └───────────────────┴──────────────────────────────────┴──────────────────────────┘
 ```
 
-Safe simulation only — never mutates real data. Example: `payments.amount DECIMAL→STRING, 30 min → INJECT`.
+Safe simulation only: never mutates real data. Example: `payments.amount DECIMAL→STRING, 30 min → INJECT`.
 
 ---
 
@@ -229,7 +230,7 @@ Safe simulation only — never mutates real data. Example: `payments.amount DECI
 |---|---|
 | **Desktop** | full 3D topology, particles, cinematic scroll |
 | **Tablet** | reduced depth/particle count, simplified camera |
-| **Mobile** | **2D-first**: lineage cards, dependency lists, incident timelines, a simplified 2D graph (SVG) — no forced WebGL |
+| **Mobile** | **2D-first**: lineage cards, dependency lists, incident timelines, a simplified 2D graph (SVG), no forced WebGL |
 
 Contextual cursor is desktop-only. 3D is always an *enhancement* over an accessible 2D baseline.
 
@@ -264,7 +265,7 @@ PULSE/
 │  ├─ components/           three/ (Scene, Nodes, Edges, Particles, Camera),
 │  │                        ui/, marketing/ (scenes 1-9), room/
 │  ├─ lib/                  api client, topology store (zustand), state colors
-│  ├─ hooks/                useScrollProgress, useReducedMotion, useCursor
+│  ├─ hooks/                useReducedMotion, useCursor
 │  ├─ package.json · tailwind.config · tsconfig
 │  └─ Dockerfile
 ├─ data/                    dbt/ (staging+marts sql), airflow/ (dag), sample csv
@@ -279,7 +280,7 @@ PULSE/
 ## Visual identity (CONFIRMED)
 
 Borrow the reference **only** for motion quality, pacing, spatial composition,
-transitions and premium polish — **never its colors**. PULSE owns its identity:
+transitions and premium polish, **never its colors**. PULSE owns its identity:
 
 - **Base**: near-black / graphite, layered depth, soft volumetric haze, physically
   believable light (no purple AI gradients, no cyberpunk HUD, no heavy glassmorphism).
@@ -295,12 +296,12 @@ irregular/slower flow · failed = broken/stopped flow · recovery = flow returni
 
 1. ✅ **Engine** (deterministic core) + tests.
 2. **API** (FastAPI + Pydantic + SQLite/Postgres seed) + API tests.  ← *in progress*
-3. **Control Room** (primary product surface + Asset Inspector) — proves topology,
+3. **Control Room** (primary product surface + Asset Inspector), proves topology,
    health, selection, blast radius & simulation wiring end-to-end first.
 4. **Chaos Lab.**
 5. **Incident Replay.**
 6. **Scenario Comparison.**
-7. **Landing** (five-scene scroll story — see section I).
+7. **Landing** (five-scene story carousel, see section I).
 8. **Responsive/mobile 2D, a11y, perf pass.**
 9. **Docker, CI, README, demo scenarios, polish.**
 

@@ -16,11 +16,11 @@ import { NodeLabels } from "./NodeLabels";
 /**
  * The PULSE system map.
  *
- * NORMAL MODE — a 2.5D technical diagram. A long lens (low FOV) flattens
+ * NORMAL MODE: a 2.5D technical diagram. A long lens (low FOV) flattens
  * perspective so the pipeline reads cleanly left-to-right, like a drawing.
  * Calm, legible, no drama.
  *
- * CHAOS MODE — the same graph gains depth: a wider lens, a lower and more
+ * CHAOS MODE: the same graph gains depth: a wider lens, a lower and more
  * angled camera, darker ground. Nothing about the data changes; only the
  * environment, which is what makes the simulation feel consequential.
  */
@@ -34,7 +34,7 @@ const GRAPH_CENTER = new THREE.Vector3(10, 0, 0);
 const VIEW = {
   //  flat, diagram-like, viewed nearly head-on
   normal: { fov: 26, dir: new THREE.Vector3(0.02, 0.15, 1).normalize(), margin: 1.24 },
-  //  wider lens, lower and angled — the graph gains depth
+  //  wider lens, lower and angled, the graph gains depth
   chaos: { fov: 42, dir: new THREE.Vector3(-0.16, 0.34, 1).normalize(), margin: 1.34 },
 };
 
@@ -63,8 +63,8 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
   const controls = useRef<any>(null);
   const userMoved = useRef(false);
   // Whether the establishing shot has been composed at least once. A view
-  // that arrives already focused — a deep link into the Chaos Lab, or an
-  // asset opened straight from the palette — would otherwise never be framed
+  // that arrives already focused, a deep link into the Chaos Lab, or an
+  // asset opened straight from the palette, would otherwise never be framed
   // at all, because focusing freezes the camera position by design.
   const framed = useRef(false);
 
@@ -83,7 +83,7 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
 
   const center = useMemo(() => bounds.getCenter(new THREE.Vector3()), [bounds]);
 
-  // Re-frame whenever the mode, the viewport or the graph changes — unless the
+  // Re-frame whenever the mode, the viewport or the graph changes, unless the
   // user has taken manual control of the camera.
   useEffect(() => {
     userMoved.current = false;
@@ -159,7 +159,7 @@ function CameraRig({ focusId, mode }: { focusId: string | null; mode: string }) 
 }
 
 function SceneContents({ mode }: { mode: string }) {
-  // Bounce light is resolved from a design token, never a literal — otherwise
+  // Bounce light is resolved from a design token, never a literal, otherwise
   // it would not re-tune when the environment switches to chaos mode.
   const [groundTone, setGroundTone] = useState(() => token("border-strong"));
   useEffect(() => setGroundTone(token("border-strong")), [mode]);
@@ -179,7 +179,7 @@ function SceneContents({ mode }: { mode: string }) {
   const recoveryStep = usePulse((s) => s.recoveryStep);
   const reduced = useReducedMotion();
 
-  // Subscribed deliberately — the clock fields are what re-render the map as
+  // Subscribed deliberately: the clock fields are what re-render the map as
   // the failure travels and the recovery plan walks back through it.
   void propagationHops;
   void recoveryStep;
@@ -192,7 +192,7 @@ function SceneContents({ mode }: { mode: string }) {
   return (
     <>
       {/* Lighting: one key, one fill. Physically believable, never theatrical. */}
-      {/* Key / fill / rim — enough modelling for the solids to read as objects
+      {/* Key / fill / rim: enough modelling for the solids to read as objects
           rather than flat silhouettes, without becoming theatrical. */}
       <ambientLight intensity={chaos ? 0.32 : 0.55} />
       <hemisphereLight intensity={chaos ? 0.25 : 0.5} groundColor={groundTone} />
@@ -249,7 +249,7 @@ function SceneContents({ mode }: { mode: string }) {
 }
 
 /**
- * Ground plane — a faint grid the graph sits on.
+ * Ground plane: a faint grid the graph sits on.
  *
  * The cheapest honest way to give a 2.5D diagram depth: it establishes a floor,
  * so nodes read as objects in space rather than shapes floating in a void. It
@@ -279,7 +279,7 @@ function GroundPlane({ mode }: { mode: string }) {
   );
 }
 
-/** Hover label — a real UI tooltip in the design system, drawn in 3D space. */
+/** Hover label: a real UI tooltip in the design system, drawn in 3D space. */
 function HoverLabel() {
   const hoveredId = usePulse((s) => s.hoveredId);
   const aimedId = usePulse((s) => s.aimedId);

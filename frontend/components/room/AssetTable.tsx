@@ -23,7 +23,7 @@ import { Sparkline } from "@/components/ui/Chart";
  * This is the professional half of the Control Room: a data engineer should be
  * able to scan health, freshness, latency, volume, ownership and lineage weight
  * without opening anything. 32px rows, tabular numerals, quiet zebra-free
- * hairlines — density earned through hierarchy rather than shrinking type.
+ * hairlines, density earned through hierarchy rather than shrinking type.
  */
 type SortKey = "name" | "state" | "criticality" | "freshness" | "latency" | "downstream";
 
@@ -215,7 +215,7 @@ export function AssetTable() {
                     {formatAge(m.freshness_seconds)}
                   </span>
                 ) : (
-                  "—"
+                  "-"
                 )}
               </Td>
               <Td className="hidden lg:table-cell">
@@ -228,14 +228,14 @@ export function AssetTable() {
                     title={`${a.name} freshness trend`}
                   />
                 ) : (
-                  <span className="text-quaternary">—</span>
+                  <span className="text-quaternary">-</span>
                 )}
               </Td>
               <Td align="right" mono className="hidden text-secondary xl:table-cell">
-                {m ? `${m.latency_ms}ms` : "—"}
+                {m ? `${m.latency_ms}ms` : "-"}
               </Td>
               <Td align="right" mono className="hidden text-secondary 2xl:table-cell">
-                {m && m.row_volume > 0 ? formatCount(m.row_volume) : "—"}
+                {m && m.row_volume > 0 ? formatCount(m.row_volume) : "-"}
               </Td>
               <Td align="right" mono className="text-secondary">
                 {downstream.get(a.id) ?? 0}

@@ -5,7 +5,7 @@ import type { Simulation } from "@/lib/types";
 import { formatDuration } from "@/lib/visual";
 
 /**
- * The consequence feed — subtitles for the map.
+ * The consequence feed: subtitles for the map.
  *
  * The brief for this surface was that the causal chain should be readable
  * without a wall of text, so this is deliberately not a log. It shows the
@@ -15,7 +15,7 @@ import { formatDuration } from "@/lib/visual";
  * complete ordered record lives in the ledger; this is the line you read
  * while watching.
  *
- * Every line is an engine event verbatim — `simulation.timeline` — so what is
+ * Every line is an engine event verbatim, `simulation.timeline`, so what is
  * narrated here and what is drawn on the map are the same fact.
  */
 const KIND_TONE: Record<string, string> = {

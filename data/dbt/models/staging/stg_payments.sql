@@ -1,4 +1,4 @@
--- PULSE demo warehouse — staging layer
+-- PULSE demo warehouse: staging layer
 -- stg_payments: cleaned, typed payment rows.
 --
 -- This is the model the "Payments schema drift" demo scenario targets: the

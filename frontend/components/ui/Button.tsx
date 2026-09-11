@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 /**
- * Button — four intents, four sizes, one radius.
+ * Button: four intents, four sizes, one radius.
  *
  * Colour is reserved: only `primary` (the cobalt accent) and `danger` carry
  * hue. Everything else is neutral, so a coloured button always means "this is

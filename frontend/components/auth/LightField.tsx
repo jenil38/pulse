@@ -8,13 +8,13 @@ import { Icon, type IconName } from "@/components/ui/Icon";
  *
  * The visual work lives in `.light-field` (globals.css): on focus the rim
  * tightens to accent, the inner surface lifts, and a halo is thrown onto the
- * darkness around it. That halo is the whole point of the auth room — with the
+ * darkness around it. That halo is the whole point of the auth room, with the
  * lamps down, the field the visitor is typing into is the brightest thing on
  * screen, so attention follows the caret without a single instruction.
  *
  * The label sits above rather than floating inside: a label that animates into
  * a border notch is a trick that costs legibility, and this form is three
- * fields long — it does not need one.
+ * fields long, it does not need one.
  */
 export function LightField({
   label,
@@ -122,7 +122,7 @@ export function RevealToggle({
 }
 
 /**
- * Password strength — four segments, filled by an honest heuristic.
+ * Password strength: four segments, filled by an honest heuristic.
  *
  * Deliberately not a score out of 100: a bar that claims precision it does not
  * have is worse than one that just says "weak" and means it.

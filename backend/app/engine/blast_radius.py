@@ -1,5 +1,5 @@
 """
-PULSE — blast-radius engine.
+PULSE: blast-radius engine.
 
 Given a topology, an origin node and a failure type, deterministically compute:
   * the state every downstream node ends up in,
@@ -8,14 +8,14 @@ Given a topology, an origin node and a failure type, deterministically compute:
   * the hop distance (used for timeline sequencing),
   * an overall blast-radius score for scenario comparison.
 
-Propagation model (fully explainable — no probabilities):
+Propagation model (fully explainable: no probabilities):
 
   1. The origin takes ORIGIN_STATE[failure_type].
   2. We walk the origin's descendants in topological order. Each node inspects
      its *affected* upstream neighbours, takes the worst incoming state, and
      applies a transition rule that depends on the failure's PropagationMode
      and the node's type.
-  3. A node is only affected if at least one of its upstreams is affected — so
+  3. A node is only affected if at least one of its upstreams is affected, so
      unrelated branches of the graph stay HEALTHY.
 
 Transition rules (`_transition`):
@@ -50,7 +50,7 @@ def _transition(incoming: HealthState, node_type: NodeType,
                 mode: PropagationMode) -> HealthState:
     """State a node takes given the worst incoming state and failure mode."""
     if node_type in CONSUMER_TYPES:
-        # A dashboard/ML never "fails" — it becomes untrustworthy.
+        # A dashboard/ML never "fails": it becomes untrustworthy.
         return HealthState.DEGRADED
     if node_type in IMPACT_TYPES:
         return HealthState.DEGRADED
@@ -73,7 +73,7 @@ def _severity(state: HealthState, crit: Criticality,
     crit_w = CRIT_WEIGHT[crit]
     state_w = SEVERITY_RANK[state]  # STALE 2, DEGRADED 3, FAILED 4
     score = crit_w * state_w
-    # Consumers with critical/high criticality escalate — an untrustworthy
+    # Consumers with critical/high criticality escalate: an untrustworthy
     # board dashboard is a critical business impact even though it isn't "FAILED".
     if node_type in CONSUMER_TYPES and crit in (Criticality.CRITICAL, Criticality.HIGH):
         score = max(score, 15)

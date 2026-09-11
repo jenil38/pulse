@@ -15,7 +15,7 @@ import {
 import { Badge, Property, StatusDot, Tabs } from "@/components/ui/primitives";
 
 /**
- * Mobile Control Room — clean, professional 2D. No WebGL.
+ * Mobile Control Room: clean, professional 2D. No WebGL.
  *
  * Same information architecture as the desktop room, expressed as lists and
  * expandable rows. 3D is an enhancement, never a requirement.

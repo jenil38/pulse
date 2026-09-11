@@ -1,5 +1,5 @@
 /**
- * PULSE — label placement.
+ * PULSE: label placement.
  *
  * Which node labels the topology can actually afford to draw.
  *
@@ -25,7 +25,7 @@ export const MAX_LABELS = 24;
  *
  * Measuring the real DOM node would mean a layout read per label per frame.
  * The labels are one line of 11px text in a known box, so deriving the width
- * from the character count is both cheap and close enough — collision culling
+ * from the character count is both cheap and close enough, collision culling
  * only needs to know roughly how much room a name asks for. Long names are
  * clamped because the label itself is capped by the layout.
  */
@@ -38,8 +38,8 @@ export function labelSize(name: string): [width: number, height: number] {
  *
  * `labels` must already be ordered by importance: the first entry always gets
  * drawn, and any later one that would overlap something already placed is
- * dropped. Overlapping labels are worse than a missing label — they sit
- * between two nodes and misattribute a name to the wrong one — so when two
+ * dropped. Overlapping labels are worse than a missing label, they sit
+ * between two nodes and misattribute a name to the wrong one, so when two
  * cannot both be drawn, the more important one wins outright rather than both
  * being nudged into a compromise position.
  */

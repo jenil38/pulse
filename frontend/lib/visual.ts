@@ -1,12 +1,12 @@
 /**
- * PULSE — state visual language.
+ * PULSE: state visual language.
  *
  * THE RULE: interface chrome is neutral. Hue appears only for system state or
  * the single accent on a primary action. So when a row turns amber, that colour
  * carries meaning rather than decoration.
  *
  * Each state is a TRIAD (text/dot · border · tint background) rather than a
- * solid colour block — the pattern that keeps status legible and quiet at the
+ * solid colour block, the pattern that keeps status legible and quiet at the
  * same time. Class names resolve to CSS variables, so every state automatically
  * re-tunes for chaos mode without a second definition here.
  *
@@ -28,7 +28,7 @@ export interface StateVisual {
   chip: string;
   /** CSS variable name, for WebGL colour resolution. */
   varName: string;
-  /** Particle speed multiplier along edges — the core metaphor. */
+  /** Particle speed multiplier along edges: the core metaphor. */
   flow: number;
   /** Flow irregularity: 0 = perfectly even, 1 = very stuttery. */
   jitter: number;
@@ -105,7 +105,7 @@ export const SEVERITY: Record<
   },
 };
 
-/** Sentence case — labels inform, they don't shout. */
+/** Sentence case: labels inform, they don't shout. */
 export const NODE_LABEL: Record<NodeType, string> = {
   SOURCE: "Source",
   INGESTION: "Ingestion",
@@ -133,7 +133,7 @@ export const NODE_ABBR: Record<NodeType, string> = {
   TEAM: "Team",
 };
 
-/** Pipeline stage order — data flows in this direction. */
+/** Pipeline stage order: data flows in this direction. */
 export const STAGE_ORDER: NodeType[] = [
   "SOURCE",
   "INGESTION",
@@ -216,7 +216,7 @@ export function formatDuration(seconds: number): string {
 /** Relative time for incident lists. */
 export function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "—";
+  if (Number.isNaN(then)) return "unknown";
   const diff = (Date.now() - then) / 1000;
   if (diff < 60) return "just now";
   if (diff < 3600) return `${Math.round(diff / 60)}m ago`;
@@ -224,7 +224,7 @@ export function formatRelative(iso: string): string {
   return `${Math.round(diff / 86400)}d ago`;
 }
 
-/** Resilience band — never implies false precision. */
+/** Resilience band: never implies false precision. */
 export function scoreBand(score: number): { label: string; text: string } {
   if (score >= 80) return { label: "Resilient", text: "text-healthy" };
   if (score >= 60) return { label: "Moderate", text: "text-degraded" };

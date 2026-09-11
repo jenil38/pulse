@@ -17,14 +17,14 @@ import { labelSize, placeWithoutOverlap, type ScreenLabel } from "@/lib/labels";
  *
  *   1. the selected node
  *   2. anything not healthy (the reason you're looking)
- *   3. sources and business consumers — the two ends of the story
+ *   3. sources and business consumers, the two ends of the story
  *
  * During a simulation the third rule is dropped, because the failure path is
  * then the only thing worth reading and the rest should recede.
  *
  * Earning a label is still not enough to get one. Two nodes far apart in the
  * graph can sit on top of each other on screen, and overlapping labels are
- * worse than no label — they misattribute a name to the wrong node. So the
+ * worse than no label, they misattribute a name to the wrong node. So the
  * candidates are placed greedily in priority order and any that would collide
  * with one already placed is dropped. See `useVisibleLabels`.
  */
@@ -66,11 +66,11 @@ interface Candidate {
  */
 function useVisibleLabels(candidates: Candidate[]): Set<string> | null {
   const { camera, size } = useThree();
-  // null means "the pass has not run yet" — draw everything, so a scene that
+  // null means "the pass has not run yet", draw everything, so a scene that
   // never renders a frame (reduced motion, offscreen) still shows its labels.
   const [visible, setVisible] = useState<Set<string> | null>(null);
   // -Infinity so the very first frame always computes. Under reduced motion the
-  // canvas renders on demand, and frames can be rare — the pass must not sit
+  // canvas renders on demand, and frames can be rare, the pass must not sit
   // behind a throttle waiting for a second one that never arrives.
   const last = useRef(-Infinity);
   const ndc = useRef(new THREE.Vector3());
@@ -194,7 +194,7 @@ export function NodeLabels() {
     <>
       {candidates.map(({ asset: a, state, inRun }) => {
         // A marked node is drawn like a selected one while it is still
-        // healthy — that is the "you are about to break this" reading. Once
+        // healthy, that is the "you are about to break this" reading. Once
         // it is failing, its state chip says more, so the state wins.
         const selected = a.id === selectedId || a.id === markedId;
         // The selection is drawn immediately rather than waiting for the next

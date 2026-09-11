@@ -8,7 +8,7 @@ import type { Asset } from "@/lib/types";
  * Keyboard navigation of the dependency graph (DESIGN.md §32).
  *
  * The 3D map is mouse-driven, so without this a keyboard user could read the
- * topology in the side panel but never *traverse lineage* — which is the actual
+ * topology in the side panel but never *traverse lineage*, which is the actual
  * product interaction. Here the graph is navigated the way data flows:
  *
  *   ArrowRight / ArrowLeft   follow lineage downstream / upstream

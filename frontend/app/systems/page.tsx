@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/AsyncState";
 import { scoreBand } from "@/lib/visual";
 
 /**
- * My Systems — the workspace.
+ * My Systems: the workspace.
  *
  * This is the screen that decides whether PULSE reads as a product or as a
  * demo. A new account lands here with nothing in it, and that emptiness is the
@@ -133,7 +133,7 @@ function EmptyWorkspace({ onOpenDemo }: { onOpenDemo: () => void }) {
       <h2 className="pt-4 text-title text-primary">No systems yet</h2>
       <p className="max-w-[56ch] pt-2 text-body leading-relaxed text-secondary">
         Bring your architecture into PULSE to start exploring dependencies,
-        resilience and failure scenarios. Nothing here is pre-filled — this
+        resilience and failure scenarios. Nothing here is pre-filled. This
         workspace holds only what you put in it.
       </p>
 

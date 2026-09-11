@@ -69,7 +69,7 @@ describe("component type vocabulary", () => {
 describe("every request carries the active system", () => {
   it("routes all API traffic through the one client", () => {
     // A component calling fetch() directly would skip `scoped()` and read
-    // whichever system the server defaults to — the demo — silently showing
+    // whichever system the server defaults to, the demo, silently showing
     // sample data inside somebody's own workspace.
     const offenders = sourceFiles(["app", "components"]).filter((f) =>
       /\bfetch\s*\(/.test(f.src)

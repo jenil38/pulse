@@ -1,5 +1,5 @@
 """
-Engine tests — graph traversal, blast radius, propagation semantics,
+Engine tests: graph traversal, blast radius, propagation semantics,
 resilience score, recovery order, scenario comparison, determinism.
 
 Run with:  python -m pytest backend/tests -q

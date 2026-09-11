@@ -1,5 +1,5 @@
 """
-PULSE — recovery planner.
+PULSE: recovery planner.
 
 Generates a recommended recovery sequence *from the topology*, not from
 hard-coded UI text. The order is: restore the origin, validate the first landed

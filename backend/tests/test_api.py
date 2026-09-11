@@ -1,5 +1,5 @@
 """
-API tests — routes, validation, simulation flow, incident lifecycle.
+API tests: routes, validation, simulation flow, incident lifecycle.
 
 Run:  python -m pytest backend/tests -q
 """

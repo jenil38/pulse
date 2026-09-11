@@ -1,5 +1,5 @@
 """
-PULSE — deterministic historical telemetry.
+PULSE: deterministic historical telemetry.
 
 Real observability products are full of time-series: freshness over time, volume
 trends, incident frequency, reliability trends. PULSE had none, which is a large
@@ -52,8 +52,8 @@ def asset_history(graph: DependencyGraph, asset_id: str, points: int = 48,
     """
     Per-asset freshness / volume / latency over the recent window.
 
-    Shape is driven by the asset's real properties — a CRITICAL warehouse table
-    behaves differently from a LOW raw table — so the charts stay consistent
+    Shape is driven by the asset's real properties, a CRITICAL warehouse table
+    behaves differently from a LOW raw table, so the charts stay consistent
     with everything else the UI says about that asset.
     """
     asset = graph.node(asset_id)
@@ -85,7 +85,7 @@ def asset_history(graph: DependencyGraph, asset_id: str, points: int = 48,
         n = _noise(asset_id, i)
         w = _wave(asset_id, i, 24)
 
-        # Freshness drifts up and resets — the sawtooth of a scheduled pipeline.
+        # Freshness drifts up and resets: the sawtooth of a scheduled pipeline.
         cycle = (i % max(3, 6 - crit)) / max(3, 6 - crit)
         fresh.append(Point(t, round(base_freshness * (0.35 + cycle * 0.9 + n * 0.15), 1)))
 
@@ -150,7 +150,7 @@ def resilience_history(points: int = 30, step_seconds: int = 86400,
 
 
 def incident_history(days: int = 30) -> list[dict]:
-    """Incident counts per day — the frequency chart every ops tool has."""
+    """Incident counts per day: the frequency chart every ops tool has."""
     out = []
     for i in range(days):
         t = -(days - 1 - i) * 86400

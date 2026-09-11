@@ -1,4 +1,4 @@
-"""PULSE — application settings."""
+"""PULSE: application settings."""
 from __future__ import annotations
 
 import os
@@ -14,7 +14,7 @@ class Settings:
 
     app_name: str = "PULSE API"
     version: str = "0.1.0"
-    # SIMULATION / DEMO telemetry — never real external monitoring.
+    # SIMULATION / DEMO telemetry: never real external monitoring.
     demo_mode: bool = True
 
     def __init__(self) -> None:

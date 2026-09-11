@@ -1,5 +1,5 @@
 """
-PULSE — canned demo scenarios + scenario comparison.
+PULSE: canned demo scenarios + scenario comparison.
 
 The six flagship demo failures, each with a deterministic expected blast radius,
 plus a comparison helper that quantifies "N x greater blast radius".

@@ -1,7 +1,7 @@
 """
-PULSE — FastAPI application.
+PULSE: FastAPI application.
 
-  Data Resilience Digital Twin — "See failure before it spreads."
+  Data Resilience Digital Twin: "See failure before it spreads."
 
 NOTE: all telemetry served by this API is SIMULATION / DEMO data generated from
 a synthetic topology (NOVA COMMERCE). PULSE does not monitor any real external
@@ -43,7 +43,7 @@ app.include_router(workspace_router, prefix="/api")
 app.include_router(router, prefix="/api")
 
 # Accounts and the systems they own are restored together, once, at boot. The
-# demo system is rebuilt from code instead — it is never persisted, so it can
+# demo system is rebuilt from code instead, it is never persisted, so it can
 # never drift from what the repository says it is.
 workspace.load()
 

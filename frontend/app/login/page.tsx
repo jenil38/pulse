@@ -22,7 +22,7 @@ import { Spinner } from "@/components/ui/AsyncState";
  * are still verified server-side against a signed, expiring token, so the flow
  * is real even though the seeded user store is fixed.
  *
- * The session is stored the moment the API answers — the ring and the welcome
+ * The session is stored the moment the API answers, the ring and the welcome
  * that play afterwards are presentation, never a gate, so the destination is
  * already warm behind them.
  */
@@ -109,7 +109,7 @@ function LoginInner() {
 
   const welcoming = !!session;
   // The form stands down while the ring holds the screen, and comes back if
-  // the sign-in failed — the discs fly home over the same beat.
+  // the sign-in failed, the discs fly home over the same beat.
   const away = welcoming || orbit === "working" || orbit === "success";
 
   return (
@@ -220,7 +220,7 @@ function LoginInner() {
             </button>
           </form>
 
-          {/* Demo accounts — three chips, not a second panel competing with the form */}
+          {/* Demo accounts: three chips, not a second panel competing with the form */}
           <div className="pt-6">
             <p className="pb-2.5 text-caption text-quaternary">
               Or continue with a demo account
@@ -229,7 +229,7 @@ function LoginInner() {
               <Spinner size={14} />
             ) : accounts.error ? (
               <p className="text-caption text-tertiary">
-                Demo accounts unavailable — sign in with{" "}
+                Demo accounts unavailable. Sign in with{" "}
                 <code className="font-mono text-secondary">analyst@pulse.demo</code>.
               </p>
             ) : (

@@ -35,7 +35,7 @@ import { ErrorState, LoadingState } from "@/components/ui/AsyncState";
  * that matters: framing one node hides the graph, which is precisely the thing
  * the user needs to see in order to understand a blast radius. So the camera
  * composes the whole system once and then stays put, and the movement in the
- * frame is the failure travelling — the subject moves, not the lens. The reach
+ * frame is the failure travelling, the subject moves, not the lens. The reach
  * of a candidate target is shown by lighting it instead, through the same
  * lineage-trace affordance the Control Room already uses.
  */
@@ -128,7 +128,7 @@ function ChaosLabInner() {
       return;
     }
     // The existing trace affordance already dims everything outside a set, so
-    // the pre-run reach is shown with the mechanism the product already has —
+    // the pre-run reach is shown with the mechanism the product already has,
     // and the camera never has to move to make the point.
     trace([value.target, ...descendants(adjacency, value.target)]);
   }, [value.target, simulation, adjacency, aim, trace, clearTrace]);
@@ -154,7 +154,7 @@ function ChaosLabInner() {
     setBusy(false);
   }, [value, busy, runSimulation, clearSimulation, clearTrace, select]);
 
-  // A fresh result starts playing on its own — the run was already committed.
+  // A fresh result starts playing on its own, the run was already committed.
   const restartRef = useRef(clock.restart);
   restartRef.current = clock.restart;
   const runId = simulation?.id ?? null;
@@ -233,7 +233,7 @@ function ChaosLabInner() {
               <div className="pointer-events-none absolute inset-0 z-20">
                 {/* Left: what to break, and what depends on it. */}
                 {/* The brief is the beat that has to be read, so it keeps its
-                    height and the composer takes the slack — a form can
+                    height and the composer takes the slack, a form can
                     scroll, a consequence should not have to be hunted for. */}
                 {/* Below xl there is not room for two 300-odd-pixel columns
                     over a graph that also has to stay readable, so during a

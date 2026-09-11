@@ -8,7 +8,7 @@ import { SimulatedTag } from "@/components/ui/primitives";
 import { useWorkspace } from "@/lib/workspace";
 
 /**
- * Toolbar — breadcrumb, live health rollup, resilience.
+ * Toolbar: breadcrumb, live health rollup, resilience.
  *
  * The counts come from `healthCounts()`, which derives from the same `stateOf`
  * the topology uses. During a simulation they therefore move with the
@@ -37,7 +37,7 @@ export function Toolbar({
 
   // The clock fields are subscribed to deliberately: they are what re-run
   // these selectors as the run advances, keeping the rollup in step with the
-  // map — while the failure spreads, and again while it is being repaired.
+  // map, while the failure spreads, and again while it is being repaired.
   const counts = useMemo(
     () => healthCounts(),
     [healthCounts, simulation, propagationHops, recoveryStep]

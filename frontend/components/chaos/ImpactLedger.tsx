@@ -18,7 +18,7 @@ import { RecoveryTrack } from "./RecoveryTrack";
  * a number. What it does control is WHEN each figure is allowed to appear.
  *
  * The old panel printed the final total the instant the request returned,
- * while the rows underneath it revealed one hop at a time — so the headline
+ * while the rows underneath it revealed one hop at a time, so the headline
  * gave away the ending of the story the map was still telling. Here the
  * headline counts what is broken *right now*: it climbs as the failure
  * spreads, holds while the blast radius is read, and falls again as the
@@ -75,8 +75,8 @@ export function ImpactLedger({
 
   const visible = rows.filter((r) => r.revealed);
   const broken = impactedCount();
-  // Restored is counted the same way broken is — from the states the map is
-  // actually showing — so the two figures can never sum to something other
+  // Restored is counted the same way broken is, from the states the map is
+  // actually showing, so the two figures can never sum to something other
   // than the blast radius.
   const restoredCount = rows.filter(
     (r) => r.revealed && r.state === "HEALTHY"
@@ -148,7 +148,7 @@ export function ImpactLedger({
           </span>
         </div>
 
-        {/* A proportional rule, not a chart — the same quiet device the
+        {/* A proportional rule, not a chart, the same quiet device the
             sidebar uses for the resilience score. */}
         {recovering && (
           <div
@@ -251,7 +251,7 @@ export function ImpactLedger({
 /**
  * The business consequence, in one sentence.
  *
- * This is the product's actual claim — not "18 assets degraded" but "the board
+ * This is the product's actual claim, not "18 assets degraded" but "the board
  * revenue number is wrong and Finance is the last to know". It is assembled
  * from the engine's own aggregates, never written ahead of time.
  */
@@ -295,7 +295,7 @@ function Consequence({ simulation }: { simulation: Simulation }) {
  * How the run closes.
  *
  * Deliberately NOT a new resilience score. Resilience is a property of the
- * system's shape, not of a simulation that was run against it — the engine
+ * system's shape, not of a simulation that was run against it, the engine
  * recomputes it from the graph, and a failure that has been fully recovered
  * has not changed the graph. Claiming a number moved here would be inventing
  * telemetry. What can honestly be stated is what this run cost and what it
@@ -324,7 +324,7 @@ function RunOutcome({
       {/*
        * Two actions, and they do different things. Replaying this run lives on
        * the transport, where the rest of the playback controls are; what
-       * belongs here is where you go NEXT — break something else, or weigh
+       * belongs here is where you go NEXT, break something else, or weigh
        * this failure against another one.
        */}
       <div className="flex flex-wrap gap-2 pt-2.5">
@@ -344,7 +344,7 @@ function RunOutcome({
 /**
  * Turning a run into something that outlives it.
  *
- * A simulation is a pure computation — closing the tab loses it. Saving it as
+ * A simulation is a pure computation, closing the tab loses it. Saving it as
  * a scenario keeps the configuration so it can be re-run against this system
  * later; recording it as an incident keeps it as an event with a replay and a
  * recovery plan. Neither is offered against the demo, which belongs to nobody.
@@ -372,7 +372,7 @@ function KeepRun({ simulation }: { simulation: Simulation }) {
     setError(null);
     try {
       await api.saveScenario(active.id, {
-        name: `${br.failure_label} — ${br.origin_name}`,
+        name: `${br.failure_label}: ${br.origin_name}`,
         origin: br.origin,
         failure_type: br.failure_type,
         duration_minutes: simulation.duration_minutes,

@@ -1,5 +1,5 @@
 """
-PULSE — SQLAlchemy models (PostgreSQL deployment path).
+PULSE: SQLAlchemy models (PostgreSQL deployment path).
 
 The demo runs entirely in memory over the engine, so these models are not
 required to use PULSE. They define the persistence schema described in

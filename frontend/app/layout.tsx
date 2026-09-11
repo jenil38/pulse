@@ -21,7 +21,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PULSE — Data Resilience Digital Twin",
+  title: "PULSE · Data Resilience Digital Twin",
   description:
     "See failure before it spreads. Model your data system as a dependency network, simulate failures, and understand blast radius before reality does.",
 };

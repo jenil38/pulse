@@ -10,14 +10,14 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useOnScreen } from "@/hooks/useOnScreen";
 
 /**
- * Landing hero visual — the real topology, running the real engine output.
+ * Landing hero visual: the real topology, running the real engine output.
  *
  * This is the one place the marketing site is allowed to be expressive, and it
  * earns it by being *product-truthful*: the nodes, edges, blast radius and
  * propagation order all come from the API. It loops slowly through healthy →
  * failure → recovery so a visitor sees the product's core idea without reading.
  *
- * No scroll hijacking, no camera acrobatics — a slow drift and an honest
+ * No scroll hijacking, no camera acrobatics: a slow drift and an honest
  * state cycle.
  */
 const CYCLE = 16; // seconds for a full healthy → failure → recovery loop
@@ -30,9 +30,9 @@ export function LandingTopology({
   topology: Topology;
   simulation: Simulation | null;
   /**
-   * When supplied, scroll position drives the story instead of a timed loop —
-   * the visitor advances the failure themselves. Omit it and the scene loops
-   * on its own (used where there is nothing to scroll).
+   * When supplied, the story drives the scene instead of a timed loop, so
+   * each story card shows its own moment of the failure. Omit it and the scene loops
+   * on its own (used where there is no story to follow).
    */
   progressRef?: React.RefObject<number>;
 }) {
@@ -98,14 +98,14 @@ function Scene({
     return { hops, states, max };
   }, [simulation]);
 
-  // Scroll drives the story when a progress ref is supplied; otherwise the
+  // The story drives the scene when a progress ref is supplied; otherwise the
   // scene loops on its own. Either way the drift stays slow and bounded.
   useFrame((s, delta) => {
     if (progressRef) {
       const target = (progressRef.current ?? 0) * CYCLE;
-      // Damped follow, so scrubbing quickly still reads as motion, not a cut.
+      // Damped follow, so a scene change still reads as motion, not a cut.
       phase.current += (target - phase.current) * (reduced ? 1 : 0.12);
-      // Camera eases back as the blast radius opens up — the one camera move.
+      // Camera eases back as the blast radius opens up, the one camera move.
       const pullback = 1 + (progressRef.current ?? 0) * 0.18;
       s.camera.position.z += (235 * pullback - s.camera.position.z) * 0.05;
     } else {

@@ -1,4 +1,4 @@
-"""PULSE — Pydantic API schemas."""
+"""PULSE: Pydantic API schemas."""
 from __future__ import annotations
 
 from typing import Literal, Optional

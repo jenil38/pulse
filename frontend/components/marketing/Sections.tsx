@@ -295,7 +295,7 @@ export function Engineering() {
             <p className="max-w-[46ch] pt-4 text-body leading-relaxed text-secondary">
               Propagation is a pure function over a directed graph: same topology and
               same failure, same blast radius, every time. No model, no probability,
-              nothing to retrain — and every number the interface shows can be traced
+              nothing to retrain, and every number the interface shows can be traced
               back to a traversal you could do by hand.
             </p>
             <a
@@ -347,7 +347,7 @@ export function FAQ() {
     },
     {
       q: "How is the resilience score calculated?",
-      a: "It starts at 100 and subtracts capped penalties for structural weaknesses — single points of failure, blast concentration, source redundancy, dependency depth, incident history and recovery complexity. Every penalty and its maximum is shown in the interface.",
+      a: "It starts at 100 and subtracts capped penalties for structural weaknesses: single points of failure, blast concentration, source redundancy, dependency depth, incident history and recovery complexity. Every penalty and its maximum is shown in the interface.",
     },
     {
       q: "What does the authentication actually do?",
@@ -359,7 +359,7 @@ export function FAQ() {
     },
     {
       q: "Why is there 3D at all?",
-      a: "Because dependency structure is the product. The topology shows flow along real lineage paths, and stops it where a failure lands. Everywhere the 3D would be decorative — tables, lists, settings — there isn't any.",
+      a: "Because dependency structure is the product. The topology shows flow along real lineage paths, and stops it where a failure lands. Everywhere the 3D would be decorative (tables, lists, settings) there isn't any.",
     },
   ];
 

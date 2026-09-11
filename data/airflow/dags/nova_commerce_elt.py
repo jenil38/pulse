@@ -1,11 +1,11 @@
 """
-PULSE demo — NOVA COMMERCE ELT DAG.
+PULSE demo: NOVA COMMERCE ELT DAG.
 
 Orchestrates the pipeline that the PULSE topology models: extract each source,
 land it raw, run dbt staging + marts, then run data-quality checks and publish
 asset health back to the PULSE API.
 
-The DAG structure intentionally mirrors `backend/app/engine/topology.py` — the
+The DAG structure intentionally mirrors `backend/app/engine/topology.py`, the
 digital twin and the real orchestration describe the same system.
 
 NOTE: this is a demo DAG over synthetic data. It is included to show the
@@ -57,7 +57,7 @@ def _run_dbt(select: str, **_) -> None:
 
 
 def _test_dbt(select: str, **_) -> None:
-    """Run dbt tests — these encode the same contracts PULSE simulates."""
+    """Run dbt tests: these encode the same contracts PULSE simulates."""
     print(f"[dbt test] --select {select}")
 
 
@@ -68,7 +68,7 @@ def _publish_health(**_) -> None:
 
 with DAG(
     dag_id="nova_commerce_elt",
-    description="NOVA COMMERCE ELT — the pipeline PULSE models as a digital twin",
+    description="NOVA COMMERCE ELT: the pipeline PULSE models as a digital twin",
     default_args=DEFAULT_ARGS,
     start_date=datetime(2026, 1, 1),
     schedule="0 * * * *",  # hourly

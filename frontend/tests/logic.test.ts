@@ -2,7 +2,7 @@
  * Design-system and formatting tests.
  *
  * These guard the places where a silent regression would change what the
- * product *communicates* — the state language, the discipline that keeps the
+ * product *communicates*, the state language, the discipline that keeps the
  * UI from drifting back toward generic dashboard styling, and the number
  * formatting a data engineer reads at a glance.
  */
@@ -46,7 +46,7 @@ describe("state language", () => {
   });
 
   it("encodes the flow metaphor: healthy flows, failed does not", () => {
-    // The product's core visual claim — guard it.
+    // The product's core visual claim: guard it.
     expect(STATE.HEALTHY.flow).toBe(1);
     expect(STATE.HEALTHY.jitter).toBe(0);
     expect(STATE.FAILED.flow).toBe(0);
@@ -211,7 +211,7 @@ describe("topology label placement", () => {
   });
 
   it("drops the later label when two would overlap", () => {
-    // 10px apart horizontally with 30px half-widths — they collide.
+    // 10px apart horizontally with 30px half-widths, they collide.
     const kept = placeWithoutOverlap([box("first", 0, 0), box("second", 10, 0)]);
     expect(kept.has("first")).toBe(true);
     expect(kept.has("second")).toBe(false);
@@ -219,7 +219,7 @@ describe("topology label placement", () => {
 
   it("resolves a collision in favour of the more important label", () => {
     // The caller sorts by importance, so order IS priority. The same pair in
-    // the opposite order must keep the other one — nothing else decides it.
+    // the opposite order must keep the other one, nothing else decides it.
     expect(placeWithoutOverlap([box("selected", 0, 0), box("healthy", 8, 0)])).toEqual(
       new Set(["selected"])
     );

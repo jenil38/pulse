@@ -1,5 +1,5 @@
 """
-PULSE — DEMO authentication.
+PULSE: DEMO authentication.
 
   >>> THIS IS DEMO AUTHENTICATION, NOT PRODUCTION AUTHENTICATION <<<
 
@@ -74,13 +74,13 @@ DEMO_USERS: dict[str, DemoUser] = {
     ),
 }
 
-#: Precomputed once — identical for every demo account by design.
+#: Precomputed once, identical for every demo account by design.
 _PASSWORD_HASH = _hash_password(DEMO_PASSWORD)
 
 #: Accounts created through /auth/register.
 #:
 #: Each one gets its own random salt, unlike the seeded demo accounts, and is
-#: written to the workspace file alongside the systems it owns — otherwise a
+#: written to the workspace file alongside the systems it owns, otherwise a
 #: restart would strand a user's saved systems behind an account that no longer
 #: exists. The salt and hash are persisted; the password never is.
 REGISTERED_USERS: dict[str, DemoUser] = {}
@@ -142,7 +142,7 @@ workspace.register_account_persistence(_dump_accounts, _load_accounts)
 
 
 # --------------------------------------------------------------------------- #
-#  Token handling — HMAC-signed, expiring, verified on every request
+#  Token handling: HMAC-signed, expiring, verified on every request
 # --------------------------------------------------------------------------- #
 def _b64e(raw: bytes) -> str:
     return base64.urlsafe_b64encode(raw).decode().rstrip("=")
@@ -170,7 +170,7 @@ def verify_token(token: str) -> DemoUser | None:
     expected = _b64e(
         hmac.new(settings.secret_key.encode(), payload.encode(), hashlib.sha256).digest()
     )
-    # Constant-time comparison — the habit matters even in a demo.
+    # Constant-time comparison: the habit matters even in a demo.
     if not hmac.compare_digest(sig, expected):
         return None
 
@@ -250,7 +250,7 @@ def current_user(authorization: str | None = Header(default=None)) -> DemoUser:
 # --------------------------------------------------------------------------- #
 @router.get("/auth/demo-accounts", response_model=list[DemoAccountOut], tags=["auth"])
 def demo_accounts():
-    """The published demo accounts. Deliberately discoverable — this is a demo."""
+    """The published demo accounts. Deliberately discoverable, this is a demo."""
     return [
         DemoAccountOut(email=u.email, name=u.name, role=u.role, description=u.description)
         for u in DEMO_USERS.values()

@@ -16,7 +16,7 @@ import { UserMenu } from "./UserMenu";
  * Product sidebar.
  *
  * Navigation is precise and quiet: the active item gets a tinted surface, an
- * accent rail and a colour shift — no glowing pill. Counts are right-aligned so
+ * accent rail and a colour shift, no glowing pill. Counts are right-aligned so
  * the column scans, and each system rolls up its worst health as a single dot.
  */
 const NAV: { href: string; label: string; icon: IconName }[] = [
@@ -29,7 +29,7 @@ const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/compare", label: "Compare", icon: "compare" },
 ];
 
-/** Worst state wins — a system is only as healthy as its weakest asset. */
+/** Worst state wins: a system is only as healthy as its weakest asset. */
 const RANK: Record<HealthState, number> = {
   HEALTHY: 0,
   RECOVERING: 1,
@@ -137,7 +137,7 @@ export function Sidebar({
           })}
         </ul>
 
-        {/* Groups within the active system — a filter, not a navigation level */}
+        {/* Groups within the active system: a filter, not a navigation level */}
         <div className="px-2 pt-5">
           <div className="flex h-6 items-center justify-between px-2.5">
             <span className="text-micro uppercase text-quaternary">Groups</span>
@@ -182,7 +182,7 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Resilience — the one number that summarises the workspace */}
+      {/* Resilience: the one number that summarises the workspace */}
       {overview && band && (
         <div className="shrink-0 border-t border-border-subtle px-3 py-3">
           <div className="flex items-baseline justify-between">

@@ -2,7 +2,7 @@
 Test isolation.
 
 `workspace` picks its data file up from PULSE_DATA_DIR at import time, so this
-has to run before anything imports the app — which is what conftest is for.
+has to run before anything imports the app, which is what conftest is for.
 Pointing it at a throwaway directory keeps a test run from writing over a
 developer's own saved systems.
 """

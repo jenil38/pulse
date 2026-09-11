@@ -8,7 +8,7 @@ import { token } from "@/lib/mode";
 import { NODE_SHAPE, STATE } from "@/lib/visual";
 
 /**
- * A topology node — a matte solid, lit rather than glowing.
+ * A topology node: a matte solid, lit rather than glowing.
  *
  * State is carried by the material's COLOUR, never by emission, so a failing
  * node reads as *marked* rather than *illuminated*. Healthy nodes take the
@@ -49,7 +49,7 @@ export function NodeMesh({
 
   const pos = asset.position ?? { x: 0, y: 0, z: 0 };
   const shape = NODE_SHAPE[asset.type];
-  // Larger overall, with more separation between tiers — at a diagram-like
+  // Larger overall, with more separation between tiers, at a diagram-like
   // camera distance the previous sizes read as indistinct specks.
   const baseScale =
     asset.criticality === "CRITICAL" ? 1.5 : asset.criticality === "HIGH" ? 1.28 : 1.08;
@@ -81,7 +81,7 @@ export function NodeMesh({
     // recede, not vanish.
     mat.current.opacity += ((dimmed ? 0.34 : 1) - mat.current.opacity) * 0.12;
 
-    // A failed node settles very slightly in SCALE — physical, not an alarm.
+    // A failed node settles very slightly in SCALE, physical, not an alarm.
     let scale = baseScale;
     if (selected) scale *= 1.12;
     else if (hovered) scale *= 1.06;
@@ -176,7 +176,7 @@ export function NodeMesh({
        * Without it the injected component becomes one red node among a dozen
        * as the wave spreads, and the question "where did this start?" stops
        * having an answer on the map. A thin drawn ring in the node's own state
-       * colour is enough — it reads as a selected object in a technical
+       * colour is enough, it reads as a selected object in a technical
        * drawing, not as a target reticle.
        */}
       {origin && !selected && state !== "HEALTHY" && (

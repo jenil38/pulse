@@ -1,4 +1,4 @@
--- PULSE demo warehouse — staging layer
+-- PULSE demo warehouse: staging layer
 -- stg_orders: deduplicated, typed order events.
 --
 -- Orders is the highest-blast-radius source in the topology: fact_orders fans

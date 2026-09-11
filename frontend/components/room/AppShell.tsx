@@ -21,7 +21,7 @@ import { Spinner } from "@/components/ui/AsyncState";
  *   - the global ⌘K / Ctrl-K / "/" command palette binding
  *
  * Every surface renders inside this, so navigation, auth and the palette behave
- * identically everywhere — which was the gap that left /incidents and /compare
+ * identically everywhere, which was the gap that left /incidents and /compare
  * with a desktop-only sidebar.
  */
 export function AppShell({ children }: { children: ReactNode }) {

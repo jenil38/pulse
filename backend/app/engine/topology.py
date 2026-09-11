@@ -1,14 +1,14 @@
 """
-PULSE — NOVA COMMERCE demo topology.
+PULSE: NOVA COMMERCE demo topology.
 
 A synthetic e-commerce data platform used for the demo. All telemetry derived
-from this topology is SIMULATION / DEMO data — there is no real external system.
+from this topology is SIMULATION / DEMO data, there is no real external system.
 
 The lineage is deliberately cross-wired so that a handful of nodes are genuine
 single points of failure:
 
   * fact_orders feeds daily_revenue, customer_metrics, marketing_attribution
-    and the demand-forecast ML model — so an Orders outage has a much larger
+    and the demand-forecast ML model, so an Orders outage has a much larger
     blast radius than a Payments outage.
   * daily_revenue needs BOTH payments and orders, so either can make the
     Executive Revenue Dashboard untrustworthy.
@@ -47,7 +47,7 @@ _A = [
     Asset("stg_orders", "stg_orders", T.TRANSFORMATION, "Commerce", C.MEDIUM,
           "analytics-eng", "Deduplicated, typed orders."),
     Asset("fact_orders", "fact_orders", T.WAREHOUSE_TABLE, "Commerce", C.CRITICAL,
-          "analytics-eng", "Central order fact — feeds revenue, customers, marketing, ML."),
+          "analytics-eng", "Central order fact: feeds revenue, customers, marketing, ML."),
 
     # ---- Customers lineage ------------------------------------------------
     Asset("src_customers", "Customers Database", T.SOURCE, "Commerce", C.HIGH,
@@ -150,7 +150,7 @@ _D = [
     ("src_marketing", "ing_marketing"), ("ing_marketing", "raw_marketing"),
     ("raw_marketing", "stg_marketing"), ("stg_marketing", "fact_marketing_spend"),
 
-    # Models (cross-wired — the interesting part)
+    # Models (cross-wired: the interesting part)
     ("fact_payments", "daily_revenue"), ("fact_orders", "daily_revenue"),
     ("fact_orders", "customer_metrics"), ("dim_customers", "customer_metrics"),
     ("fact_orders", "marketing_attribution"), ("fact_marketing_spend", "marketing_attribution"),

@@ -1,4 +1,4 @@
-/** PULSE — API types (mirrors backend Pydantic schemas). */
+/** PULSE: API types (mirrors backend Pydantic schemas). */
 
 export type NodeType =
   | "SOURCE"

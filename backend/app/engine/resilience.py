@@ -1,5 +1,5 @@
 """
-PULSE — resilience score.
+PULSE: resilience score.
 
 A transparent, fully-documented 0-100 score. There is NO machine learning and NO
 invented probability. The score is 100 minus a set of explainable penalties, each
@@ -45,7 +45,7 @@ def _critical_consumers(graph: DependencyGraph) -> list[str]:
 # The component granularities a data team reasons about as "single points of
 # failure": external sources and the conformed warehouse tables everything fans
 # out from. Data models consume with AND-semantics (a model needs ALL its
-# inputs), so any of these failing degrades every critical consumer downstream —
+# inputs), so any of these failing degrades every critical consumer downstream,
 # and this topology models no redundant/alternate lineage, so each one that
 # gates a critical consumer is a genuine SPOF.
 _SPOF_TYPES = (NodeType.SOURCE, NodeType.WAREHOUSE_TABLE)
@@ -102,7 +102,7 @@ def compute_resilience(graph: DependencyGraph,
     """Score a graph 0-100.
 
     `recent_incidents` and `stale_pipelines` are the caller's observed history.
-    They default to zero — a graph nobody has broken yet carries no history
+    They default to zero: a graph nobody has broken yet carries no history
     penalty, and the engine never invents one. `workspace.system_resilience`
     supplies the real figures for a stored system.
     """

@@ -1,4 +1,4 @@
-/** PULSE — typed API client. */
+/** PULSE: typed API client. */
 import { authToken } from "./auth";
 import { DEMO_SYSTEM_ID, activeSystemId } from "./workspace";
 import type {
@@ -88,7 +88,7 @@ function classify(status: number): ApiErrorKind {
  */
 function scoped(path: string): string {
   if (path.startsWith("/auth") || path.startsWith("/workspace")) return path;
-  // A caller that named a system already means it — the landing page pins the
+  // A caller that named a system already means it, the landing page pins the
   // demo this way so a signed-in visitor's own system never rewrites the story.
   if (path.includes("system=")) return path;
   const id = activeSystemId();

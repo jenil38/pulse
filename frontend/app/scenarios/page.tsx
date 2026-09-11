@@ -19,12 +19,12 @@ import { Badge, EmptyState } from "@/components/ui/primitives";
  *
  * Two different things answer here, and the page says which it is showing. The
  * demo ships a curated, read-only catalogue. A system the user built lists the
- * scenarios they saved from the Chaos Lab, and those they can delete — the
+ * scenarios they saved from the Chaos Lab, and those they can delete, the
  * library is theirs, so it starts empty rather than pretending otherwise.
  */
 const MODE_NOTE: Record<string, string> = {
   SOURCE_OUTAGE: "Starves everything downstream of fresh data.",
-  SCHEMA_DRIFT: "Breaks parsing — transformations fail outright.",
+  SCHEMA_DRIFT: "Breaks parsing, so transformations fail outright.",
   STALE_DATA: "Data is present but no longer refreshing.",
   VOLUME_DROP: "Wrong values flow through at reduced volume.",
   NULL_SPIKE: "Corrupts downstream aggregates with missing keys.",
@@ -138,7 +138,7 @@ export default function ScenariosPage() {
               <section className="mt-6 rounded-lg border border-border bg-surface p-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="text-heading text-primary">
-                    {result.origin_name} — {result.failure_label}
+                    {result.origin_name}: {result.failure_label}
                   </h2>
                   <span className="text-caption text-tertiary">Result</span>
                 </div>

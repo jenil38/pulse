@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/primitives";
 
 /**
- * Incidents — a real table, not a stack of cards.
+ * Incidents: a real table, not a stack of cards.
  *
  * Status is a small dot + label; severity is a restrained chip. Everything is
  * scannable in one pass, and the row is the click target.

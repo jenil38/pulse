@@ -18,7 +18,7 @@ import { STATE } from "@/lib/visual";
  *   STALE      barely moving            FAILED     stopped
  *   RECOVERING gradually resuming
  *
- * All particles live in one InstancedMesh — a single draw call.
+ * All particles live in one InstancedMesh, a single draw call.
  */
 const PARTICLES_PER_EDGE = 3;
 
@@ -90,7 +90,7 @@ export function FlowEdges({
       Array.from({ length: count }, (_, i) => ({
         edge: i % Math.max(edges.length, 1),
         offset: (Math.floor(i / Math.max(edges.length, 1)) + 1) / (PARTICLES_PER_EDGE + 1),
-        // Deterministic per-particle variation — never Math.random in a loop.
+        // Deterministic per-particle variation: never Math.random in a loop.
         speedVar: 0.85 + ((i * 37) % 30) / 100,
       })),
     [count, edges.length]
@@ -143,7 +143,7 @@ export function FlowEdges({
       const upV = STATE[upState];
       const downV = STATE[downState];
 
-      // An edge flows at the rate of its WEAKEST end — a broken producer stops
+      // An edge flows at the rate of its WEAKEST end, a broken producer stops
       // the pipe even when the consumer is nominally fine.
       const flow = Math.min(upV.flow, downV.flow);
       const jitter = Math.max(upV.jitter, downV.jitter);
@@ -184,8 +184,8 @@ export function FlowEdges({
           *
           * At full strength the edges are the brightest thing on a dark stage
           * and they compete with the states travelling along them. Held at
-          * roughly half, the dependency structure stays legible — you can
-          * still trace what feeds what — without arguing with the story.
+          * roughly half, the dependency structure stays legible, you can
+          * still trace what feeds what, without arguing with the story.
           */}
         <lineBasicMaterial
           color={palette.edge}

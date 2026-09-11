@@ -14,7 +14,7 @@ import { Icon } from "@/components/ui/Icon";
  * radius completes within minutes, but the engine does not schedule the first
  * recovery step until the failure has run for its configured duration. Drawn
  * to scale that is a scrubber which is mostly empty, so the axis here is
- * compressed — the two halves sit side by side, and the notch between them is
+ * compressed, the two halves sit side by side, and the notch between them is
  * labelled with the real time it stands for. The gap is stated, not hidden.
  *
  * The boundary is also where playback stops. "What did this cost?" and "how do
@@ -171,7 +171,7 @@ export function RunTransport({
             style={{ width: `${progress * 100}%` }}
           />
 
-          {/* Event ticks — where the interesting moments are. */}
+          {/* Event ticks: where the interesting moments are. */}
           {ticks.map((tick) => (
             <span
               key={tick.key}

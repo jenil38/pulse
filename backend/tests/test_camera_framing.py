@@ -2,13 +2,13 @@
 Guards the landing-page camera choreography.
 
 The cinematic scene is scroll-driven WebGL, so a bad keyframe cannot be caught
-by a normal unit test — and it could not be verified visually during
+by a normal unit test, and it could not be verified visually during
 development. Instead we check the camera *geometrically*: project every node
 through each keyframe's real perspective frustum and assert the scene's subject
 is actually on screen.
 
 If someone retunes CAMERA_KEYS in frontend/lib/story.ts, they must update
-backend/tools/check_camera_framing.py to match — and this test will fail loudly
+backend/tools/check_camera_framing.py to match, and this test will fail loudly
 if the new path stops framing its subject.
 """
 from __future__ import annotations
