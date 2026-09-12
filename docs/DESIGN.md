@@ -1,7 +1,7 @@
 # PULSE: Design & Architecture
 
 > **Data Resilience Digital Twin**: *See failure before it spreads.*
-> This document is the "First Output" (sections A–N). It is the contract the
+> This document is the "First Output" (sections A-N). It is the contract the
 > implementation follows. Telemetry in PULSE is **SIMULATION / DEMO** data.
 
 ---

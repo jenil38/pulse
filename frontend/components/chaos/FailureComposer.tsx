@@ -26,7 +26,7 @@ const PARAM_PRESETS: Record<FailureType, string> = {
   SOURCE_OUTAGE: "endpoint unreachable",
   SCHEMA_DRIFT: "amount: DECIMAL → STRING",
   STALE_DATA: "snapshot age > 24h",
-  VOLUME_DROP: "row count −87% vs baseline",
+  VOLUME_DROP: "row count -87% vs baseline",
   NULL_SPIKE: "null ratio → 22%",
   DUPLICATE_SPIKE: "duplicate keys → 14%",
   TRANSFORMATION_FAILURE: "model build error",

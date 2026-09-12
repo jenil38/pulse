@@ -37,7 +37,7 @@ PULSE answers one question precisely:
 - **Compute** the blast radius: which assets degrade, which dashboards become
   untrustworthy, which teams are affected, with an explainable severity per node.
 - **Plan recovery** in dependency order, generated from the topology.
-- **Score resilience** 0–100 with a fully documented, ML-free formula.
+- **Score resilience** 0-100 with a fully documented, ML-free formula.
 - **Compare** two failure scenarios to find the real single point of failure.
 - **Replay** past incidents on a scrubable timeline.
 
@@ -239,7 +239,7 @@ and resolve.
 
 ## Resilience Score
 
-`score = 100 − penalties`, every component returned in the API response:
+`score = 100 - penalties`, every component returned in the API response:
 
 | Component | Max | Basis |
 |---|---|---|
@@ -434,7 +434,7 @@ own system are yours, listed on the same screen, and re-runnable.
 | 3 | Inventory freshness delay | `src_inventory` | snapshot age > 24h |
 | 4 | Customer ID null spike | `stg_customers` | null ratio → 22% |
 | 5 | Revenue transformation failure | `daily_revenue` | model build error |
-| 6 | Orders volume collapse | `src_orders` | row count −87% |
+| 6 | Orders volume collapse | `src_orders` | row count -87% |
 
 Each has a deterministic, reproducible impact.
 

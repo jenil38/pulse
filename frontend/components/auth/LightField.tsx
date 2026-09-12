@@ -155,7 +155,7 @@ export function StrengthMeter({ password }: { password: string }) {
   );
 }
 
-/** 0–3. Length carries most of the weight, because it actually does. */
+/** 0-3. Length carries most of the weight, because it actually does. */
 function strength(pw: string): number {
   if (pw.length < 8) return 0;
   let s = 1;

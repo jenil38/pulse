@@ -215,7 +215,7 @@ function AssetRow({
           </span>
         </span>
         <span className="text-caption text-quaternary" aria-hidden>
-          {open ? "−" : "+"}
+          {open ? "-" : "+"}
         </span>
       </button>
 

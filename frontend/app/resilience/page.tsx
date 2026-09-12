@@ -112,7 +112,7 @@ export default function ResiliencePage() {
                           />
                         </div>
                         <p className="pt-1.5 text-caption text-quaternary">
-                          100 − {totalPenalty.toFixed(1)} penalty points
+                          100 - {totalPenalty.toFixed(1)} penalty points
                         </p>
                       </div>
                     </div>
@@ -180,7 +180,7 @@ export default function ResiliencePage() {
                                       />
                                     </span>
                                     <span className="w-16 text-right font-mono text-caption tnum text-primary">
-                                      −{c.penalty} / {max}
+                                      -{c.penalty} / {max}
                                     </span>
                                   </span>
                                 </Td>

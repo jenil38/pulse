@@ -13,7 +13,7 @@ Audited across 26 `.tsx` files. These are counts, not impressions:
 | Problem | Evidence | Why it reads as AI-generated |
 |---|---|---|
 | **Mono is the default, not the exception** | **158** `font-mono` usages | Real products use mono for IDs, metrics and timestamps only. Using it everywhere flattens hierarchy into one texture. |
-| **Uppercase + wide tracking everywhere** | **87** `uppercase tracking-[0.1–0.22em]` | Every label shouts equally, so nothing leads. Linear/Raycast use sentence case and reserve caps for rare column headers. |
+| **Uppercase + wide tracking everywhere** | **87** `uppercase tracking-[0.1-0.22em]` | Every label shouts equally, so nothing leads. Linear/Raycast use sentence case and reserve caps for rare column headers. |
 | **Everything is a bordered box** | **49** bordered panels | Structure comes from boxes rather than hierarchy, spacing and rules. Produces the "floating card grid" look. |
 | **Dark-by-default as a premium shortcut** | `bg-void` / `bg-panel` / `bg-base` throughout | Dark + neon accents is the single most recognisable AI-dashboard signature. |
 | **Decorative atmosphere** | `grain` overlay, `haze` radial gradients (9 uses) | Neither communicates system state; both are "premium" costume. |
@@ -40,7 +40,7 @@ Measured from the live site, not recalled:
 | Weight | `--font-weight-medium: 510` | **510, not 600/700.** Emphasis without shouting, the most copyable detail here. |
 | Display type | 64px / lh 1.0 / **-1.4px tracking** | Large type gets *negative* tracking and 1.0 line-height. |
 | Radius | `--border-radius: 8px` | One base radius. Pills reserved for chips. |
-| Controls | 28px and 32px heights, 13–14px text | Compact, consistent control sizing. |
+| Controls | 28px and 32px heights, 13-14px text | Compact, consistent control sizing. |
 | Semantic colour | `bg` ~96% L, `border` ~87% L, `text` ~45% L | Status = **triad** (tint bg + border + saturated text), never a solid block. |
 | Layout | `--page-max-width: 1024px` | Marketing is narrow and readable, not full-bleed. |
 
@@ -59,7 +59,7 @@ premium; big glowing cards do not.
 | Spacing scale | 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48 / 56 / 64 / 80 / 96 … | 8px rhythm with 4px half-steps. Nothing arbitrary. |
 | Foreground scale | `#f4f4f6` → `#c2c7ca` → `#78787c` → `#5e6366` | Again **4 steps**. Two independent sources converging on 4 is a strong signal. |
 | Semantic + tint | `--color-red: #ff6161` with `--color-red-transparent: #ff616126` | Every semantic colour ships with a **15% alpha tint** for chip backgrounds. |
-| Type usage | `14px/500` used **128×**, then `16px/400`, `14px/600`, `24px/500`, `11px/500` | One workhorse size (14px medium). Metadata at 11–12px. Very few sizes total. |
+| Type usage | `14px/500` used **128×**, then `16px/400`, `14px/600`, `24px/500`, `11px/500` | One workhorse size (14px medium). Metadata at 11-12px. Very few sizes total. |
 | Containers | 746 / 1064 / 1204 / 1280 | Content width is chosen per section, not one global max. |
 
 **The meta-lesson:** Raycast's polish comes from *restraint plus consistency*,
@@ -171,11 +171,11 @@ This alone removes 158 mono usages down to roughly 30 legitimate ones.
 
 | Token | Size / line-height / tracking / weight | Use |
 |---|---|---|
-| `display-xl` | 60 / 1.0 / −0.03em / 500 | landing hero only |
-| `display` | 40 / 1.05 / −0.025em / 500 | landing section heads |
-| `title-lg` | 28 / 1.15 / −0.02em / 510 | page titles |
-| `title` | 20 / 1.3 / −0.015em / 510 | panel titles |
-| `heading` | 16 / 1.4 / −0.01em / 510 | section heads, inspector name |
+| `display-xl` | 60 / 1.0 / -0.03em / 500 | landing hero only |
+| `display` | 40 / 1.05 / -0.025em / 500 | landing section heads |
+| `title-lg` | 28 / 1.15 / -0.02em / 510 | page titles |
+| `title` | 20 / 1.3 / -0.015em / 510 | panel titles |
+| `heading` | 16 / 1.4 / -0.01em / 510 | section heads, inspector name |
 | **`body`** | **14 / 1.5 / 0 / 400** | **the workhorse** |
 | `body-med` | 14 / 1.5 / 0 / 510 | buttons, active nav, table headers |
 | `small` | 13 / 1.45 / 0 / 400 | secondary UI, dense rows |
@@ -202,7 +202,7 @@ xl  16  large visual surfaces (topology stage), only when justified
 full    status pills only
 ```
 
-Nothing above 16px. No 20–30px "AI SaaS" corners.
+Nothing above 16px. No 20-30px "AI SaaS" corners.
 
 **Elevation**: three levels, and shadows are nearly invisible:
 
@@ -216,7 +216,7 @@ No blur, no glass, no glow, no gradient borders.
 
 **Control heights:** 24 (xs) / 28 (sm) / 32 (md, default) / 36 (lg).
 **Spacing:** 4px base: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96.
-**Density target:** table rows 32–36px; list rows 28–32px.
+**Density target:** table rows 32-36px; list rows 28-32px.
 
 **Card policy:** a card exists only when it groups genuinely related content that
 needs a boundary. Default is a **section**: a heading, a hairline, content.
