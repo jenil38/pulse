@@ -84,7 +84,7 @@ describe("every request carries the active system", () => {
     expect(api).toMatch(/path\.startsWith\("\/auth"\)/);
     expect(api).toMatch(/path\.startsWith\("\/workspace"\)/);
     // And the single fetch call site goes through it.
-    expect(api).toMatch(/fetch\(`\$\{BASE\}\/api\$\{scoped\(path\)\}`/);
+    expect(api).toMatch(/fetch\(`\/api\$\{scoped\(path\)\}`/);
   });
 
   it("keeps the landing page's test counts honest", () => {

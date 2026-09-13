@@ -32,8 +32,6 @@ import type {
   Topology,
 } from "./types";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-
 /**
  * A failure the UI can reason about.
  *
@@ -101,7 +99,9 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
 
   try {
-    res = await fetch(`${BASE}/api${scoped(path)}`, {
+    // Always same-origin: next.config rewrites /api to the backend, so the
+    // browser never makes a cross-origin call that CORS could block.
+    res = await fetch(`/api${scoped(path)}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",

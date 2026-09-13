@@ -50,7 +50,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      # Read by the Next server's /api rewrite, so it must be reachable from
+      # inside this container: the api service name, not localhost.
+      NEXT_PUBLIC_API_URL: http://api:8000
     ports:
       - "3000:3000"
     depends_on:
